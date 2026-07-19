@@ -112,6 +112,9 @@ export type MediaItem = {
   url: string;
 };
 
+export type PublishChange = { type: string; label: string; id: number | null; updatedAt: string };
+export type PublishStatus = { lastPublishAt: string | null; dirty: boolean; changes: PublishChange[] };
+
 export type BuildRun = {
   id: number;
   runNumber: number;

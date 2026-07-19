@@ -20,6 +20,7 @@ type TrackRecordSection = {
   body: string;
   ctaLabel: string;
   chartCaption: string;
+  bgImage?: string;
 };
 
 const data = ARCADE?.history ?? [];
@@ -98,7 +99,7 @@ export default function TrackRecord() {
     <section ref={sectionEl} className="relative overflow-hidden bg-night text-paper">
       <div className="pointer-events-none absolute right-0 top-0 hidden h-full w-[44%] lg:block">
         <Image
-          src="/images/home/arcade-structure.jpg"
+          src={s.bgImage || "/images/home/arcade-structure.jpg"}
           alt=""
           fill
           sizes="44vw"

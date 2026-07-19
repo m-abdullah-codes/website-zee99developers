@@ -12,6 +12,7 @@ type ClosingSection = {
   title: string;
   body: string;
   cta2Label: string;
+  bgImage?: string;
 };
 
 export default function ClosingCTA() {
@@ -20,7 +21,7 @@ export default function ClosingCTA() {
     <section className="relative overflow-hidden border-b border-paper/10 bg-night text-paper">
       <div className="pointer-events-none absolute inset-0">
         <Image
-          src="/images/home/featured-lifestyle.jpg"
+          src={s.bgImage || "/images/home/featured-lifestyle.jpg"}
           alt=""
           fill
           sizes="100vw"

@@ -16,6 +16,7 @@ type OverseasSection = {
   cta2Label: string;
   cta2Href: string;
   imageCaption: string;
+  image?: string;
 };
 
 export default function Overseas() {
@@ -57,7 +58,7 @@ export default function Overseas() {
         </div>
         <Reveal delay={0.15} className="lg:justify-self-end lg:w-[86%]">
           <Plate
-            src="/images/home/overseas.jpg"
+            src={s.image || "/images/home/overseas.jpg"}
             alt="Zee99 hard hat and level over site drawings"
             ratio="aspect-[3/4]"
             parallax={7}

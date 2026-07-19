@@ -15,6 +15,44 @@ export const admin = new Hono<AppContext>();
 // ---------------------------------------------------------------- session
 admin.get("/me", (c) => c.json({ ok: true }));
 
+// ---------------------------------------------------------------- publish status
+// "Dirty" = any content row edited after the last time Publish was pressed.
+// This is a proxy for "last publish requested", not "last build succeeded" —
+// close enough for a status indicator, and avoids needing a completion callback.
+admin.get("/publish-status", async (c) => {
+  const last = await c.env.DB.prepare(
+    "SELECT triggered_at FROM builds ORDER BY triggered_at DESC LIMIT 1",
+  ).first<{ triggered_at: string }>();
+  const since = last?.triggered_at ?? "1970-01-01 00:00:00";
+
+  const { results } = await c.env.DB.prepare(
+    `SELECT 'post' AS type, CASE WHEN title = '' THEN slug ELSE title END AS label, id, updated_at AS updatedAt
+       FROM posts WHERE updated_at > ?
+     UNION ALL
+     SELECT 'project', COALESCE(NULLIF(json_extract(data, '$.name'), ''), slug), id, updated_at
+       FROM projects WHERE updated_at > ?
+     UNION ALL
+     SELECT 'section', page || ' / ' || key, id, updated_at
+       FROM sections WHERE updated_at > ?
+     UNION ALL
+     SELECT 'setting', key, NULL, updated_at
+       FROM settings WHERE updated_at > ?
+     UNION ALL
+     SELECT 'page_seo', path, NULL, updated_at
+       FROM page_seo WHERE updated_at > ?
+     ORDER BY updatedAt DESC
+     LIMIT 40`,
+  )
+    .bind(since, since, since, since, since)
+    .all();
+
+  return c.json({
+    lastPublishAt: last?.triggered_at ?? null,
+    dirty: results.length > 0,
+    changes: results,
+  });
+});
+
 // ---------------------------------------------------------------- posts
 admin.get("/posts", async (c) => {
   const { results } = await c.env.DB.prepare(

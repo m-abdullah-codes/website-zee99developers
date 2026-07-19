@@ -4,22 +4,85 @@
 // Strings → inputs (textarea when long), numbers/booleans → typed controls,
 // object arrays → repeatable rows, nested objects → fieldsets.
 // A raw-JSON toggle covers anything the form can't express (adding keys, etc).
+// Fields whose key looks like an image/video (heroImage, cardImage, img, cover,
+// poster, heroVideo…) get a "Pick" button wired to the media library instead of
+// a plain text box, via a single shared picker modal (PickerCtx).
 
-import { useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Field, TextInput, TextArea, inputCls, AdminButton } from "./ui";
+import { MediaPickerModal } from "./views/Media";
 
 type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
+type MediaKind = "image" | "video";
 
 const clone = (v: Json): Json => JSON.parse(JSON.stringify(v));
 
-function StringControl({
+/** Field-name heuristic: catches heroImage/cardImage/img/cover/poster/heroVideo,
+ *  but not imageCaption, coverAlt, heroLabel, etc. */
+function mediaKind(key: string): MediaKind | null {
+  const k = key.toLowerCase();
+  if (/caption|_alt|alt$|label|title|desc/.test(k)) return null;
+  if (/video|mp4/.test(k)) return "video";
+  if (/image|img|photo|logo|poster|thumb|cover|picture|avatar|icon/.test(k)) return "image";
+  return null;
+}
+
+const PickerCtx = createContext<{
+  request: (onSelect: (url: string) => void, kind: MediaKind) => void;
+} | null>(null);
+
+function MediaFieldControl({
+  kind,
   value,
   onChange,
 }: {
+  kind: MediaKind;
   value: string;
   onChange: (v: string) => void;
 }) {
+  const picker = useContext(PickerCtx);
+  return (
+    <div>
+      <div className="flex gap-2">
+        <TextInput
+          value={value}
+          placeholder={kind === "video" ? "R2 video URL" : "/images/… or R2 URL"}
+          onChange={(e) => onChange(e.target.value)}
+          className="flex-1"
+        />
+        <AdminButton variant="outline" onClick={() => picker?.request(onChange, kind)}>
+          Pick
+        </AdminButton>
+      </div>
+      {value &&
+        (kind === "video" ? (
+          <video
+            src={value}
+            muted
+            playsInline
+            preload="metadata"
+            className="mt-2 h-28 w-full border border-ink/10 object-cover"
+          />
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={value} alt="" className="mt-2 h-24 w-full border border-ink/10 object-cover" />
+        ))}
+    </div>
+  );
+}
+
+function StringControl({
+  fieldKey,
+  value,
+  onChange,
+}: {
+  fieldKey: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const kind = mediaKind(fieldKey);
+  if (kind) return <MediaFieldControl kind={kind} value={value} onChange={onChange} />;
   const long = value.length > 72 || value.includes("\n");
   return long ? (
     <TextArea rows={Math.min(8, Math.ceil(value.length / 70) + 1)} value={value} onChange={(e) => onChange(e.target.value)} />
@@ -40,7 +103,7 @@ function ValueControl({
   if (typeof value === "string")
     return (
       <Field label={label}>
-        <StringControl value={value} onChange={onChange} />
+        <StringControl fieldKey={label} value={value} onChange={onChange} />
       </Field>
     );
   if (typeof value === "number")
@@ -198,47 +261,61 @@ export default function JsonEditor({
   const [raw, setRaw] = useState(false);
   const [rawText, setRawText] = useState("");
   const [rawErr, setRawErr] = useState<string | null>(null);
+  const [pickerState, setPickerState] = useState<{
+    onSelect: (url: string) => void;
+    kind: MediaKind;
+  } | null>(null);
 
   return (
-    <div>
-      <div className="mb-3 flex justify-end">
-        <button
-          type="button"
-          onClick={() => {
-            if (!raw) setRawText(JSON.stringify(value, null, 2));
-            setRaw(!raw);
-            setRawErr(null);
-          }}
-          className="font-mono text-[9.5px] uppercase tracking-[0.2em] text-ink-2 underline decoration-ink/30 underline-offset-4 hover:text-ink"
-        >
-          {raw ? "← Form view" : "Raw JSON"}
-        </button>
-      </div>
-      {raw ? (
-        <div>
-          <textarea
-            value={rawText}
-            onChange={(e) => {
-              setRawText(e.target.value);
-              try {
-                onChange(JSON.parse(e.target.value));
-                setRawErr(null);
-              } catch {
-                setRawErr("Invalid JSON — fix before saving.");
-              }
+    <PickerCtx.Provider
+      value={{ request: (onSelect, kind) => setPickerState({ onSelect, kind }) }}
+    >
+      <div>
+        <div className="mb-3 flex justify-end">
+          <button
+            type="button"
+            onClick={() => {
+              if (!raw) setRawText(JSON.stringify(value, null, 2));
+              setRaw(!raw);
+              setRawErr(null);
             }}
-            rows={Math.min(28, rawText.split("\n").length + 2)}
-            spellCheck={false}
-            className={cn(inputCls, "font-mono text-[12px] leading-relaxed")}
-          />
-          {rawErr && <p className="mt-1 text-[11px] text-red-900">{rawErr}</p>}
+            className="font-mono text-[9.5px] uppercase tracking-[0.2em] text-ink-2 underline decoration-ink/30 underline-offset-4 hover:text-ink"
+          >
+            {raw ? "← Form view" : "Raw JSON"}
+          </button>
         </div>
-      ) : typeof value === "object" && value !== null && !Array.isArray(value) ? (
-        <ObjectFields value={value} onChange={onChange} />
-      ) : (
-        <ValueControl label="value" value={value} onChange={onChange} />
-      )}
-    </div>
+        {raw ? (
+          <div>
+            <textarea
+              value={rawText}
+              onChange={(e) => {
+                setRawText(e.target.value);
+                try {
+                  onChange(JSON.parse(e.target.value));
+                  setRawErr(null);
+                } catch {
+                  setRawErr("Invalid JSON — fix before saving.");
+                }
+              }}
+              rows={Math.min(28, rawText.split("\n").length + 2)}
+              spellCheck={false}
+              className={cn(inputCls, "font-mono text-[12px] leading-relaxed")}
+            />
+            {rawErr && <p className="mt-1 text-[11px] text-red-900">{rawErr}</p>}
+          </div>
+        ) : typeof value === "object" && value !== null && !Array.isArray(value) ? (
+          <ObjectFields value={value} onChange={onChange} />
+        ) : (
+          <ValueControl label="value" value={value} onChange={onChange} />
+        )}
+      </div>
+      <MediaPickerModal
+        open={pickerState !== null}
+        accept={pickerState?.kind ?? "any"}
+        onClose={() => setPickerState(null)}
+        onPick={(m) => pickerState?.onSelect(m.url)}
+      />
+    </PickerCtx.Provider>
   );
 }
 

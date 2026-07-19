@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, type PostListRow, type PostRow, type MediaItem } from "../api";
 import {
   AdminButton,
@@ -8,12 +8,14 @@ import {
   StatusBadge,
   TextArea,
   TextInput,
+  inputCls,
   useConfirm,
   useToast,
   useUnsavedGuard,
 } from "../ui";
 import { MediaPickerModal } from "./Media";
 import { mdToHtml } from "@/lib/markdown";
+import { cn } from "@/lib/utils";
 
 /* ---------------------------------------------------------------- list */
 export function PostsList({ nav }: { nav: (hash: string) => void }) {
@@ -85,6 +87,121 @@ export function PostsList({ nav }: { nav: (hash: string) => void }) {
   );
 }
 
+/* ------------------------------------------------------- markdown toolbar */
+type ToolbarKind =
+  | "bold"
+  | "italic"
+  | "code"
+  | "h2"
+  | "h3"
+  | "quote"
+  | "bullet"
+  | "numbered"
+  | "link"
+  | "table";
+
+type Sel = { value: string; start: number; end: number };
+type Result = { value: string; start: number; end: number };
+
+const lineRange = (value: string, pos: number): [number, number] => {
+  const start = value.lastIndexOf("\n", pos - 1) + 1;
+  let end = value.indexOf("\n", pos);
+  if (end === -1) end = value.length;
+  return [start, end];
+};
+
+const wrapInline = (sel: Sel, before: string, after: string, placeholder: string): Result => {
+  const { value, start, end } = sel;
+  const text = value.slice(start, end) || placeholder;
+  return {
+    value: value.slice(0, start) + before + text + after + value.slice(end),
+    start: start + before.length,
+    end: start + before.length + text.length,
+  };
+};
+
+const prefixLine = (sel: Sel, marker: (line: string) => string): Result => {
+  const { value, start } = sel;
+  const [ls, le] = lineRange(value, start);
+  const newLine = marker(value.slice(ls, le));
+  const delta = newLine.length - (le - ls);
+  return {
+    value: value.slice(0, ls) + newLine + value.slice(le),
+    start: sel.start + delta,
+    end: sel.end + delta,
+  };
+};
+
+const prefixBlock = (sel: Sel, prefix: (line: string) => string): Result => {
+  const { value, start, end } = sel;
+  const [bs] = lineRange(value, start);
+  const [, be] = lineRange(value, Math.max(end - 1, start));
+  const newBlock = value
+    .slice(bs, be)
+    .split("\n")
+    .map(prefix)
+    .join("\n");
+  return { value: value.slice(0, bs) + newBlock + value.slice(be), start: bs, end: bs + newBlock.length };
+};
+
+const insertAt = (value: string, pos: number, text: string): Result => ({
+  value: value.slice(0, pos) + text + value.slice(pos),
+  start: pos + text.length,
+  end: pos + text.length,
+});
+
+function ToolbarBtn({
+  label,
+  title,
+  onClick,
+  className,
+}: {
+  label: string;
+  title: string;
+  onClick: () => void;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      title={title}
+      // Toolbar acts on the textarea's current selection — losing focus first would clear it.
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={onClick}
+      className={cn(
+        "min-w-[30px] border border-ink/15 px-2 py-1.5 font-mono text-[11px] text-ink-2 transition-colors hover:border-ink/40 hover:text-ink",
+        className,
+      )}
+    >
+      {label}
+    </button>
+  );
+}
+
+function MarkdownToolbar({
+  onAction,
+  onInsertImage,
+}: {
+  onAction: (k: ToolbarKind) => void;
+  onInsertImage: () => void;
+}) {
+  return (
+    <div className="mb-2 flex flex-wrap gap-1.5">
+      <ToolbarBtn label="B" title="Bold" className="font-bold" onClick={() => onAction("bold")} />
+      <ToolbarBtn label="I" title="Italic" className="italic" onClick={() => onAction("italic")} />
+      <ToolbarBtn label="H2" title="Heading 2" onClick={() => onAction("h2")} />
+      <ToolbarBtn label="H3" title="Heading 3" onClick={() => onAction("h3")} />
+      <ToolbarBtn label="Quote" title="Blockquote" onClick={() => onAction("quote")} />
+      <ToolbarBtn label="List" title="Bullet list" onClick={() => onAction("bullet")} />
+      <ToolbarBtn label="1. List" title="Numbered list" onClick={() => onAction("numbered")} />
+      <ToolbarBtn label="Link" title="Insert link" onClick={() => onAction("link")} />
+      <ToolbarBtn label="Table" title="Insert table" onClick={() => onAction("table")} />
+      <ToolbarBtn label="Code" title="Inline code" onClick={() => onAction("code")} />
+      <ToolbarBtn label="Image" title="Insert image from library" onClick={onInsertImage} />
+    </div>
+  );
+}
+
 /* ---------------------------------------------------------------- edit */
 type Draft = {
   slug: string;
@@ -133,8 +250,10 @@ export function PostEdit({ id, nav }: { id: string; nav: (hash: string) => void 
   const [draft, setDraft] = useState<Draft | null>(isNew ? emptyDraft() : null);
   const [initial, setInitial] = useState<string>(isNew ? JSON.stringify(emptyDraft()) : "");
   const [saving, setSaving] = useState(false);
-  const [preview, setPreview] = useState(false);
-  const [picker, setPicker] = useState<null | "cover" | "thumb">(null);
+  const [viewMode, setViewMode] = useState<"write" | "split" | "full">("write");
+  const [picker, setPicker] = useState<null | "cover" | "thumb" | "body">(null);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const bodyInsertPos = useRef(0);
   const toast = useToast();
   const confirm = useConfirm();
 
@@ -172,10 +291,64 @@ export function PostEdit({ id, nav }: { id: string; nav: (hash: string) => void 
     setDraft((d) => (d ? { ...d, [k]: v } : d));
   }, []);
 
-  const previewHtml = useMemo(
-    () => (draft && preview ? mdToHtml(draft.body_md) : ""),
-    [draft, preview],
-  );
+  // Scoped to body_md's value (not the whole draft object) so editing other
+  // fields — title, tags, SEO — doesn't re-run the markdown parser.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const bodyHtml = useMemo(() => (draft ? mdToHtml(draft.body_md) : ""), [draft?.body_md]);
+
+  const applyFormat = (kind: ToolbarKind) => {
+    const el = bodyRef.current;
+    if (!el || !draft) return;
+    const sel: Sel = { value: draft.body_md, start: el.selectionStart, end: el.selectionEnd };
+    let result: Result;
+    switch (kind) {
+      case "bold":
+        result = wrapInline(sel, "**", "**", "bold text");
+        break;
+      case "italic":
+        result = wrapInline(sel, "*", "*", "italic text");
+        break;
+      case "code":
+        result = wrapInline(sel, "`", "`", "code");
+        break;
+      case "h2":
+        result = prefixLine(sel, (l) => `## ${l.replace(/^#+\s*/, "")}`);
+        break;
+      case "h3":
+        result = prefixLine(sel, (l) => `### ${l.replace(/^#+\s*/, "")}`);
+        break;
+      case "quote":
+        result = prefixBlock(sel, (l) => (l ? `> ${l.replace(/^>\s*/, "")}` : l));
+        break;
+      case "bullet":
+        result = prefixBlock(sel, (l) => (l ? `- ${l.replace(/^[-*]\s*/, "")}` : l));
+        break;
+      case "numbered": {
+        let n = 0;
+        result = prefixBlock(sel, (l) => (l ? `${++n}. ${l.replace(/^\d+\.\s*/, "")}` : l));
+        break;
+      }
+      case "link": {
+        const url = window.prompt("Link URL", "https://");
+        if (!url) return;
+        result = wrapInline(sel, "[", `](${url})`, "link text");
+        break;
+      }
+      case "table":
+        result = insertAt(sel.value, sel.start, "\n| Column | Column |\n| --- | --- |\n| Cell | Cell |\n");
+        break;
+    }
+    set("body_md", result.value);
+    requestAnimationFrame(() => {
+      el.focus();
+      el.setSelectionRange(result.start, result.end);
+    });
+  };
+
+  const openBodyImagePicker = () => {
+    if (bodyRef.current) bodyInsertPos.current = bodyRef.current.selectionStart;
+    setPicker("body");
+  };
 
   if (!draft) return <p className="text-[13px] text-ink-2">Loading…</p>;
 
@@ -218,6 +391,17 @@ export function PostEdit({ id, nav }: { id: string; nav: (hash: string) => void 
     }
   };
 
+  const bodyTextarea = (
+    <textarea
+      ref={bodyRef}
+      rows={24}
+      value={draft.body_md}
+      onChange={(e) => set("body_md", e.target.value)}
+      spellCheck={false}
+      className={cn(inputCls, "font-mono text-[12.5px] leading-relaxed")}
+    />
+  );
+
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -243,9 +427,21 @@ export function PostEdit({ id, nav }: { id: string; nav: (hash: string) => void 
           )}
         </div>
         <div className="flex items-center gap-2">
-          <AdminButton variant="outline" onClick={() => setPreview(!preview)}>
-            {preview ? "Edit" : "Preview"}
-          </AdminButton>
+          <div className="flex border border-ink/20">
+            {(["write", "split", "full"] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setViewMode(m)}
+                className={cn(
+                  "px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] transition-colors",
+                  viewMode === m ? "bg-ink text-paper" : "text-ink-2 hover:text-ink",
+                )}
+              >
+                {m === "full" ? "Full preview" : m}
+              </button>
+            ))}
+          </div>
           {!isNew && (
             <AdminButton variant="danger" onClick={() => void del()}>
               Delete
@@ -260,7 +456,7 @@ export function PostEdit({ id, nav }: { id: string; nav: (hash: string) => void 
         </div>
       </div>
 
-      {preview ? (
+      {viewMode === "full" ? (
         /* Draft preview — same markdown pipeline + prose styles as the live site. */
         <article className="mx-auto max-w-3xl border border-ink/10 bg-paper px-6 py-10 sm:px-10">
           <p className="flex flex-wrap items-center gap-x-4 font-mono text-[10px] uppercase tracking-[0.22em]">
@@ -285,10 +481,7 @@ export function PostEdit({ id, nav }: { id: string; nav: (hash: string) => void 
               className="mt-8 aspect-[16/9] w-full border border-ink/10 object-cover"
             />
           )}
-          <div
-            className="prose-z mt-10"
-            dangerouslySetInnerHTML={{ __html: previewHtml }}
-          />
+          <div className="prose-z mt-10" dangerouslySetInnerHTML={{ __html: bodyHtml }} />
         </article>
       ) : (
         <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
@@ -319,13 +512,18 @@ export function PostEdit({ id, nav }: { id: string; nav: (hash: string) => void 
               />
             </Field>
             <Field label="Body — markdown (GFM tables supported)">
-              <TextArea
-                rows={26}
-                value={draft.body_md}
-                onChange={(e) => set("body_md", e.target.value)}
-                spellCheck={false}
-                className="font-mono text-[12.5px]"
-              />
+              <MarkdownToolbar onAction={applyFormat} onInsertImage={openBodyImagePicker} />
+              {viewMode === "split" ? (
+                <div className="grid gap-4 lg:grid-cols-2">
+                  {bodyTextarea}
+                  <div
+                    className="prose-z max-h-[560px] overflow-y-auto border border-ink/15 bg-white/40 p-5 text-[0.92em]"
+                    dangerouslySetInnerHTML={{ __html: bodyHtml }}
+                  />
+                </div>
+              ) : (
+                bodyTextarea
+              )}
             </Field>
           </div>
 
@@ -455,10 +653,20 @@ export function PostEdit({ id, nav }: { id: string; nav: (hash: string) => void 
 
       <MediaPickerModal
         open={picker !== null}
+        accept="image"
         onClose={() => setPicker(null)}
         onPick={(m: MediaItem) => {
-          if (picker) set(picker, m.url);
-          if (picker === "cover" && m.alt && !draft.cover_alt) set("cover_alt", m.alt);
+          if (picker === "cover" || picker === "thumb") {
+            set(picker, m.url);
+            if (picker === "cover" && m.alt && !draft.cover_alt) set("cover_alt", m.alt);
+          } else if (picker === "body") {
+            const result = insertAt(draft.body_md, bodyInsertPos.current, `![${m.alt}](${m.url})`);
+            set("body_md", result.value);
+            requestAnimationFrame(() => {
+              bodyRef.current?.focus();
+              bodyRef.current?.setSelectionRange(result.start, result.end);
+            });
+          }
         }}
       />
     </div>

@@ -11,10 +11,13 @@ const fmtSize = (n: number) =>
 export function MediaGrid({
   onPick,
   compact,
+  accept = "any",
 }: {
   /** Picker mode: click returns the URL instead of managing the item. */
   onPick?: (item: MediaItem) => void;
   compact?: boolean;
+  /** Filter the grid to a content-type family. */
+  accept?: "image" | "video" | "any";
 }) {
   // null = initial load in flight
   const [items, setItems] = useState<MediaItem[] | null>(null);
@@ -99,6 +102,10 @@ export function MediaGrid({
     }
   };
 
+  const visible = (items ?? []).filter(
+    (m) => accept === "any" || m.content_type.startsWith(`${accept}/`),
+  );
+
   return (
     <div>
       <div className="mb-5 flex items-center justify-between gap-4">
@@ -118,9 +125,11 @@ export function MediaGrid({
         </p>
       </div>
 
-      {items?.length === 0 && (
+      {items !== null && visible.length === 0 && (
         <p className="border border-dashed border-ink/20 p-10 text-center text-[13px] text-ink-2">
-          No uploads yet. Existing site images stay in /public — new media lives here.
+          {accept === "any"
+            ? "No uploads yet."
+            : `No ${accept}s in the library yet. Upload one, or pick from “any” type.`}
         </p>
       )}
       {items === null && <p className="text-[13px] text-ink-2">Loading…</p>}
@@ -131,7 +140,7 @@ export function MediaGrid({
           compact ? "grid-cols-3 sm:grid-cols-4" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4",
         )}
       >
-        {(items ?? []).map((m) => (
+        {visible.map((m) => (
           <figure key={m.id} className="group border border-ink/15 bg-white/50">
             <button
               type="button"
@@ -147,6 +156,21 @@ export function MediaGrid({
                   loading="lazy"
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                 />
+              ) : m.content_type.startsWith("video/") ? (
+                <>
+                  <video
+                    src={m.url}
+                    muted
+                    playsInline
+                    preload="metadata"
+                    className="h-full w-full object-cover"
+                  />
+                  <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-ink/50 text-paper">
+                      ▶
+                    </span>
+                  </span>
+                </>
               ) : (
                 <span className="flex h-full items-center justify-center font-mono text-[10px] uppercase tracking-[0.2em] text-ink-2">
                   {m.content_type}
@@ -213,10 +237,12 @@ export function MediaPickerModal({
   open,
   onClose,
   onPick,
+  accept = "any",
 }: {
   open: boolean;
   onClose: () => void;
   onPick: (item: MediaItem) => void;
+  accept?: "image" | "video" | "any";
 }) {
   if (!open) return null;
   return (
@@ -229,7 +255,9 @@ export function MediaPickerModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-display text-[1.3rem] text-ink">Pick from media library</h3>
+          <h3 className="font-display text-[1.3rem] text-ink">
+            Pick {accept === "any" ? "media" : `a ${accept}`} from the library
+          </h3>
           <button
             type="button"
             onClick={onClose}
@@ -240,6 +268,7 @@ export function MediaPickerModal({
         </div>
         <MediaGrid
           compact
+          accept={accept}
           onPick={(m) => {
             onPick(m);
             onClose();

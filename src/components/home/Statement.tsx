@@ -13,6 +13,7 @@ type StatementSection = {
   ctaLabel: string;
   ctaHref: string;
   detailCaption: string;
+  bgImage?: string;
 };
 
 export default function Statement() {
@@ -23,7 +24,7 @@ export default function Statement() {
       <div className="absolute inset-0">
         <Parallax strength={6}>
           <Image
-            src="/images/home/opening-bg.jpg"
+            src={s.bgImage || "/images/home/opening-bg.jpg"}
             alt="Brass inlay set into cast concrete"
             fill
             sizes="100vw"

@@ -22,6 +22,7 @@ type FeaturedSection = {
   cardLine2: string;
   cta1Label: string;
   cta2Label: string;
+  image?: string;
 };
 
 export default function Featured() {
@@ -64,7 +65,7 @@ export default function Featured() {
         <div ref={clip} className="relative aspect-[4/5] overflow-hidden sm:aspect-[16/10] lg:aspect-[21/10]">
           <Parallax strength={8}>
             <Image
-              src="/images/home/featured-lifestyle.jpg"
+              src={s.image || "/images/home/featured-lifestyle.jpg"}
               alt="Zee99 Lifestyle at night — lit terraces and street-level retail on the corner"
               fill
               sizes="100vw"

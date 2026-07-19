@@ -14,6 +14,8 @@ type HeroSection = {
   coordsLine2: string;
   introWordmark: string;
   introTagline: string;
+  heroVideo?: string;
+  heroPoster?: string;
 };
 
 export default function Hero() {
@@ -122,10 +124,10 @@ export default function Hero() {
           loop
           playsInline
           preload="metadata"
-          poster="/images/home/featured-lifestyle.jpg"
+          poster={s.heroPoster || "/images/home/featured-lifestyle.jpg"}
           className="absolute inset-0 h-full w-full object-cover"
         >
-          <source src="/media/hero.mp4" type="video/mp4" />
+          <source src={s.heroVideo || "/media/hero.mp4"} type="video/mp4" />
         </video>
         <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-night/60 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-night/70 to-transparent" />
