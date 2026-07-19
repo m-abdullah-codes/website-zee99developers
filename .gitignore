@@ -20,8 +20,9 @@
 # build-time content pulled from D1 (public repo: content lives in D1, not git)
 /content/
 
-# wrangler local state
+# wrangler local state + local dev secrets
 /.wrangler/
+/.dev.vars
 
 # production
 /build
