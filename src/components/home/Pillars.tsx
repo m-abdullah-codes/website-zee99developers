@@ -16,7 +16,7 @@ export default function Pillars() {
     <section className="border-t border-ink/10 bg-paper py-24 md:py-36">
       <div className="container-x">
         <SectionHead
-          no="06"
+          no="05"
           label={s.label}
           title={<Em text={s.title} />}
           className="mb-16"

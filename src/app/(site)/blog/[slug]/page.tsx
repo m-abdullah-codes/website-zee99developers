@@ -10,6 +10,8 @@ import { POSTS, getPost } from "@/data/posts";
 import { SITE, waLink } from "@/data/site";
 import { LIFESTYLE } from "@/data/projects";
 import { mdToHtml } from "@/lib/markdown";
+import JsonLd from "@/components/seo/JsonLd";
+import { articleLd, breadcrumbLd } from "@/lib/seo";
 
 export function generateStaticParams() {
   return POSTS.map((p) => ({ slug: p.slug }));
@@ -24,11 +26,25 @@ export async function generateMetadata({
   const post = getPost(slug);
   if (!post) return {};
   const seo = post.seo ?? {};
+  const title = seo.title || post.title;
+  const description = seo.description || post.excerpt;
+  const image = seo.ogImage || post.cover;
+  const canonical = seo.canonical || `/blog/${post.slug}`;
   return {
-    title: seo.title || post.title,
-    description: seo.description || post.excerpt,
-    openGraph: { images: [seo.ogImage || post.cover], type: "article" },
-    ...(seo.canonical ? { alternates: { canonical: seo.canonical } } : {}),
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: {
+      type: "article",
+      url: canonical,
+      title,
+      description,
+      images: [image],
+      publishedTime: post.dateISO,
+      authors: [SITE.name],
+      tags: post.tags,
+    },
+    twitter: { card: "summary_large_image", title, description, images: [image] },
   };
 }
 
@@ -46,6 +62,16 @@ export default async function PostPage({
 
   return (
     <article className="bg-paper pt-36 md:pt-44">
+      <JsonLd
+        data={[
+          articleLd(post),
+          breadcrumbLd([
+            { name: "Home", path: "/" },
+            { name: "Blog", path: "/blog" },
+            { name: post.title, path: `/blog/${post.slug}` },
+          ]),
+        ]}
+      />
       <div className="container-x">
         <div className="mx-auto max-w-3xl">
           <Reveal y={14}>

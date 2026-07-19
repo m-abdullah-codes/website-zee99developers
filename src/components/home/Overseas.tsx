@@ -42,7 +42,7 @@ export default function Overseas() {
       <div className="container-x grid items-center gap-16 pt-20 md:pt-28 lg:grid-cols-[1.05fr_0.95fr]">
         <div>
           <SectionHead
-            no="05"
+            no="04"
             label={s.label}
             title={<Em text={s.title} />}
             lede={s.lede}

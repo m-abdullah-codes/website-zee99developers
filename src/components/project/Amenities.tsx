@@ -1,6 +1,7 @@
 import SectionHead from "@/components/ui/SectionHead";
 import Reveal from "@/components/motion/Reveal";
 import Plate from "@/components/ui/Plate";
+import type { AmenityMedia } from "@/data/projects";
 
 const ICONS: Record<string, React.ReactNode> = {
   terrace: (
@@ -55,13 +56,34 @@ const ICONS: Record<string, React.ReactNode> = {
   ),
 };
 
+// Editable in the dashboard via project.amenityMedia; falls back to the
+// original renders so the section always has its two gallery images.
+const MEDIA_FALLBACK: AmenityMedia[] = [
+  {
+    image: "/images/projects/rooftop-pool.jpg",
+    alt: "Rooftop pool at dusk",
+    captionLeft: "Rooftop pool — dusk render",
+    captionRight: "Level 8",
+  },
+  {
+    image: "/images/projects/terrace-interior.jpg",
+    alt: "Terrace interior looking out",
+    captionLeft: "Private terrace — every unit",
+    captionRight: "Typ.",
+  },
+];
+
 export default function Amenities({
   items,
+  media,
   no = "05",
 }: {
   items: { id: string; label: string }[];
+  media?: AmenityMedia[];
   no?: string;
 }) {
+  const m0 = media?.[0] ?? MEDIA_FALLBACK[0];
+  const m1 = media?.[1] ?? MEDIA_FALLBACK[1];
   return (
     <section id="amenities" className="border-t border-ink/10 bg-paper-2/55 py-24 md:py-32">
       <div className="container-x">
@@ -126,22 +148,22 @@ export default function Amenities({
           <div className="grid gap-6">
             <Reveal>
               <Plate
-                src="/images/projects/rooftop-pool.jpg"
-                alt="Rooftop pool at dusk"
+                src={m0.image}
+                alt={m0.alt}
                 ratio="aspect-[16/9]"
                 zoom
                 sizes="(max-width: 1024px) 100vw, 45vw"
-                caption={{ left: "Rooftop pool — dusk render", right: "Level 8" }}
+                caption={{ left: m0.captionLeft, right: m0.captionRight }}
               />
             </Reveal>
             <Reveal delay={0.1} className="lg:w-[68%] lg:justify-self-end">
               <Plate
-                src="/images/projects/terrace-interior.jpg"
-                alt="Terrace interior looking out"
+                src={m1.image}
+                alt={m1.alt}
                 ratio="aspect-[3/4]"
                 zoom
                 sizes="(max-width: 1024px) 80vw, 30vw"
-                caption={{ left: "Private terrace — every unit", right: "Typ." }}
+                caption={{ left: m1.captionLeft, right: m1.captionRight }}
               />
             </Reveal>
           </div>

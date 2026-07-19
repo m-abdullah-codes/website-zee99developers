@@ -15,7 +15,7 @@ export default function BlogTeaser() {
     <section className="border-t border-ink/10 bg-paper-2/55 py-24 md:py-36">
       <div className="container-x">
         <div className="mb-16 flex flex-wrap items-end justify-between gap-8">
-          <SectionHead no="07" label={s.label} title={<Em text={s.title} />} />
+          <SectionHead no="06" label={s.label} title={<Em text={s.title} />} />
           <Reveal delay={0.2}>
             <Button href="/blog" variant="outline" arrow>
               {s.ctaLabel}

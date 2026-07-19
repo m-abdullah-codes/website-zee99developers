@@ -29,6 +29,7 @@ export const WA = {
 export const NAV = [
   { href: "/", label: "Home" },
   { href: "/projects", label: "Projects" },
+  { href: "/payment-planner", label: "Planner" },
   { href: "/about", label: "About" },
   { href: "/blog", label: "Blog" },
 ] as const;

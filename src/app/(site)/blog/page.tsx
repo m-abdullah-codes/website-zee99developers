@@ -4,7 +4,6 @@ import Image from "next/image";
 import Reveal from "@/components/motion/Reveal";
 import SplitReveal from "@/components/motion/SplitReveal";
 import BlogIndex from "@/components/blog/BlogIndex";
-import SubscribeForm from "@/components/blog/SubscribeForm";
 import Button from "@/components/ui/Button";
 import Em from "@/components/ui/Em";
 import { POSTS } from "@/data/posts";
@@ -97,11 +96,13 @@ export default function BlogPage() {
               {subscribe.body}
             </p>
           </div>
-          <div className="flex flex-col gap-8 lg:items-end">
-            <SubscribeForm />
+          <div className="flex flex-col items-start gap-5 lg:items-end">
             <Button external href={WA.channel} variant="light">
               {subscribe.waCtaLabel}
             </Button>
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-paper/40">
+              Delivered on WhatsApp — leave any time.
+            </p>
           </div>
         </div>
       </section>

@@ -106,7 +106,7 @@ export default function Residences({ units }: { units: Unit[] }) {
           <div className="relative aspect-[4/3] bg-white">
             {open && (
               <Image
-                src="/images/projects/floor-plan.jpg"
+                src={open.floorPlan || "/images/projects/floor-plan.jpg"}
                 alt={`${open.name} floor plan drawing`}
                 fill
                 sizes="(max-width: 768px) 100vw, 768px"

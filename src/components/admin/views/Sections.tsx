@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 const PAGE_LABELS: Record<string, string> = {
   home: "Home",
+  "payment-planner": "Payment Planner",
   about: "About",
   projects: "Projects index",
   blog: "Blog index",

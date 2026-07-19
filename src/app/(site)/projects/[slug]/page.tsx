@@ -16,6 +16,8 @@ import SplitReveal from "@/components/motion/SplitReveal";
 import Plate from "@/components/ui/Plate";
 import Button from "@/components/ui/Button";
 import Accordion from "@/components/ui/Accordion";
+import JsonLd from "@/components/seo/JsonLd";
+import { projectLd, faqLd, breadcrumbLd } from "@/lib/seo";
 
 export function generateStaticParams() {
   return PROJECTS.filter((p) => !p.href).map((p) => ({ slug: p.slug }));
@@ -30,11 +32,16 @@ export async function generateMetadata({
   const project = getProject(slug);
   if (!project) return {};
   const seo = project.seo ?? {};
+  const title = seo.title || project.name;
+  const description = seo.description || project.short;
+  const image = seo.ogImage || project.heroImage;
+  const canonical = seo.canonical || `/projects/${project.slug}`;
   return {
-    title: seo.title || project.name,
-    description: seo.description || project.short,
-    openGraph: { images: [seo.ogImage || project.heroImage] },
-    ...(seo.canonical ? { alternates: { canonical: seo.canonical } } : {}),
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: { type: "website", url: canonical, title, description, images: [image] },
+    twitter: { card: "summary_large_image", title, description, images: [image] },
   };
 }
 
@@ -67,6 +74,17 @@ export default async function ProjectPage({
 
   return (
     <>
+      <JsonLd
+        data={[
+          projectLd(project),
+          breadcrumbLd([
+            { name: "Home", path: "/" },
+            { name: "Projects", path: "/projects" },
+            { name: project.name, path: `/projects/${project.slug}` },
+          ]),
+          ...(booking && project.faqs?.length ? [faqLd(project.faqs)] : []),
+        ]}
+      />
       <DetailHero project={project} />
       <AnchorNav items={anchors} />
 
@@ -156,7 +174,7 @@ export default async function ProjectPage({
             </div>
           </section>
 
-          <Amenities items={project.amenities!} />
+          <Amenities items={project.amenities!} media={project.amenityMedia} />
 
           {/* location */}
           <section id="location" className="border-t border-ink/10 bg-paper py-24 md:py-32">

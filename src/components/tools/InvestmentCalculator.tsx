@@ -88,7 +88,7 @@ export default function InvestmentCalculator({
 
       <div className="grid lg:grid-cols-[0.92fr_1.08fr]">
         {/* controls */}
-        <div className="space-y-9 border-b border-ink/10 p-6 sm:p-9 lg:border-b-0 lg:border-r">
+        <div className="min-w-0 space-y-9 border-b border-ink/10 p-6 sm:p-9 lg:border-b-0 lg:border-r">
           <div className="flex gap-7">
             {(
               [
@@ -194,7 +194,7 @@ export default function InvestmentCalculator({
         </div>
 
         {/* results */}
-        <div className="bg-paper-2/45 p-6 sm:p-9">
+        <div className="min-w-0 bg-paper-2/45 p-6 sm:p-9">
           <div className="flex items-baseline justify-between gap-4">
             <p className="eyebrow">Your plan, roughly.</p>
             <p className="font-mono text-[10px] tracking-[0.14em] text-ink-2">
@@ -226,13 +226,13 @@ export default function InvestmentCalculator({
             ].map(([k, v]) => (
               <div
                 key={k as string}
-                className="flex items-baseline justify-between gap-6 border-b border-ink/10 py-4"
+                className="flex items-baseline justify-between gap-4 border-b border-ink/10 py-4 sm:gap-6"
               >
                 <dt className="text-[0.9rem] text-ink-2">{k}</dt>
                 <dd className="font-mono text-[1.02rem] tracking-[0.05em] text-ink">{v}</dd>
               </div>
             ))}
-            <div className="flex items-baseline justify-between gap-6 border-b border-ink/10 py-4">
+            <div className="flex items-baseline justify-between gap-4 border-b border-ink/10 py-4 sm:gap-6">
               <dt className="text-[0.9rem] text-ink-2">Projected value at handover</dt>
               <dd className="text-right font-mono text-[1.02rem] tracking-[0.03em] text-gold">
                 {cur === "PKR"
@@ -240,7 +240,7 @@ export default function InvestmentCalculator({
                   : `${money(range.low, cur, { compact: true })} – ${money(range.high, cur, { compact: true })}`}
               </dd>
             </div>
-            <div className="flex items-baseline justify-between gap-6 border-b border-ink/10 py-4">
+            <div className="flex items-baseline justify-between gap-4 border-b border-ink/10 py-4 sm:gap-6">
               <dt className="text-[0.9rem] text-ink-2">Est. rental yield</dt>
               <dd className="text-right font-mono text-[1.02rem] tracking-[0.03em] text-ink">
                 {yld.toFixed(1)}%<span className="text-ink-2"> / yr · {money(unit.rentEst, cur)}/mo</span>

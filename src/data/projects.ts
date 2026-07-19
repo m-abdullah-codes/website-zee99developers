@@ -17,6 +17,16 @@ export type Unit = {
   /** Current Bahria Town rent estimate, PKR/month. */
   rentEst: number;
   blurb: string;
+  /** Floor-plan drawing shown in the residences modal (R2 URL). Optional. */
+  floorPlan?: string;
+};
+
+/** A captioned image in the project's amenities gallery. */
+export type AmenityMedia = {
+  image: string;
+  alt: string;
+  captionLeft: string;
+  captionRight: string;
 };
 
 export type PricePoint = { label: string; twoBed: number; oneBed: number };
@@ -48,6 +58,7 @@ export type Project = {
   units?: Unit[];
   appreciation?: { low: number; high: number };
   amenities?: { id: string; label: string }[];
+  amenityMedia?: AmenityMedia[];
   locationSec?: {
     title: string;
     body: string;

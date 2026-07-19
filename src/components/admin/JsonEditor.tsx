@@ -18,13 +18,18 @@ type MediaKind = "image" | "video";
 
 const clone = (v: Json): Json => JSON.parse(JSON.stringify(v));
 
-/** Field-name heuristic: catches heroImage/cardImage/img/cover/poster/heroVideo,
- *  but not imageCaption, coverAlt, heroLabel, etc. */
+/** Field-name heuristic: catches heroImage/cardImage/img/cover/poster/heroVideo/
+ *  floorPlan, but not imageCaption, coverAlt, heroLabel, etc. */
 function mediaKind(key: string): MediaKind | null {
   const k = key.toLowerCase();
   if (/caption|_alt|alt$|label|title|desc/.test(k)) return null;
   if (/video|mp4/.test(k)) return "video";
-  if (/image|img|photo|logo|poster|thumb|cover|picture|avatar|icon/.test(k)) return "image";
+  if (
+    /image|img|photo|logo|poster|thumb|cover|picture|avatar|icon|floorplan|render|diagram|banner|gallery/.test(
+      k,
+    )
+  )
+    return "image";
   return null;
 }
 
