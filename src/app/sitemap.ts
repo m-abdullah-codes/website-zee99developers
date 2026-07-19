@@ -1,15 +1,19 @@
 import type { MetadataRoute } from "next";
 import { SITE } from "@/data/site";
 import { POSTS } from "@/data/posts";
-import { LIFESTYLE, ARCADE } from "@/data/projects";
+import { PROJECTS } from "@/data/projects";
+
+export const dynamic = "force-static";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = SITE.domain;
   return [
     { url: base, priority: 1 },
     { url: `${base}/projects`, priority: 0.9 },
-    { url: `${base}/projects/${LIFESTYLE.slug}`, priority: 0.95 },
-    { url: `${base}/projects/${ARCADE.slug}`, priority: 0.8 },
+    ...PROJECTS.filter((p) => !p.href).map((p) => ({
+      url: `${base}/projects/${p.slug}`,
+      priority: p.status === "booking" ? 0.95 : 0.8,
+    })),
     { url: `${base}/about`, priority: 0.7 },
     { url: `${base}/blog`, priority: 0.7 },
     ...POSTS.map((p) => ({

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getProject, LIFESTYLE, ARCADE } from "@/data/projects";
+import { getProject, PROJECTS } from "@/data/projects";
 import { SITE, WA, waLink } from "@/data/site";
 import DetailHero from "@/components/project/DetailHero";
 import AnchorNav, { type AnchorItem } from "@/components/project/AnchorNav";
@@ -18,7 +18,7 @@ import Button from "@/components/ui/Button";
 import Accordion from "@/components/ui/Accordion";
 
 export function generateStaticParams() {
-  return [{ slug: LIFESTYLE.slug }, { slug: ARCADE.slug }];
+  return PROJECTS.filter((p) => !p.href).map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({
@@ -29,10 +29,12 @@ export async function generateMetadata({
   const { slug } = await params;
   const project = getProject(slug);
   if (!project) return {};
+  const seo = project.seo ?? {};
   return {
-    title: project.name,
-    description: project.short,
-    openGraph: { images: [project.heroImage] },
+    title: seo.title || project.name,
+    description: seo.description || project.short,
+    openGraph: { images: [seo.ogImage || project.heroImage] },
+    ...(seo.canonical ? { alternates: { canonical: seo.canonical } } : {}),
   };
 }
 

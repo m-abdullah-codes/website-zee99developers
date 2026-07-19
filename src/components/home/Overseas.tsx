@@ -3,20 +3,27 @@ import Reveal from "@/components/motion/Reveal";
 import Button from "@/components/ui/Button";
 import Plate from "@/components/ui/Plate";
 import Marquee from "@/components/ui/Marquee";
+import Em from "@/components/ui/Em";
 import { WA } from "@/data/site";
+import { section } from "@/data/content";
 
-const CITIES = [
-  ["UK", "London", "£695 /mo"],
-  ["US", "New York", "$899 /mo"],
-  ["AU", "Sydney", "A$1,289 /mo"],
-  ["EU", "Berlin", "€789 /mo"],
-] as const;
+type OverseasSection = {
+  label: string;
+  title: string;
+  lede: string;
+  cities: { code: string; city: string; price: string }[];
+  cta1Label: string;
+  cta2Label: string;
+  cta2Href: string;
+  imageCaption: string;
+};
 
 export default function Overseas() {
+  const s = section<OverseasSection>("home", "overseas");
   return (
     <section className="bg-paper pb-24 md:pb-36">
       <Marquee speed={34} className="border-b border-ink/10 py-5">
-        {CITIES.map(([code, city, price]) => (
+        {s.cities.map(({ code, city, price }) => (
           <span
             key={city}
             className="flex items-center gap-4 pr-10 font-mono text-[11px] uppercase tracking-[0.26em] text-ink-2"
@@ -35,23 +42,16 @@ export default function Overseas() {
         <div>
           <SectionHead
             no="05"
-            label="From abroad"
-            title={
-              <>
-                Own in Lahore. <em className="italic text-gold">From anywhere.</em>
-              </>
-            }
-            lede="From £695 a month, hold a titled apartment in Bahria Town — booked over WhatsApp, tracked through monthly construction photos, handed over without a single flight home. Though we'd happily give you the tour."
+            label={s.label}
+            title={<Em text={s.title} />}
+            lede={s.lede}
           />
           <Reveal delay={0.25} className="mt-11 flex flex-wrap items-center gap-4">
             <Button external href={WA.overseas} arrow>
-              WhatsApp from anywhere
+              {s.cta1Label}
             </Button>
-            <Button
-              href="/blog/buying-an-apartment-in-lahore-from-4000-miles-away"
-              variant="outline"
-            >
-              Read the overseas guide
+            <Button href={s.cta2Href} variant="outline">
+              {s.cta2Label}
             </Button>
           </Reveal>
         </div>
@@ -63,7 +63,7 @@ export default function Overseas() {
             parallax={7}
             zoom
             sizes="(max-width: 1024px) 90vw, 38vw"
-            caption={{ left: "Monthly update — sent to three continents", right: "No. 07" }}
+            caption={{ left: s.imageCaption, right: "No. 07" }}
           />
         </Reveal>
       </div>

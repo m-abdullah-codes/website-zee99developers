@@ -4,18 +4,29 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { useGSAP } from "@gsap/react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
-import { ARCADE } from "@/data/projects";
+import { ARCADE, LIFESTYLE } from "@/data/projects";
 import { crFmt, lacFmt } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import Reveal from "@/components/motion/Reveal";
 import SplitReveal from "@/components/motion/SplitReveal";
 import Button from "@/components/ui/Button";
+import Em from "@/components/ui/Em";
+import { section } from "@/data/content";
 import PriceChart, { type PriceChartHandle } from "@/components/home/PriceChart";
 
-const data = ARCADE.history!;
+type TrackRecordSection = {
+  label: string;
+  title: string;
+  body: string;
+  ctaLabel: string;
+  chartCaption: string;
+};
+
+const data = ARCADE?.history ?? [];
 
 export default function TrackRecord() {
-  const section = useRef<HTMLElement>(null);
+  const s = section<TrackRecordSection>("home", "track-record");
+  const sectionEl = useRef<HTMLElement>(null);
   const pinInner = useRef<HTMLDivElement>(null);
   const chartWrap = useRef<HTMLDivElement>(null);
   const chart = useRef<PriceChartHandle>(null);
@@ -53,7 +64,7 @@ export default function TrackRecord() {
           }
           if (desktop) {
             ScrollTrigger.create({
-              trigger: section.current,
+              trigger: sectionEl.current,
               start: "top top",
               end: "+=170%",
               pin: pinInner.current,
@@ -78,11 +89,13 @@ export default function TrackRecord() {
         },
       );
     },
-    { scope: section },
+    { scope: sectionEl },
   );
 
+  if (data.length === 0) return null;
+
   return (
-    <section ref={section} className="relative overflow-hidden bg-night text-paper">
+    <section ref={sectionEl} className="relative overflow-hidden bg-night text-paper">
       <div className="pointer-events-none absolute right-0 top-0 hidden h-full w-[44%] lg:block">
         <Image
           src="/images/home/arcade-structure.jpg"
@@ -99,20 +112,17 @@ export default function TrackRecord() {
           <div className="grid w-full items-center gap-14 lg:grid-cols-[0.92fr_1.08fr] lg:gap-20">
             <div>
               <Reveal as="p" y={14} className="folio mb-9 text-gold-3">
-                03&ensp;—&ensp;Track record
+                03&ensp;—&ensp;{s.label}
               </Reveal>
               <SplitReveal
                 as="h2"
                 className="font-display font-[360] text-[clamp(2.6rem,4.8vw,4.6rem)] leading-[1.02] tracking-[-0.02em] text-paper"
               >
-                The one you <em className="italic text-gold-3">missed.</em>
+                <Em text={s.title} emClass="italic text-gold-3" />
               </SplitReveal>
               <Reveal delay={0.15}>
                 <p className="mt-8 max-w-[34rem] text-[1rem] leading-[1.85] text-paper/60">
-                  In December 2024, a two-bed at Zee99 Arcade was 1.20 crore.
-                  Today it&rsquo;s 1.61 crore. That&rsquo;s not luck — that&rsquo;s a
-                  corner plot near the Eiffel Tower and a grey structure finished
-                  in 8 months, when the market takes two years.
+                  {s.body}
                 </p>
               </Reveal>
 
@@ -144,8 +154,8 @@ export default function TrackRecord() {
               </Reveal>
 
               <Reveal delay={0.25} className="mt-11">
-                <Button href="/projects/zee99-lifestyle" variant="gold" arrow>
-                  Don&rsquo;t miss the next one
+                <Button href={`/projects/${LIFESTYLE.slug}`} variant="gold" arrow>
+                  {s.ctaLabel}
                 </Button>
               </Reveal>
             </div>
@@ -154,8 +164,7 @@ export default function TrackRecord() {
               <Reveal y={20}>
                 <PriceChart ref={chart} data={data} onProgress={onProgress} />
                 <p className="mt-6 font-mono text-[9px] uppercase leading-[2.1] tracking-[0.26em] text-paper/35">
-                  Transfer record — dated entries, published as they happened.
-                  Not a projection.
+                  {s.chartCaption}
                 </p>
               </Reveal>
             </div>

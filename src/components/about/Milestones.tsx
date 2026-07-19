@@ -4,17 +4,11 @@ import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "@/lib/gsap";
 import Reveal from "@/components/motion/Reveal";
+import Em from "@/components/ui/Em";
+import type { MilestonesSection } from "@/app/(site)/about/page";
 
-const MILESTONES = [
-  { year: "2010", t: "First homes in Bahria Town", d: "Single houses — built, finished, handed over." },
-  { year: "2015", t: "First plaza delivered", d: "Homes became plazas. The method stayed the same." },
-  { year: "2021", t: "100th home handed over", d: "Keys, not files. A record measured in families." },
-  { year: "2024", t: "Arcade launches on the corner", d: "Plot R-102–109, Tauheed Block. Booked out at launch." },
-  { year: "2025", t: "Grey structure in 8 months", d: "A stage the market takes two years to reach — on record." },
-  { year: "2026", t: "Zee99 Lifestyle opens booking", d: "Same method, one block over. The next chart begins." },
-];
-
-export default function Milestones() {
+export default function Milestones({ data }: { data: MilestonesSection }) {
+  const MILESTONES = data.items;
   const section = useRef<HTMLElement>(null);
   const track = useRef<HTMLDivElement>(null);
 
@@ -69,14 +63,14 @@ export default function Milestones() {
         <div className="container-x mb-14 flex flex-wrap items-end justify-between gap-6 lg:mb-20">
           <div>
             <Reveal as="p" y={14} className="folio mb-8 text-ink-2">
-              05&ensp;—&ensp;Milestones
+              {data.folio}
             </Reveal>
             <h2 className="font-display font-[360] text-[clamp(2.3rem,4.4vw,4.2rem)] leading-none tracking-[-0.02em] text-ink">
-              Sixteen years, six <em className="italic text-gold">lines.</em>
+              <Em text={data.title} />
             </h2>
           </div>
           <p className="hidden font-mono text-[9.5px] uppercase tracking-[0.26em] text-ink-2 lg:block">
-            Scroll — the timeline moves
+            {data.hint}
           </p>
         </div>
 

@@ -17,6 +17,12 @@
 /.next/
 /out/
 
+# build-time content pulled from D1 (public repo: content lives in D1, not git)
+/content/
+
+# wrangler local state
+/.wrangler/
+
 # production
 /build
 

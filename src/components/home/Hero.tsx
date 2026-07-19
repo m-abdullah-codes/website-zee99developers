@@ -5,8 +5,19 @@ import Link from "next/link";
 import { useGSAP } from "@gsap/react";
 import { gsap, ScrollTrigger, prefersReduced } from "@/lib/gsap";
 import { LogoMark } from "@/components/ui/Logo";
+import { section as sectionData } from "@/data/content";
+
+type HeroSection = {
+  chipLabel: string;
+  chipHref: string;
+  coordsLine1: string;
+  coordsLine2: string;
+  introWordmark: string;
+  introTagline: string;
+};
 
 export default function Hero() {
+  const s = sectionData<HeroSection>("home", "hero");
   const section = useRef<HTMLElement>(null);
   const frame = useRef<HTMLDivElement>(null);
   const overlay = useRef<HTMLDivElement>(null);
@@ -124,19 +135,19 @@ export default function Hero() {
       {/* bottom chrome */}
       <div className="container-x absolute inset-x-0 bottom-0 z-10 flex items-end justify-between pb-8">
         <p className="hidden font-mono text-[9px] uppercase leading-[2] tracking-[0.3em] text-paper/55 sm:block">
-          Bahria Town, Lahore
+          {s.coordsLine1}
           <br />
-          31.3865° N — 74.1922° E
+          {s.coordsLine2}
         </p>
         <div className="absolute bottom-8 left-1/2 h-16 w-px -translate-x-1/2 overflow-hidden bg-paper/20">
           <span className="scroll-cue-dot absolute left-0 top-0 h-6 w-px bg-gold-3" />
         </div>
         <Link
-          href="/projects/zee99-lifestyle"
+          href={s.chipHref}
           className="group ml-auto mr-16 inline-flex items-center gap-3 rounded-full border border-paper/25 bg-night/40 px-5 py-3 font-mono text-[9px] uppercase tracking-[0.26em] text-paper backdrop-blur-md transition-colors duration-300 hover:border-gold-2/70 hover:text-gold-3 sm:mr-20"
         >
           <span className="pulse-dot h-[5px] w-[5px] rounded-full bg-gold-2" />
-          Now booking — Lifestyle
+          {s.chipLabel}
           <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
         </Link>
       </div>
@@ -151,14 +162,14 @@ export default function Hero() {
           data-intro-word
           className="mt-6 font-mono text-[12px] uppercase tracking-[0.5em] text-ink"
         >
-          ZEE99&ensp;DEVELOPERS
+          {s.introWordmark}
         </p>
         <span
           data-intro-rule
           className="mt-7 block h-px w-24 origin-center bg-gold-2"
         />
         <p className="absolute bottom-8 font-mono text-[9px] uppercase tracking-[0.3em] text-ink-2">
-          Bahria Town Lahore — since 2010
+          {s.introTagline}
         </p>
       </div>
     </section>

@@ -6,16 +6,19 @@ import SplitReveal from "@/components/motion/SplitReveal";
 import BlogIndex from "@/components/blog/BlogIndex";
 import SubscribeForm from "@/components/blog/SubscribeForm";
 import Button from "@/components/ui/Button";
+import Em from "@/components/ui/Em";
 import { POSTS } from "@/data/posts";
 import { WA } from "@/data/site";
+import { section, pageMeta } from "@/data/content";
 
-export const metadata: Metadata = {
-  title: "Notes on the market",
-  description:
-    "What's actually happening in Bahria Town real estate — written by people who build here, not people who trade files.",
-};
+export const metadata: Metadata = pageMeta("/blog");
+
+type BlogHeader = { folio: string; title: string; lede: string };
+type BlogSubscribe = { label: string; title: string; body: string; waCtaLabel: string };
 
 export default function BlogPage() {
+  const header = section<BlogHeader>("blog", "header");
+  const subscribe = section<BlogSubscribe>("blog", "subscribe");
   const featured = POSTS.find((p) => p.featured) ?? POSTS[0];
   const rest = POSTS.filter((p) => p.slug !== featured.slug);
 
@@ -24,19 +27,18 @@ export default function BlogPage() {
       <div className="container-x">
         <header className="mb-16 max-w-4xl md:mb-20">
           <Reveal as="p" y={14} className="folio mb-9 text-ink-2">
-            The blog&ensp;—&ensp;Field notes
+            {header.folio}
           </Reveal>
           <SplitReveal
             as="h1"
             immediate
             className="font-display font-[340] text-[clamp(2.8rem,6vw,5.6rem)] leading-[1.02] tracking-[-0.025em] text-ink"
           >
-            Notes on the <em className="italic text-gold">market</em>
+            <Em text={header.title} />
           </SplitReveal>
           <Reveal delay={0.25}>
             <p className="mt-9 max-w-xl text-[1.02rem] leading-[1.85] text-ink-2">
-              What&rsquo;s actually happening in Bahria Town real estate —
-              written by people who build here, not people who trade files.
+              {header.lede}
             </p>
           </Reveal>
         </header>
@@ -87,20 +89,18 @@ export default function BlogPage() {
       <section className="mt-24 border-t border-paper/10 bg-night py-20 text-paper md:mt-32 md:py-24">
         <div className="container-x grid items-center gap-12 lg:grid-cols-2">
           <div>
-            <p className="folio mb-8 text-gold-3">The monthly note</p>
+            <p className="folio mb-8 text-gold-3">{subscribe.label}</p>
             <h2 className="max-w-lg font-display text-[clamp(1.8rem,3.2vw,2.7rem)] font-[370] leading-[1.2] tracking-[-0.015em]">
-              One useful message a month.{" "}
-              <em className="italic text-gold-3">No spam — we&rsquo;re too busy building.</em>
+              <Em text={subscribe.title} emClass="italic text-gold-3" />
             </h2>
             <p className="mt-6 max-w-md text-[0.98rem] leading-[1.85] text-paper/60">
-              Prices, progress photos, and what we&rsquo;re seeing on the
-              ground.
+              {subscribe.body}
             </p>
           </div>
           <div className="flex flex-col gap-8 lg:items-end">
             <SubscribeForm />
             <Button external href={WA.channel} variant="light">
-              Join the WhatsApp channel
+              {subscribe.waCtaLabel}
             </Button>
           </div>
         </div>

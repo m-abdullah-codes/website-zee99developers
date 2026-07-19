@@ -1,47 +1,28 @@
 import Image from "next/image";
 import SectionHead from "@/components/ui/SectionHead";
 import Reveal from "@/components/motion/Reveal";
+import Em from "@/components/ui/Em";
+import { section } from "@/data/content";
 
-const PILLARS = [
-  {
-    n: "01",
-    t: "Delivery you can watch.",
-    d: "Construction updates published monthly. Arcade's grey structure: 8 months, on record.",
-    img: "/images/home/dated-site.jpg",
-    alt: "Dated construction site photo",
-  },
-  {
-    n: "02",
-    t: "Prices you can plan around.",
-    d: "The full payment plan in writing before you book. No surprises at possession.",
-    img: "/images/home/payment-schedule.jpg",
-    alt: "A printed payment schedule",
-  },
-  {
-    n: "03",
-    t: "Locations that hold value.",
-    d: "Corner plots on main roads — facing the Eiffel Tower, facing the Sports Complex. Frontage is the investment.",
-    img: "/images/home/corner-aerial.jpg",
-    alt: "Aerial view of a corner plot",
-  },
-];
+type PillarsSection = {
+  label: string;
+  title: string;
+  items: { n: string; t: string; d: string; img: string; alt: string }[];
+};
 
 export default function Pillars() {
+  const s = section<PillarsSection>("home", "pillars");
   return (
     <section className="border-t border-ink/10 bg-paper py-24 md:py-36">
       <div className="container-x">
         <SectionHead
           no="06"
-          label="How we work"
-          title={
-            <>
-              The <em className="italic text-gold">method.</em>
-            </>
-          }
+          label={s.label}
+          title={<Em text={s.title} />}
           className="mb-16"
         />
         <div>
-          {PILLARS.map((p, i) => (
+          {s.items.map((p, i) => (
             <Reveal
               key={p.n}
               delay={i * 0.08}

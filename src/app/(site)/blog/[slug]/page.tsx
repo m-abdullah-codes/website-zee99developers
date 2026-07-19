@@ -8,6 +8,8 @@ import Button from "@/components/ui/Button";
 import PostCard from "@/components/blog/PostCard";
 import { POSTS, getPost } from "@/data/posts";
 import { SITE, waLink } from "@/data/site";
+import { LIFESTYLE } from "@/data/projects";
+import { mdToHtml } from "@/lib/markdown";
 
 export function generateStaticParams() {
   return POSTS.map((p) => ({ slug: p.slug }));
@@ -21,10 +23,12 @@ export async function generateMetadata({
   const { slug } = await params;
   const post = getPost(slug);
   if (!post) return {};
+  const seo = post.seo ?? {};
   return {
-    title: post.title,
-    description: post.excerpt,
-    openGraph: { images: [post.cover], type: "article" },
+    title: seo.title || post.title,
+    description: seo.description || post.excerpt,
+    openGraph: { images: [seo.ogImage || post.cover], type: "article" },
+    ...(seo.canonical ? { alternates: { canonical: seo.canonical } } : {}),
   };
 }
 
@@ -80,7 +84,10 @@ export default async function PostPage({
           />
         </Reveal>
 
-        <div className="prose-z mx-auto mt-16 max-w-3xl pb-8 md:mt-20">{post.body}</div>
+        <div
+          className="prose-z mx-auto mt-16 max-w-3xl pb-8 md:mt-20"
+          dangerouslySetInnerHTML={{ __html: mdToHtml(post.bodyMd) }}
+        />
 
         {/* signature + CTA */}
         <div className="mx-auto max-w-3xl border-t border-ink/10 py-12">
@@ -90,7 +97,7 @@ export default async function PostPage({
                 Written on site
               </p>
               <p className="mt-2 font-display text-[1.3rem] font-[420] text-ink">
-                Zee99 Developers — Bahria Town, Lahore
+                {SITE.name} — Bahria Town, Lahore
               </p>
             </div>
             <Button external href={waLink(`Hi, I just read "${post.title}" on your site — I have a question.`)} arrow>
@@ -111,8 +118,8 @@ export default async function PostPage({
             <p className="max-w-sm font-display text-[1.5rem] font-[380] leading-[1.4] text-ink">
               The next one is <em className="italic text-gold">booking now.</em>
             </p>
-            <Button href="/projects/zee99-lifestyle" variant="outline" arrow className="mt-7">
-              Zee99 Lifestyle
+            <Button href={`/projects/${LIFESTYLE.slug}`} variant="outline" arrow className="mt-7">
+              {LIFESTYLE.name}
             </Button>
           </div>
         </div>

@@ -1,11 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Manrope, Spline_Sans_Mono } from "next/font/google";
 import "./globals.css";
-import SmoothScroll from "@/components/motion/SmoothScroll";
-import Header from "@/components/chrome/Header";
-import Footer from "@/components/chrome/Footer";
-import WhatsAppFloat from "@/components/chrome/WhatsAppFloat";
 import { SITE } from "@/data/site";
+import { GLOBAL_SEO } from "@/data/content";
 
 const fraunces = Fraunces({
   variable: "--font-fraunces",
@@ -30,16 +27,15 @@ const splineMono = Spline_Sans_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.domain),
   title: {
-    default: "Zee99 Developers — We publish our numbers",
-    template: "%s — Zee99 Developers",
+    default: GLOBAL_SEO.titleDefault,
+    template: GLOBAL_SEO.titleTemplate,
   },
-  description:
-    "Fifteen years of building in Bahria Town Lahore. Every project delivered, every price on record. Now booking: Zee99 Lifestyle — terrace apartments facing the Safari Sports Complex.",
+  description: GLOBAL_SEO.description,
   openGraph: {
     siteName: SITE.name,
     type: "website",
-    locale: "en_US",
-    images: ["/images/home/featured-lifestyle.jpg"],
+    locale: GLOBAL_SEO.locale,
+    images: [GLOBAL_SEO.ogImage],
   },
 };
 
@@ -57,16 +53,7 @@ export default function RootLayout({
       lang="en"
       className={`${fraunces.variable} ${manrope.variable} ${splineMono.variable} antialiased`}
     >
-      <body className="grain min-h-screen">
-        <noscript>
-          <style>{`[data-reveal]{opacity:1!important}[data-lines]{visibility:visible!important}`}</style>
-        </noscript>
-        <SmoothScroll />
-        <Header />
-        <main>{children}</main>
-        <Footer />
-        <WhatsAppFloat />
-      </body>
+      <body className="grain min-h-screen">{children}</body>
     </html>
   );
 }

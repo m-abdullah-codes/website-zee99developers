@@ -9,8 +9,24 @@ import Button from "@/components/ui/Button";
 import Reveal from "@/components/motion/Reveal";
 import Parallax from "@/components/motion/Parallax";
 import StatusPill from "@/components/ui/StatusPill";
+import Em from "@/components/ui/Em";
+import { section as sectionData } from "@/data/content";
+import { LIFESTYLE } from "@/data/projects";
+
+type FeaturedSection = {
+  label: string;
+  title: string;
+  intro: string;
+  imageCaption: string;
+  cardLine1: string;
+  cardLine2: string;
+  cta1Label: string;
+  cta2Label: string;
+};
 
 export default function Featured() {
+  const s = sectionData<FeaturedSection>("home", "featured");
+  const projectHref = `/projects/${LIFESTYLE.slug}`;
   const section = useRef<HTMLElement>(null);
   const clip = useRef<HTMLDivElement>(null);
 
@@ -38,21 +54,9 @@ export default function Featured() {
   return (
     <section ref={section} className="bg-paper pt-28 md:pt-40">
       <div className="container-x mb-16 grid items-end gap-10 lg:grid-cols-[1.15fr_1fr]">
-        <SectionHead
-          no="02"
-          label="Featured — Now booking"
-          title={
-            <>
-              Zee99 <em className="italic text-gold">Lifestyle</em>
-            </>
-          }
-        />
+        <SectionHead no="02" label={s.label} title={<Em text={s.title} />} />
         <Reveal delay={0.15} className="lg:justify-self-end">
-          <p className="max-w-md text-[1.02rem] leading-[1.85] text-ink-2">
-            Eight storeys on a corner of Safari Block, facing the Safari Sports
-            Complex. Studios, one-beds, and two-beds — each with a private
-            terrace, owned outright in 36 months.
-          </p>
+          <p className="max-w-md text-[1.02rem] leading-[1.85] text-ink-2">{s.intro}</p>
         </Reveal>
       </div>
 
@@ -69,10 +73,10 @@ export default function Featured() {
           </Parallax>
           <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-night/60 to-transparent" />
           <div className="absolute left-5 top-5 sm:left-8 sm:top-8">
-            <StatusPill status="booking" label="Now booking" onImage />
+            <StatusPill status="booking" label={LIFESTYLE.statusLabel} onImage />
           </div>
           <p className="absolute bottom-6 right-5 hidden font-mono text-[9px] uppercase tracking-[0.3em] text-paper/70 sm:right-8 md:block">
-            Night elevation — Safari Block corner
+            {s.imageCaption}
           </p>
         </div>
 
@@ -82,16 +86,16 @@ export default function Featured() {
             className="relative z-10 -mt-16 max-w-2xl border border-ink/10 bg-paper p-8 shadow-[0_30px_90px_rgba(23,20,16,0.12)] sm:-mt-24 sm:p-12"
           >
             <p className="font-mono text-[10px] uppercase leading-[2.4] tracking-[0.26em] text-ink-2">
-              Sector B, Bahria Town Lahore&ensp;·&ensp;Studio / 1 Bed / 2 Bed
+              {s.cardLine1}
               <br />
-              <span className="text-gold">From ₨ 550,000 down — keys in 36 months</span>
+              <span className="text-gold">{s.cardLine2}</span>
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
-              <Button href="/projects/zee99-lifestyle" arrow>
-                Explore the project
+              <Button href={projectHref} arrow>
+                {s.cta1Label}
               </Button>
-              <Button href="/projects/zee99-lifestyle#payment" variant="outline">
-                See payment plans
+              <Button href={`${projectHref}#payment`} variant="outline">
+                {s.cta2Label}
               </Button>
             </div>
           </Reveal>

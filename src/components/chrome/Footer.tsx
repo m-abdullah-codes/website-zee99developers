@@ -1,8 +1,13 @@
 import Link from "next/link";
 import Logo from "@/components/ui/Logo";
+import Em from "@/components/ui/Em";
 import { NAV, SITE, WA, waLink } from "@/data/site";
+import { LIFESTYLE } from "@/data/projects";
 
 export default function Footer() {
+  const parts = SITE.address.split(", ");
+  const addressLines =
+    parts.length > 2 ? [parts[0], parts[1], parts.slice(2).join(", ")] : parts;
   return (
     <footer className="relative overflow-hidden bg-night text-paper">
       <div className="container-x relative pt-20 pb-8 sm:pt-28">
@@ -10,8 +15,7 @@ export default function Footer() {
           <div>
             <Logo tone="paper" />
             <p className="mt-8 max-w-sm font-display text-[1.7rem] leading-[1.35] font-[360] text-paper/90">
-              Built in Bahria Town.{" "}
-              <em className="text-gold-3">For fifteen years, nowhere else.</em>
+              <Em text={SITE.tagline} emClass="text-gold-3" />
             </p>
           </div>
 
@@ -41,11 +45,16 @@ export default function Footer() {
             <div>
               <p className="eyebrow mb-6 text-paper/40">Visit</p>
               <p className="font-mono text-[11px] uppercase leading-[2.3] tracking-[0.18em] text-paper/70">
-                22 Nishter,
-                <br />
-                Main Boulevard,
-                <br />
-                Bahria Town, Lahore
+                {addressLines.map((line, i) => (
+                  <span key={line}>
+                    {line}
+                    {i < addressLines.length - 1 && (
+                      <>
+                        ,<br />
+                      </>
+                    )}
+                  </span>
+                ))}
               </p>
               <a
                 href={SITE.directionsUrl}
@@ -81,14 +90,14 @@ export default function Footer() {
 
         <div className="mt-6 flex flex-col items-center justify-between gap-4 border-t border-paper/10 pt-7 sm:flex-row">
           <p className="font-mono text-[9.5px] uppercase tracking-[0.24em] text-paper/35">
-            © 2026 Zee99 Developers
+            © {new Date().getFullYear()} {SITE.name}
           </p>
           <Link
-            href="/projects/zee99-lifestyle"
+            href={`/projects/${LIFESTYLE.slug}`}
             className="group inline-flex items-center gap-3 font-mono text-[9.5px] uppercase tracking-[0.24em] text-paper/55 transition-colors hover:text-gold-3"
           >
             <span className="pulse-dot h-[5px] w-[5px] rounded-full bg-gold-2" />
-            Now booking — Zee99 Lifestyle
+            Now booking — {LIFESTYLE.name}
             <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
           </Link>
         </div>

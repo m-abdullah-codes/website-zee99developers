@@ -1,16 +1,21 @@
-/**
- * Static FX table — PKR per one unit of currency.
- * Update monthly (see content spec). Placeholder mid-2026 rates;
- * reconcile with finance before launch.
- */
-export const CURRENCIES = {
-  PKR: { code: "PKR", symbol: "₨ ", flag: "🇵🇰", pkrPerUnit: 1, label: "Pakistani Rupee" },
-  GBP: { code: "GBP", symbol: "£", flag: "🇬🇧", pkrPerUnit: 357, label: "British Pound" },
-  USD: { code: "USD", symbol: "$", flag: "🇺🇸", pkrPerUnit: 283, label: "US Dollar" },
-  AUD: { code: "AUD", symbol: "A$", flag: "🇦🇺", pkrPerUnit: 186, label: "Australian Dollar" },
-  EUR: { code: "EUR", symbol: "€", flag: "🇪🇺", pkrPerUnit: 306, label: "Euro" },
-} as const;
+// FX table sourced from D1 at build time (settings.rates) — PKR per one unit.
+// Edit monthly in the dashboard under Settings → Rates.
+import settings from "../../content/settings.json";
 
-export type CurrencyCode = keyof typeof CURRENCIES;
+export type Currency = {
+  code: string;
+  symbol: string;
+  flag: string;
+  pkrPerUnit: number;
+  label: string;
+};
 
-export const CURRENCY_ORDER: CurrencyCode[] = ["PKR", "GBP", "USD", "AUD", "EUR"];
+export type CurrencyCode = string;
+
+const list = (settings.rates as { currencies: Currency[] }).currencies;
+
+export const CURRENCIES: Record<CurrencyCode, Currency> = Object.fromEntries(
+  list.map((c) => [c.code, c]),
+);
+
+export const CURRENCY_ORDER: CurrencyCode[] = list.map((c) => c.code);

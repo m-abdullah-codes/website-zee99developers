@@ -1,0 +1,33 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "zee99",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-07-01",
+  "assets": {
+    "directory": "./out",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"]
+  },
+  "observability": { "enabled": true },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "zee99-db",
+      "database_id": "9064d1a9-ab8d-4e8e-acdb-c8e88c43fe44"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "zee99-media"
+    }
+  ],
+  "vars": {
+    // Public repo this site deploys from; used for repository_dispatch + build status.
+    "GITHUB_REPO": "m-abdullah-codes/website-zee99developers",
+    "GITHUB_WORKFLOW": "deploy.yml",
+    // R2 public base URL (r2.dev or custom domain); objects are served from here, not the Worker.
+    "MEDIA_BASE_URL": "https://pub-0dc6556a273e45f5a42c3978056f5cf9.r2.dev"
+  }
+}
