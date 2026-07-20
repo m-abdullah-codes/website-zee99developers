@@ -247,11 +247,11 @@ export function MediaPickerModal({
   if (!open) return null;
   return (
     <div
-      className="fixed inset-0 z-[90] flex items-center justify-center bg-ink/40 p-6"
+      className="fixed inset-0 z-[90] flex items-end justify-center bg-ink/40 p-0 sm:items-center sm:p-6"
       onClick={onClose}
     >
       <div
-        className="max-h-[80vh] w-full max-w-3xl overflow-y-auto border border-ink/20 bg-paper p-6 shadow-2xl"
+        className="max-h-[88vh] w-full max-w-3xl overflow-y-auto border border-ink/20 bg-paper p-4 shadow-2xl sm:max-h-[80vh] sm:p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">

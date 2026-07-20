@@ -116,6 +116,39 @@ export function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return <select {...props} className={cn(inputCls, "bg-white/60", props.className)} />;
 }
 
+/** Segmented control — a row of mutually exclusive options. Full-width on mobile. */
+export function Segmented<T extends string>({
+  value,
+  onChange,
+  options,
+  className,
+}: {
+  value: T;
+  onChange: (v: T) => void;
+  options: { value: T; label: string }[];
+  className?: string;
+}) {
+  return (
+    <div className={cn("inline-flex w-full border border-ink/20 sm:w-auto", className)}>
+      {options.map((o, i) => (
+        <button
+          key={o.value}
+          type="button"
+          onClick={() => onChange(o.value)}
+          aria-pressed={value === o.value}
+          className={cn(
+            "flex-1 whitespace-nowrap px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] transition-colors sm:flex-none sm:px-4",
+            i > 0 && "border-l border-ink/20",
+            value === o.value ? "bg-ink text-paper" : "text-ink-2 hover:bg-ink/5 hover:text-ink",
+          )}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
     published: "border-green-800/25 bg-green-800/5 text-green-900",

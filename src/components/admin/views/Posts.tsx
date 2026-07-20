@@ -5,6 +5,7 @@ import { api, type PostListRow, type PostRow, type MediaItem } from "../api";
 import {
   AdminButton,
   Field,
+  Segmented,
   StatusBadge,
   TextArea,
   TextInput,
@@ -14,6 +15,7 @@ import {
   useUnsavedGuard,
 } from "../ui";
 import { MediaPickerModal } from "./Media";
+import { RichTextEditor } from "../RichTextEditor";
 import { mdToHtml } from "@/lib/markdown";
 import { cn } from "@/lib/utils";
 
@@ -169,7 +171,7 @@ function ToolbarBtn({
       onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
       className={cn(
-        "min-w-[30px] border border-ink/15 px-2 py-1.5 font-mono text-[11px] text-ink-2 transition-colors hover:border-ink/40 hover:text-ink",
+        "inline-flex h-8 min-w-[34px] items-center justify-center border border-ink/15 px-2 font-mono text-[11px] text-ink-2 transition-colors hover:border-ink/40 hover:text-ink",
         className,
       )}
     >
@@ -186,7 +188,7 @@ function MarkdownToolbar({
   onInsertImage: () => void;
 }) {
   return (
-    <div className="mb-2 flex flex-wrap gap-1.5">
+    <div className="mb-2 flex flex-wrap gap-1">
       <ToolbarBtn label="B" title="Bold" className="font-bold" onClick={() => onAction("bold")} />
       <ToolbarBtn label="I" title="Italic" className="italic" onClick={() => onAction("italic")} />
       <ToolbarBtn label="H2" title="Heading 2" onClick={() => onAction("h2")} />
@@ -198,6 +200,40 @@ function MarkdownToolbar({
       <ToolbarBtn label="Table" title="Insert table" onClick={() => onAction("table")} />
       <ToolbarBtn label="Code" title="Inline code" onClick={() => onAction("code")} />
       <ToolbarBtn label="Image" title="Insert image from library" onClick={onInsertImage} />
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------ status toggle */
+function StatusToggle({
+  value,
+  onChange,
+  className,
+}: {
+  value: "draft" | "published";
+  onChange: (s: "draft" | "published") => void;
+  className?: string;
+}) {
+  return (
+    <div className={cn("inline-flex shrink-0 rounded-full border border-ink/20 p-0.5", className)}>
+      {(["draft", "published"] as const).map((st) => (
+        <button
+          key={st}
+          type="button"
+          onClick={() => onChange(st)}
+          aria-pressed={value === st}
+          className={cn(
+            "rounded-full px-3.5 py-1.5 font-mono text-[9.5px] uppercase tracking-[0.16em] transition-colors",
+            value === st
+              ? st === "published"
+                ? "bg-gold text-paper"
+                : "bg-ink text-paper"
+              : "text-ink-2 hover:text-ink",
+          )}
+        >
+          {st}
+        </button>
+      ))}
     </div>
   );
 }
@@ -250,10 +286,10 @@ export function PostEdit({ id, nav }: { id: string; nav: (hash: string) => void 
   const [draft, setDraft] = useState<Draft | null>(isNew ? emptyDraft() : null);
   const [initial, setInitial] = useState<string>(isNew ? JSON.stringify(emptyDraft()) : "");
   const [saving, setSaving] = useState(false);
-  const [viewMode, setViewMode] = useState<"write" | "split" | "full">("write");
-  const [picker, setPicker] = useState<null | "cover" | "thumb" | "body">(null);
+  const [mode, setMode] = useState<"rich" | "markdown" | "preview">("rich");
+  const [pickerAccept, setPickerAccept] = useState<"image" | "video" | "any" | null>(null);
+  const mediaResolver = useRef<((m: MediaItem | null) => void) | null>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
-  const bodyInsertPos = useRef(0);
   const toast = useToast();
   const confirm = useConfirm();
 
@@ -280,6 +316,9 @@ export function PostEdit({ id, nav }: { id: string; nav: (hash: string) => void 
         };
         setDraft(d);
         setInitial(JSON.stringify(d));
+        // Raw HTML can't round-trip through the rich editor — open such posts in
+        // markdown mode so nothing is silently dropped.
+        if (/<([a-z][a-z0-9]*)\b[^>]*>/i.test(d.body_md)) setMode("markdown");
       })
       .catch((e) => toast("err", e.message));
   }, [id, isNew, toast]);
@@ -295,6 +334,22 @@ export function PostEdit({ id, nav }: { id: string; nav: (hash: string) => void 
   // fields — title, tags, SEO — doesn't re-run the markdown parser.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const bodyHtml = useMemo(() => (draft ? mdToHtml(draft.body_md) : ""), [draft?.body_md]);
+
+  /* One media-picker for cover, thumbnail and in-body images. Resolves the
+     promise the caller is awaiting when the user picks (or cancels). */
+  const pickMedia = useCallback(
+    (accept: "image" | "video" | "any" = "image") =>
+      new Promise<MediaItem | null>((resolve) => {
+        mediaResolver.current = resolve;
+        setPickerAccept(accept);
+      }),
+    [],
+  );
+  const resolveMedia = (m: MediaItem | null) => {
+    setPickerAccept(null);
+    mediaResolver.current?.(m);
+    mediaResolver.current = null;
+  };
 
   const applyFormat = (kind: ToolbarKind) => {
     const el = bodyRef.current;
@@ -345,22 +400,44 @@ export function PostEdit({ id, nav }: { id: string; nav: (hash: string) => void 
     });
   };
 
-  const openBodyImagePicker = () => {
-    if (bodyRef.current) bodyInsertPos.current = bodyRef.current.selectionStart;
-    setPicker("body");
+  const insertBodyImage = async () => {
+    const el = bodyRef.current;
+    const pos = el ? el.selectionStart : draft?.body_md.length ?? 0;
+    const m = await pickMedia("image");
+    if (!m) return;
+    setDraft((d) => {
+      if (!d) return d;
+      const r = insertAt(d.body_md, Math.min(pos, d.body_md.length), `![${m.alt}](${m.url})`);
+      requestAnimationFrame(() => {
+        el?.focus();
+        el?.setSelectionRange(r.start, r.end);
+      });
+      return { ...d, body_md: r.value };
+    });
+  };
+
+  const pickInto = async (k: "cover" | "thumb") => {
+    const m = await pickMedia("image");
+    if (!m) return;
+    setDraft((d) => {
+      if (!d) return d;
+      const next: Draft = { ...d, [k]: m.url };
+      if (k === "cover" && m.alt && !d.cover_alt) next.cover_alt = m.alt;
+      return next;
+    });
   };
 
   if (!draft) return <p className="text-[13px] text-ink-2">Loading…</p>;
 
-  const save = async (statusOverride?: "draft" | "published") => {
-    const body = { ...draft, status: statusOverride ?? draft.status };
+  const save = async () => {
+    const body = { ...draft };
     if (!body.slug && body.title) body.slug = slugify(body.title);
-    if (!body.slug) return toast("err", "Slug is required (set a title first).");
+    if (!body.slug) return toast("err", "Add a title (or slug) before saving.");
     setSaving(true);
     try {
       if (isNew) {
         const r = await api.post<{ id: number }>("/admin/posts", body);
-        toast("ok", "Post created.");
+        toast("ok", body.status === "published" ? "Post created — marked published." : "Draft created.");
         nav(`#/posts/${r.id}`);
       } else {
         await api.put(`/admin/posts/${id}`, body);
@@ -369,7 +446,7 @@ export function PostEdit({ id, nav }: { id: string; nav: (hash: string) => void 
         toast(
           "ok",
           body.status === "published"
-            ? "Saved. Publish from the dashboard to rebuild the site."
+            ? "Saved. It goes live at the next site publish."
             : "Draft saved.",
         );
       }
@@ -394,7 +471,7 @@ export function PostEdit({ id, nav }: { id: string; nav: (hash: string) => void 
   const bodyTextarea = (
     <textarea
       ref={bodyRef}
-      rows={24}
+      rows={22}
       value={draft.body_md}
       onChange={(e) => set("body_md", e.target.value)}
       spellCheck={false}
@@ -402,74 +479,75 @@ export function PostEdit({ id, nav }: { id: string; nav: (hash: string) => void 
     />
   );
 
+  const statusHint =
+    draft.status === "published"
+      ? "Published — goes live at the next site publish (Dashboard → Publish)."
+      : "Draft — stays hidden until you mark it Published and publish the site.";
+
   return (
-    <div>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={() => {
-              if (dirty && !confirm("Discard unsaved changes?")) return;
-              nav("#/posts");
-            }}
-            className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-2 hover:text-ink"
-          >
-            ← Posts
-          </button>
-          <h2 className="font-display text-[1.5rem] font-[400] text-ink">
-            {isNew ? "New post" : draft.title || "(untitled)"}
-          </h2>
-          <StatusBadge status={draft.status} />
-          {dirty && (
-            <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-gold">
-              Unsaved
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex border border-ink/20">
-            {(["write", "split", "full"] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setViewMode(m)}
-                className={cn(
-                  "px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] transition-colors",
-                  viewMode === m ? "bg-ink text-paper" : "text-ink-2 hover:text-ink",
-                )}
-              >
-                {m === "full" ? "Full preview" : m}
-              </button>
-            ))}
-          </div>
+    <div className="pb-24 sm:pb-0">
+      {/* Title row */}
+      <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+        <button
+          type="button"
+          onClick={() => {
+            if (dirty && !confirm("Discard unsaved changes?")) return;
+            nav("#/posts");
+          }}
+          className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-2 hover:text-ink"
+        >
+          ← Posts
+        </button>
+        <h2 className="max-w-full truncate font-display text-[1.4rem] font-[400] text-ink sm:text-[1.6rem]">
+          {isNew ? "New post" : draft.title || "(untitled)"}
+        </h2>
+        <StatusBadge status={draft.status} />
+        {dirty && (
+          <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-gold">Unsaved</span>
+        )}
+      </div>
+
+      {/* Mode toggle + desktop actions */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <Segmented
+          value={mode}
+          onChange={setMode}
+          options={[
+            { value: "rich", label: "Rich" },
+            { value: "markdown", label: "Markdown" },
+            { value: "preview", label: "Preview" },
+          ]}
+        />
+        <div className="hidden items-center gap-2 sm:flex">
+          <StatusToggle value={draft.status} onChange={(s) => set("status", s)} />
           {!isNew && (
             <AdminButton variant="danger" onClick={() => void del()}>
               Delete
             </AdminButton>
           )}
-          <AdminButton onClick={() => void save("draft")} busy={saving} variant="outline">
-            Save draft
-          </AdminButton>
-          <AdminButton onClick={() => void save("published")} busy={saving} variant="gold">
-            {draft.status === "published" ? "Save (published)" : "Mark published"}
+          <AdminButton variant="gold" busy={saving} onClick={() => void save()}>
+            Save
           </AdminButton>
         </div>
       </div>
+      <p className="mb-6 mt-2 font-mono text-[9.5px] uppercase tracking-[0.14em] text-ink-2/60">
+        {statusHint}
+      </p>
 
-      {viewMode === "full" ? (
+      {mode === "preview" ? (
         /* Draft preview — same markdown pipeline + prose styles as the live site. */
-        <article className="mx-auto max-w-3xl border border-ink/10 bg-paper px-6 py-10 sm:px-10">
-          <p className="flex flex-wrap items-center gap-x-4 font-mono text-[10px] uppercase tracking-[0.22em]">
+        <article className="mx-auto max-w-3xl border border-ink/10 bg-paper px-5 py-8 sm:px-10 sm:py-10">
+          <p className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[10px] uppercase tracking-[0.22em]">
             <span className="text-gold">{draft.category}</span>
             <span className="text-ink-2/70">{draft.date_iso}</span>
             <span className="text-ink-2/70">{draft.read_time} min read</span>
             <StatusBadge status={draft.status} />
           </p>
-          <h1 className="mt-4 font-display font-[360] text-[clamp(1.9rem,3.5vw,3rem)] leading-[1.1] tracking-[-0.02em] text-ink">
+          <h1 className="mt-4 font-display font-[360] text-[clamp(1.7rem,3.5vw,3rem)] leading-[1.1] tracking-[-0.02em] text-ink">
             {draft.title || "(untitled)"}
           </h1>
           {draft.excerpt && (
-            <p className="mt-4 font-display text-[1.15rem] italic leading-[1.6] text-ink-2">
+            <p className="mt-4 font-display text-[1.1rem] italic leading-[1.6] text-ink-2 sm:text-[1.15rem]">
               {draft.excerpt}
             </p>
           )}
@@ -481,12 +559,12 @@ export function PostEdit({ id, nav }: { id: string; nav: (hash: string) => void 
               className="mt-8 aspect-[16/9] w-full border border-ink/10 object-cover"
             />
           )}
-          <div className="prose-z mt-10" dangerouslySetInnerHTML={{ __html: bodyHtml }} />
+          <div className="prose-z mt-8 sm:mt-10" dangerouslySetInnerHTML={{ __html: bodyHtml }} />
         </article>
       ) : (
         <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
           {/* editor column */}
-          <div className="grid content-start gap-5">
+          <div className="grid min-w-0 content-start gap-5">
             <Field label="Title">
               <TextInput
                 value={draft.title}
@@ -511,28 +589,42 @@ export function PostEdit({ id, nav }: { id: string; nav: (hash: string) => void 
                 onChange={(e) => set("excerpt", e.target.value)}
               />
             </Field>
-            <Field label="Body — markdown (GFM tables supported)">
-              <MarkdownToolbar onAction={applyFormat} onInsertImage={openBodyImagePicker} />
-              {viewMode === "split" ? (
-                <div className="grid gap-4 lg:grid-cols-2">
+
+            {/* Body — a plain container, NOT a <label>, so toolbar buttons aren't
+                triggered by clicking the field label. */}
+            <div className="min-w-0">
+              <span className="mb-1.5 block font-mono text-[9.5px] uppercase tracking-[0.22em] text-ink-2">
+                {mode === "markdown" ? "Body — markdown" : "Body"}
+              </span>
+              {mode === "markdown" ? (
+                <>
+                  <MarkdownToolbar onAction={applyFormat} onInsertImage={() => void insertBodyImage()} />
                   {bodyTextarea}
-                  <div
-                    className="prose-z max-h-[560px] overflow-y-auto border border-ink/15 bg-white/40 p-5 text-[0.92em]"
-                    dangerouslySetInnerHTML={{ __html: bodyHtml }}
-                  />
-                </div>
+                </>
               ) : (
-                bodyTextarea
+                <RichTextEditor
+                  value={draft.body_md}
+                  onChange={(md) => set("body_md", md)}
+                  onRequestImage={async () => {
+                    const m = await pickMedia("image");
+                    return m ? { url: m.url, alt: m.alt } : null;
+                  }}
+                />
               )}
-            </Field>
+              <span className="mt-1.5 block text-[11px] text-ink-2/70">
+                {mode === "markdown"
+                  ? "GFM tables, images & links supported."
+                  : "Write normally — it’s saved as markdown. Switch to Markdown anytime."}
+              </span>
+            </div>
           </div>
 
           {/* meta column */}
-          <div className="grid content-start gap-5">
+          <div className="grid min-w-0 content-start gap-5">
             <Field label="Slug" hint="URL: /blog/<slug>. Changing it breaks old links.">
               <TextInput value={draft.slug} onChange={(e) => set("slug", e.target.value)} />
             </Field>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Category">
                 <TextInput
                   value={draft.category}
@@ -554,7 +646,7 @@ export function PostEdit({ id, nav }: { id: string; nav: (hash: string) => void 
                 />
               </Field>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Read time (min)">
                 <TextInput
                   type="number"
@@ -597,7 +689,7 @@ export function PostEdit({ id, nav }: { id: string; nav: (hash: string) => void 
                     placeholder="/images/… or R2 URL"
                     onChange={(e) => set(k, e.target.value)}
                   />
-                  <AdminButton variant="outline" onClick={() => setPicker(k)}>
+                  <AdminButton variant="outline" onClick={() => void pickInto(k)}>
                     Pick
                   </AdminButton>
                 </div>
@@ -647,27 +739,37 @@ export function PostEdit({ id, nav }: { id: string; nav: (hash: string) => void 
                 </Field>
               </div>
             </fieldset>
+
+            {/* Delete lives here on mobile (the desktop cluster has its own). */}
+            {!isNew && (
+              <div className="border-t border-ink/10 pt-4 sm:hidden">
+                <AdminButton variant="danger" onClick={() => void del()} className="w-full justify-center">
+                  Delete post
+                </AdminButton>
+              </div>
+            )}
           </div>
         </div>
       )}
 
+      {/* Mobile sticky action bar — Save always within reach. */}
+      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-ink/10 bg-paper/95 px-5 py-3 backdrop-blur sm:hidden">
+        <StatusToggle value={draft.status} onChange={(s) => set("status", s)} />
+        <AdminButton
+          variant="gold"
+          busy={saving}
+          onClick={() => void save()}
+          className="flex-1 justify-center"
+        >
+          Save
+        </AdminButton>
+      </div>
+
       <MediaPickerModal
-        open={picker !== null}
-        accept="image"
-        onClose={() => setPicker(null)}
-        onPick={(m: MediaItem) => {
-          if (picker === "cover" || picker === "thumb") {
-            set(picker, m.url);
-            if (picker === "cover" && m.alt && !draft.cover_alt) set("cover_alt", m.alt);
-          } else if (picker === "body") {
-            const result = insertAt(draft.body_md, bodyInsertPos.current, `![${m.alt}](${m.url})`);
-            set("body_md", result.value);
-            requestAnimationFrame(() => {
-              bodyRef.current?.focus();
-              bodyRef.current?.setSelectionRange(result.start, result.end);
-            });
-          }
-        }}
+        open={pickerAccept !== null}
+        accept={pickerAccept ?? "image"}
+        onClose={() => resolveMedia(null)}
+        onPick={(m: MediaItem) => resolveMedia(m)}
       />
     </div>
   );
