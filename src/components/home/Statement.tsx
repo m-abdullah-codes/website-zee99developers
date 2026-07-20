@@ -37,7 +37,7 @@ export default function Statement() {
       </div>
 
       <div className="container-x relative py-28 md:py-40">
-        <div className="max-w-4xl">
+        <div className="mx-auto max-w-4xl text-center">
           <Reveal as="p" y={14} className="folio mb-10 text-ink-2">
             {s.folio}
           </Reveal>
@@ -48,7 +48,7 @@ export default function Statement() {
             <Em text={s.title} emClass="font-[380] italic text-gold" />
           </SplitReveal>
           <Reveal delay={0.2}>
-            <p className="mt-12 max-w-md text-[1.05rem] leading-[1.9] text-ink-2">{s.body}</p>
+            <p className="mx-auto mt-12 max-w-md text-[1.05rem] leading-[1.9] text-ink-2">{s.body}</p>
           </Reveal>
           <Reveal delay={0.3}>
             <Link href={s.ctaHref} className="link-mono mt-10 text-ink hover:text-gold">
