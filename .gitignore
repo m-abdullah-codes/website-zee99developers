@@ -20,6 +20,9 @@
 # build-time content pulled from D1 (public repo: content lives in D1, not git)
 /content/
 
+# client handover document (sales collateral — not part of the public codebase)
+/handover/
+
 # wrangler local state + local dev secrets
 /.wrangler/
 /.dev.vars

@@ -190,6 +190,9 @@ export default function InvestmentCalculator({
                 </button>
               ))}
             </div>
+            <p className="mt-3 text-[11px] leading-[1.6] text-ink-2/80">
+              Less down, larger installments — the total never changes.
+            </p>
           </div>
         </div>
 
@@ -198,21 +201,47 @@ export default function InvestmentCalculator({
           <div className="flex items-baseline justify-between gap-4">
             <p className="eyebrow">Your plan, roughly.</p>
             <p className="font-mono text-[10px] tracking-[0.14em] text-ink-2">
-              {unit.name} — Zee99 Lifestyle
+              Zee99 Lifestyle
             </p>
           </div>
 
-          <p className="mt-7 font-display text-[clamp(2.3rem,3.6vw,3.3rem)] font-[380] leading-none tracking-[-0.01em] text-ink">
+          {/* Unit identity — prominent so a budget-driven switch is never missed */}
+          <div className="mt-5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1.5 border-b border-ink/10 pb-6">
+            <div className="flex items-baseline gap-3">
+              <h3 className="font-display text-[1.7rem] font-[440] leading-none tracking-[-0.015em] text-ink">
+                {unit.name}
+              </h3>
+              <span className="font-mono text-[10.5px] tracking-[0.12em] text-ink-2">
+                ~{unit.area} sq ft
+              </span>
+            </div>
+            {mode === "budget" && budgetPKR > 0 && !stretch && (
+              <span className="rounded-full border border-gold-2/50 bg-paper px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.16em] text-gold">
+                Matched to your budget
+              </span>
+            )}
+          </div>
+
+          <p className="mt-6 font-display text-[clamp(2.3rem,3.6vw,3.3rem)] font-[380] leading-none tracking-[-0.01em] text-ink">
             {money(twMonthly, cur)}
             <span className="ml-3 font-sans text-[0.95rem] font-normal tracking-normal text-ink-2">
               / month × {plan.months}
             </span>
           </p>
-          {stretch && (
-            <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-gold">
-              Slightly above this budget — talk to us. Plans flex.
-            </p>
-          )}
+          {mode === "budget" &&
+            (budgetPKR === 0 ? (
+              <p className="mt-3 text-[12px] leading-[1.7] text-ink-2/80">
+                Enter your monthly budget to match a home — showing {unit.name} for now.
+              </p>
+            ) : stretch ? (
+              <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-gold">
+                Even the {unit.name} is above this budget at {pct}% down — talk to us. Plans flex.
+              </p>
+            ) : (
+              <p className="mt-3 text-[12px] leading-[1.7] text-ink-2">
+                The largest home that fits {money(budgetPKR, cur)}/mo at {pct}% down.
+              </p>
+            ))}
 
           <dl className="mt-9 border-t border-ink/10">
             {[
