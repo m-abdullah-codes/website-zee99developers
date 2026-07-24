@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { api, type PageSeoRow } from "../api";
-import { AdminButton, Field, TextArea, TextInput, useToast, useUnsavedGuard } from "../ui";
+import {
+  AdminButton,
+  Field,
+  TextArea,
+  TextInput,
+  useToast,
+  useUnsavedFieldToast,
+  useUnsavedGuard,
+} from "../ui";
 
 type Draft = Omit<PageSeoRow, "updated_at">;
 
@@ -20,6 +28,7 @@ export default function SeoView() {
   }, [toast]);
 
   useUnsavedGuard(Object.keys(drafts).length > 0);
+  const onFieldBlur = useUnsavedFieldToast(Object.keys(drafts).length > 0);
 
   const get = (r: PageSeoRow): Draft => drafts[r.path] ?? r;
   const edit = (r: PageSeoRow, patch: Partial<Draft>) =>
@@ -48,7 +57,7 @@ export default function SeoView() {
   };
 
   return (
-    <div>
+    <div onBlur={onFieldBlur}>
       <h2 className="mb-2 font-display text-[1.8rem] font-[400] text-ink">SEO</h2>
       <p className="mb-6 max-w-2xl text-[12.5px] leading-relaxed text-ink-2">
         Per-page meta for the static pages. Posts and projects carry their own SEO in their

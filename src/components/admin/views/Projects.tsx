@@ -10,6 +10,7 @@ import {
   TextInput,
   useConfirm,
   useToast,
+  useUnsavedFieldToast,
   useUnsavedGuard,
 } from "../ui";
 import JsonEditor, { type Json } from "../JsonEditor";
@@ -120,6 +121,7 @@ export function ProjectEdit({ id, nav }: { id: string; nav: (hash: string) => vo
   const dirty =
     data !== null && JSON.stringify([data, seo, slug, status, sortOrder]) !== initial;
   useUnsavedGuard(dirty);
+  const onFieldBlur = useUnsavedFieldToast(dirty);
 
   if (data === null) return <p className="text-[13px] text-ink-2">Loading…</p>;
 
@@ -157,7 +159,7 @@ export function ProjectEdit({ id, nav }: { id: string; nav: (hash: string) => vo
   };
 
   return (
-    <div>
+    <div onBlur={onFieldBlur}>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-4">
           <button

@@ -178,8 +178,22 @@ export function useConfirm() {
   return useCallback((message: string) => window.confirm(message), []);
 }
 
-/** Warn about unsaved changes on tab close. */
+/* Module-level flag so in-app nav (hash router, logout) can check the
+   current view's dirty state without threading it through every component. */
+let globalDirty = false;
+export function isDirty() {
+  return globalDirty;
+}
+
+/** Warn about unsaved changes on tab close, and expose the dirty flag globally for in-app nav guards. */
 export function useUnsavedGuard(dirty: boolean) {
+  useEffect(() => {
+    globalDirty = dirty;
+    return () => {
+      globalDirty = false;
+    };
+  }, [dirty]);
+
   useEffect(() => {
     if (!dirty) return;
     const handler = (e: BeforeUnloadEvent) => {
@@ -188,4 +202,26 @@ export function useUnsavedGuard(dirty: boolean) {
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [dirty]);
+}
+
+/**
+ * Nudge toast on field blur while there are unsaved changes. Attach the
+ * returned handler to a container wrapping the editor fields — React's
+ * synthetic blur event bubbles, so one listener covers every input inside.
+ * Throttled so tabbing through several fields doesn't spam toasts.
+ */
+export function useUnsavedFieldToast(dirty: boolean) {
+  const toast = useToast();
+  const lastShown = useRef(0);
+  return useCallback(
+    (e: React.FocusEvent<HTMLElement>) => {
+      if (!dirty) return;
+      if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
+      const now = Date.now();
+      if (now - lastShown.current < 5000) return;
+      lastShown.current = now;
+      toast("ok", "You have unsaved changes — remember to save.");
+    },
+    [dirty, toast],
+  );
 }

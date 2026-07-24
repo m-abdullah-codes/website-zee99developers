@@ -12,6 +12,7 @@ import {
   inputCls,
   useConfirm,
   useToast,
+  useUnsavedFieldToast,
   useUnsavedGuard,
 } from "../ui";
 import { MediaPickerModal } from "./Media";
@@ -325,6 +326,7 @@ export function PostEdit({ id, nav }: { id: string; nav: (hash: string) => void 
 
   const dirty = draft !== null && JSON.stringify(draft) !== initial;
   useUnsavedGuard(dirty);
+  const onFieldBlur = useUnsavedFieldToast(dirty);
 
   const set = useCallback(<K extends keyof Draft>(k: K, v: Draft[K]) => {
     setDraft((d) => (d ? { ...d, [k]: v } : d));
@@ -485,7 +487,7 @@ export function PostEdit({ id, nav }: { id: string; nav: (hash: string) => void 
       : "Draft — stays hidden until you mark it Published and publish the site.";
 
   return (
-    <div className="pb-24 sm:pb-0">
+    <div className="pb-24 sm:pb-0" onBlur={onFieldBlur}>
       {/* Title row */}
       <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2">
         <button

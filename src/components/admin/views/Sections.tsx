@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { api, type SectionRow } from "../api";
-import { AdminButton, useToast, useUnsavedGuard, useConfirm } from "../ui";
+import { AdminButton, useToast, useUnsavedFieldToast, useUnsavedGuard, useConfirm } from "../ui";
 import JsonEditor, { type Json } from "../JsonEditor";
 import { cn } from "@/lib/utils";
 
@@ -35,6 +35,7 @@ export default function SectionsView() {
   const visible = (rows ?? []).filter((r) => r.page === page);
   const dirtyIds = Object.keys(drafts).map(Number);
   useUnsavedGuard(dirtyIds.length > 0);
+  const onFieldBlur = useUnsavedFieldToast(dirtyIds.length > 0);
 
   const save = async (row: SectionRow) => {
     const data = drafts[row.id];
@@ -61,7 +62,7 @@ export default function SectionsView() {
   };
 
   return (
-    <div>
+    <div onBlur={onFieldBlur}>
       <h2 className="mb-2 font-display text-[1.8rem] font-[400] text-ink">Page sections</h2>
       <p className="mb-6 max-w-2xl text-[12.5px] leading-relaxed text-ink-2">
         Structured blocks per page. In titles, wrap words in *asterisks* for the gold italic

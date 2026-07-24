@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api, type SettingRow } from "../api";
-import { AdminButton, useToast, useUnsavedGuard } from "../ui";
+import { AdminButton, useToast, useUnsavedFieldToast, useUnsavedGuard } from "../ui";
 import JsonEditor, { type Json } from "../JsonEditor";
 import { cn } from "@/lib/utils";
 
@@ -39,6 +39,7 @@ export default function SettingsView() {
   const row = rows?.find((r) => r.key === active);
   const value = draft ?? (row ? JSON.parse(row.data || "{}") : null);
   useUnsavedGuard(draft !== null);
+  const onFieldBlur = useUnsavedFieldToast(draft !== null);
 
   const save = async () => {
     if (draft === null || !row) return;
@@ -58,7 +59,7 @@ export default function SettingsView() {
   };
 
   return (
-    <div>
+    <div onBlur={onFieldBlur}>
       <h2 className="mb-6 font-display text-[1.8rem] font-[400] text-ink">Settings</h2>
       <div className="mb-6 flex flex-wrap gap-2">
         {(rows ?? []).map((r) => (

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { api, setUnauthorizedHandler, type PublishStatus } from "./api";
-import { ToastProvider } from "./ui";
+import { ToastProvider, isDirty } from "./ui";
 import { cn } from "@/lib/utils";
 import Login from "./views/Login";
 import Dashboard from "./views/Dashboard";
@@ -109,10 +109,13 @@ export default function AdminApp() {
   useEffect(() => setMobileOpen(false), [hash]);
 
   const nav = useCallback((h: string) => {
+    if (h === window.location.hash) return;
+    if (isDirty() && !window.confirm("You have unsaved changes. Leave without saving?")) return;
     window.location.hash = h;
   }, []);
 
   const logout = async () => {
+    if (isDirty() && !window.confirm("You have unsaved changes. Log out without saving?")) return;
     await fetch("/api/logout", {
       method: "POST",
       credentials: "same-origin",

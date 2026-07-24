@@ -175,18 +175,15 @@ export default function Dashboard({
           ) : latest ? (
             <div className="grid gap-2">
               {status.runs.slice(0, 4).map((r) => (
-                <a
-                  key={r.id}
-                  href={r.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex flex-wrap items-center gap-3 font-mono text-[11px] text-ink-2 hover:text-ink"
-                >
+                <div
+                    key={r.id}
+                    className="flex flex-wrap items-center gap-3 font-mono text-[11px] text-ink-2"
+                  >
                   <StatusBadge status={r.status === "completed" ? (r.conclusion ?? "queued") : r.status} />
                   <span>#{r.runNumber}</span>
                   <span className="uppercase tracking-[0.12em]">{r.event.replace("_", " ")}</span>
                   <span className="text-ink-2/60">{ago(r.createdAt)}</span>
-                </a>
+                </div>
               ))}
             </div>
           ) : (
