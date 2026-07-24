@@ -190,9 +190,9 @@ export default function InvestmentCalculator({
                 </button>
               ))}
             </div>
-            <p className="mt-3 text-[11px] leading-[1.6] text-ink-2/80">
+            {/* <p className="mt-3 text-[11px] leading-[1.6] text-ink-2/80">
               Less down, larger installments — the total never changes.
-            </p>
+            </p> */}
           </div>
         </div>
 
