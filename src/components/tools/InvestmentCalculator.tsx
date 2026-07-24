@@ -163,7 +163,7 @@ export default function InvestmentCalculator({
                       onClick={() => setBudget(String(Math.ceil(m)))}
                       className="rounded-full border border-ink/15 px-3.5 py-1.5 font-mono text-[9.5px] tracking-[0.14em] text-ink-2 transition-colors hover:border-gold-2 hover:text-gold"
                     >
-                      {u.name} · {money(planFor(u, pct).monthly, cur)}
+                      {money(planFor(u, pct).monthly, cur)}
                     </button>
                   );
                 })}
