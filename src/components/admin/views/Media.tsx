@@ -8,6 +8,14 @@ import { cn } from "@/lib/utils";
 const fmtSize = (n: number) =>
   n >= 1e6 ? `${(n / 1e6).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1e3))} KB`;
 
+/** What each picker filter matches against a stored content type. */
+export type MediaAccept = "image" | "video" | "pdf" | "any";
+const ACCEPT_PREFIX: Record<Exclude<MediaAccept, "any">, string> = {
+  image: "image/",
+  video: "video/",
+  pdf: "application/pdf",
+};
+
 export function MediaGrid({
   onPick,
   compact,
@@ -17,7 +25,7 @@ export function MediaGrid({
   onPick?: (item: MediaItem) => void;
   compact?: boolean;
   /** Filter the grid to a content-type family. */
-  accept?: "image" | "video" | "any";
+  accept?: MediaAccept;
 }) {
   // null = initial load in flight
   const [items, setItems] = useState<MediaItem[] | null>(null);
@@ -103,7 +111,7 @@ export function MediaGrid({
   };
 
   const visible = (items ?? []).filter(
-    (m) => accept === "any" || m.content_type.startsWith(`${accept}/`),
+    (m) => accept === "any" || m.content_type.startsWith(ACCEPT_PREFIX[accept]),
   );
 
   return (
@@ -129,7 +137,7 @@ export function MediaGrid({
         <p className="border border-dashed border-ink/20 p-10 text-center text-[13px] text-ink-2">
           {accept === "any"
             ? "No uploads yet."
-            : `No ${accept}s in the library yet. Upload one, or pick from “any” type.`}
+            : `No ${accept === "pdf" ? "PDF" : accept}s in the library yet. Upload one above.`}
         </p>
       )}
       {items === null && <p className="text-[13px] text-ink-2">Loading…</p>}
@@ -242,7 +250,7 @@ export function MediaPickerModal({
   open: boolean;
   onClose: () => void;
   onPick: (item: MediaItem) => void;
-  accept?: "image" | "video" | "any";
+  accept?: MediaAccept;
 }) {
   if (!open) return null;
   return (
@@ -256,7 +264,8 @@ export function MediaPickerModal({
       >
         <div className="mb-4 flex items-center justify-between">
           <h3 className="font-display text-[1.3rem] text-ink">
-            Pick {accept === "any" ? "media" : `a ${accept}`} from the library
+            Pick {accept === "any" ? "media" : accept === "pdf" ? "a PDF" : `a ${accept}`} from the
+            library
           </h3>
           <button
             type="button"

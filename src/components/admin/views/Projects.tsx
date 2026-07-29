@@ -68,7 +68,16 @@ export function ProjectsList({ nav }: { nav: (hash: string) => void }) {
       )}
       <p className="mt-4 text-[12px] leading-relaxed text-ink-2">
         The booking project powers the calculator, payment visualizer, and “now booking” CTAs.
-        The construction project with a price history powers the track-record chart.
+        The construction project with a price history powers the track-record chart. Prices,
+        instalments and floor plans have their own editor under{" "}
+        <button
+          type="button"
+          onClick={() => nav("#/payment")}
+          className="text-gold underline decoration-gold/40 underline-offset-4 hover:decoration-gold"
+        >
+          Payment
+        </button>
+        .
       </p>
     </div>
   );
@@ -212,6 +221,24 @@ export function ProjectEdit({ id, nav }: { id: string; nav: (hash: string) => vo
           />
         </Field>
       </div>
+
+      {!isNew && Array.isArray((data as { units?: unknown })?.units) && (
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border border-gold-2/50 bg-gold/5 px-5 py-3.5">
+          <p className="text-[12.5px] leading-relaxed text-ink-2">
+            This project has payment plans. Edit prices, instalments and floor plans in the
+            purpose-built editor — it checks the numbers add up.
+          </p>
+          <AdminButton
+            variant="outline"
+            onClick={() => {
+              if (dirty && !confirm("Discard unsaved changes?")) return;
+              nav("#/payment");
+            }}
+          >
+            Open payment editor
+          </AdminButton>
+        </div>
+      )}
 
       <div className="grid gap-8 lg:grid-cols-[1.4fr_0.6fr]">
         <div>

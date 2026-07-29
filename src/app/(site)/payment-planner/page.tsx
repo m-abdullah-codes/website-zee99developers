@@ -3,6 +3,7 @@ import Reveal from "@/components/motion/Reveal";
 import SplitReveal from "@/components/motion/SplitReveal";
 import Em from "@/components/ui/Em";
 import InvestmentCalculator from "@/components/tools/InvestmentCalculator";
+import BrochureDownload from "@/components/tools/BrochureDownload";
 import Button from "@/components/ui/Button";
 import { sectionOr, pageMeta } from "@/data/content";
 import { WA } from "@/data/site";
@@ -58,8 +59,15 @@ export default function PaymentPlannerPage() {
         </div>
 
         <Reveal y={36} className="mt-16">
-          <InvestmentCalculator defaultMode="budget" />
+          {/* No props: this page's opening state is set in the dashboard. */}
+          <InvestmentCalculator />
         </Reveal>
+
+        {LIFESTYLE.brochure?.url && (
+          <Reveal delay={0.08} className="mt-10 max-w-2xl">
+            <BrochureDownload brochure={LIFESTYLE.brochure} />
+          </Reveal>
+        )}
 
         {head.note && (
           <Reveal delay={0.1} className="mt-12 max-w-2xl">

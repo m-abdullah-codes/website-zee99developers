@@ -1,10 +1,11 @@
 // Structured-data (JSON-LD) builders and URL helpers, shared across pages.
 // The graph is anchored on stable @id nodes so the Organization and WebSite are
 // declared once and referenced everywhere else.
-import { SITE } from "@/data/site";
+import { SITE, SOCIAL } from "@/data/site";
 import { GLOBAL_SEO } from "@/data/content";
 import type { Project } from "@/data/projects";
 import type { Post } from "@/data/posts";
+import { unitTotal } from "@/lib/pricing";
 
 const BASE = SITE.domain.replace(/\/$/, "");
 export const ORG_ID = `${BASE}/#organization`;
@@ -23,6 +24,7 @@ export function organizationLd() {
     "@type": "RealEstateAgent",
     "@id": ORG_ID,
     name: SITE.name,
+    alternateName: "Zee99",
     url: BASE,
     logo: absUrl("/images/logo.svg"),
     image: GLOBAL_SEO.ogImage,
@@ -31,6 +33,8 @@ export function organizationLd() {
     email: SITE.email,
     foundingDate: "2010",
     areaServed: { "@type": "Place", name: "Bahria Town, Lahore, Pakistan" },
+    // Verified profiles Google can use to tie this domain to the real business.
+    ...(SOCIAL.length ? { sameAs: SOCIAL.map((s) => s.url) } : {}),
     address: {
       "@type": "PostalAddress",
       streetAddress: "22 Nishter, Main Boulevard, Bahria Town",
@@ -42,6 +46,11 @@ export function organizationLd() {
   };
 }
 
+/**
+ * The site itself. `name`/`alternateName` are what Google reads to decide the
+ * site name printed above a search result — keep them in sync with the brand,
+ * and keep `alternateName` to the short form people actually search for.
+ */
 export function websiteLd() {
   return {
     "@context": "https://schema.org",
@@ -49,6 +58,7 @@ export function websiteLd() {
     "@id": SITE_ID,
     url: BASE,
     name: SITE.name,
+    alternateName: ["Zee99", "Zee 99 Developers"],
     inLanguage: "en",
     publisher: { "@id": ORG_ID },
   };
@@ -94,7 +104,7 @@ export function articleLd(post: Post) {
 export function projectLd(project: Project) {
   const url = absUrl(`/projects/${project.slug}`);
   const offers = (project.units ?? []).map((u) => {
-    const total = u.down + u.monthly * u.months;
+    const total = unitTotal(u);
     return {
       "@type": "Offer",
       name: `${project.name} — ${u.name}`,

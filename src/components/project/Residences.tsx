@@ -6,7 +6,8 @@ import SectionHead from "@/components/ui/SectionHead";
 import Reveal from "@/components/motion/Reveal";
 import { cn } from "@/lib/utils";
 import type { Unit } from "@/data/projects";
-import { fmtInt } from "@/lib/format";
+import { milestonesTotal, unitTotal } from "@/lib/pricing";
+import { fmtInt, pkrCompact } from "@/lib/format";
 
 export default function Residences({ units }: { units: Unit[] }) {
   const [open, setOpen] = useState<Unit | null>(null);
@@ -47,15 +48,31 @@ export default function Residences({ units }: { units: Unit[] }) {
                 </span>
               </div>
               <p className="mt-8 font-display text-[2rem] font-[380] leading-none tracking-[-0.01em] text-ink">
-                ₨ {fmtInt(u.down)}
+                ₨ {pkrCompact(unitTotal(u))}
                 <span className="mt-2 block font-sans text-[0.8rem] font-normal tracking-normal text-ink-2">
-                  down payment
+                  total price
                 </span>
               </p>
-              <p className="mt-6 border-t border-ink/10 pt-6 font-mono text-[13px] tracking-[0.06em] text-ink">
-                {u.months} × ₨ {fmtInt(u.monthly)}
-                <span className="ml-2 font-sans text-[0.8rem] text-ink-2">monthly</span>
-              </p>
+              <dl className="mt-6 space-y-2.5 border-t border-ink/10 pt-6 font-mono text-[13px] tracking-[0.06em] text-ink">
+                <div className="flex items-baseline justify-between gap-3">
+                  <dt className="font-sans text-[0.8rem] tracking-normal text-ink-2">Down</dt>
+                  <dd>₨ {fmtInt(u.down)}</dd>
+                </div>
+                <div className="flex items-baseline justify-between gap-3">
+                  <dt className="font-sans text-[0.8rem] tracking-normal text-ink-2">Monthly</dt>
+                  <dd>
+                    {u.months} × ₨ {fmtInt(u.monthly)}
+                  </dd>
+                </div>
+                {milestonesTotal(u) > 0 && (
+                  <div className="flex items-baseline justify-between gap-3">
+                    <dt className="font-sans text-[0.8rem] tracking-normal text-ink-2">
+                      On construction
+                    </dt>
+                    <dd>₨ {pkrCompact(milestonesTotal(u))}</dd>
+                  </div>
+                )}
+              </dl>
               <p className="mt-6 flex-1 text-[0.94rem] leading-[1.8] text-ink-2">{u.blurb}</p>
               <button
                 type="button"

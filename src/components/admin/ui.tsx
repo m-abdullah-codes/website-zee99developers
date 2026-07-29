@@ -116,6 +116,76 @@ export function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return <select {...props} className={cn(inputCls, "bg-white/60", props.className)} />;
 }
 
+/**
+ * Amount field that shows thousands separators while you type. Digits only —
+ * the caret stays put because the value is re-formatted from the raw number on
+ * every keystroke, which is what makes six- and seven-figure figures readable.
+ */
+export function MoneyInput({
+  value,
+  onChange,
+  className,
+  prefix = "₨",
+  ...rest
+}: {
+  value: number;
+  onChange: (v: number) => void;
+  className?: string;
+  prefix?: string;
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "prefix">) {
+  return (
+    <span className="relative block">
+      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 font-mono text-[11px] text-ink-2/70">
+        {prefix}
+      </span>
+      <input
+        {...rest}
+        inputMode="numeric"
+        value={value ? value.toLocaleString("en-US") : ""}
+        onChange={(e) => {
+          const digits = e.target.value.replace(/[^\d]/g, "");
+          onChange(digits ? Number(digits) : 0);
+        }}
+        className={cn(inputCls, "pl-8 text-right font-mono tabular-nums", className)}
+      />
+    </span>
+  );
+}
+
+/** Compact integer field for counts, months and percentages. */
+export function NumberInput({
+  value,
+  onChange,
+  suffix,
+  className,
+  ...rest
+}: {
+  value: number;
+  onChange: (v: number) => void;
+  suffix?: string;
+  className?: string;
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange">) {
+  return (
+    <span className="relative block">
+      <input
+        {...rest}
+        inputMode="numeric"
+        value={Number.isFinite(value) ? String(value) : ""}
+        onChange={(e) => {
+          const digits = e.target.value.replace(/[^\d]/g, "");
+          onChange(digits ? Number(digits) : 0);
+        }}
+        className={cn(inputCls, "font-mono tabular-nums", suffix && "pr-10", className)}
+      />
+      {suffix && (
+        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[10px] text-ink-2/70">
+          {suffix}
+        </span>
+      )}
+    </span>
+  );
+}
+
 /** Segmented control — a row of mutually exclusive options. Full-width on mobile. */
 export function Segmented<T extends string>({
   value,
