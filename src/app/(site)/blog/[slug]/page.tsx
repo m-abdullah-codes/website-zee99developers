@@ -10,6 +10,7 @@ import { POSTS, getPost } from "@/data/posts";
 import { SITE, waLink } from "@/data/site";
 import { LIFESTYLE } from "@/data/projects";
 import { mdToHtml } from "@/lib/markdown";
+import { OG_SITE } from "@/data/content";
 import JsonLd from "@/components/seo/JsonLd";
 import { articleLd, breadcrumbLd } from "@/lib/seo";
 
@@ -35,6 +36,7 @@ export async function generateMetadata({
     description,
     alternates: { canonical },
     openGraph: {
+      ...OG_SITE,
       type: "article",
       url: canonical,
       title,

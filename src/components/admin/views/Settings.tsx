@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { api, type SettingRow } from "../api";
 import { AdminButton, useToast, useUnsavedFieldToast, useUnsavedGuard } from "../ui";
 import JsonEditor, { type Json } from "../JsonEditor";
+import { DEFAULT_SOCIAL } from "@/data/site";
 import { cn } from "@/lib/utils";
 
 const LABELS: Record<string, { title: string; hint: string }> = {
@@ -12,6 +13,10 @@ const LABELS: Record<string, { title: string; hint: string }> = {
     hint: "Name, phone, WhatsApp number and message templates, email, address. Used across the whole site.",
   },
   stats: { title: "Stat band", hint: "The four counters on the home page." },
+  social: {
+    title: "Social links",
+    hint: "Profiles shown in the footer, in this order. The label picks the icon (Facebook, Instagram, YouTube, TikTok) — anything else gets a generic one. These URLs are also what tells Google which accounts belong to Zee99, so only add profiles you own.",
+  },
   rates: {
     title: "FX rates",
     hint: "PKR per unit of each currency — update monthly; drives the overseas pricing.",
@@ -20,6 +25,15 @@ const LABELS: Record<string, { title: string; hint: string }> = {
     title: "Global SEO",
     hint: "Default title/description/OG image; per-page rows can override under SEO.",
   },
+};
+
+/**
+ * Starting value for a known key that has no row in D1 yet. Saving the tab
+ * creates the row (PUT /admin/settings/:key upserts), so a new settings block
+ * ships without anyone having to run SQL against the database by hand.
+ */
+const SEEDS: Record<string, Json> = {
+  social: { links: DEFAULT_SOCIAL },
 };
 
 export default function SettingsView() {
@@ -32,7 +46,13 @@ export default function SettingsView() {
   useEffect(() => {
     api
       .get<SettingRow[]>("/admin/settings")
-      .then(setRows)
+      .then((r) => {
+        // Surface seeded keys that D1 doesn't carry yet as empty tabs.
+        const missing = Object.keys(SEEDS)
+          .filter((k) => !r.some((row) => row.key === k))
+          .map((k) => ({ key: k, data: JSON.stringify(SEEDS[k]), updated_at: "" }) as SettingRow);
+        setRows([...r, ...missing].sort((a, b) => a.key.localeCompare(b.key)));
+      })
       .catch((e) => toast("err", e.message));
   }, [toast]);
 

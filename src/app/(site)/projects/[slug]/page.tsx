@@ -18,6 +18,7 @@ import Button from "@/components/ui/Button";
 import Accordion from "@/components/ui/Accordion";
 import JsonLd from "@/components/seo/JsonLd";
 import { projectLd, faqLd, breadcrumbLd } from "@/lib/seo";
+import { OG_SITE } from "@/data/content";
 
 export function generateStaticParams() {
   return PROJECTS.filter((p) => !p.href).map((p) => ({ slug: p.slug }));
@@ -40,7 +41,7 @@ export async function generateMetadata({
     title,
     description,
     alternates: { canonical },
-    openGraph: { type: "website", url: canonical, title, description, images: [image] },
+    openGraph: { ...OG_SITE, type: "website", url: canonical, title, description, images: [image] },
     twitter: { card: "summary_large_image", title, description, images: [image] },
   };
 }

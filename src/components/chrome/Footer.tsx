@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Logo from "@/components/ui/Logo";
 import Em from "@/components/ui/Em";
+import SocialLinks from "@/components/chrome/SocialLinks";
 import { NAV, SITE, WA, waLink } from "@/data/site";
 import { LIFESTYLE } from "@/data/projects";
 
@@ -76,6 +77,7 @@ export default function Footer() {
                   {SITE.email}
                 </a>
               </p>
+              <SocialLinks className="mt-6 gap-4" />
             </div>
           </div>
         </div>

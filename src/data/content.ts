@@ -45,6 +45,17 @@ export const GLOBAL_SEO = settingsJson.seo as {
 };
 
 /**
+ * Open Graph fields that must appear on *every* page. Next merges metadata
+ * shallowly, so a page that declares `openGraph` replaces the root layout's
+ * object wholesale — spread this into each one or `og:site_name` (a primary
+ * signal for the site name Google prints above a result) silently disappears.
+ */
+export const OG_SITE = {
+  siteName: (settingsJson.site as { name: string }).name,
+  locale: GLOBAL_SEO.locale,
+} as const;
+
+/**
  * Per-path SEO row → Next metadata (empty fields fall back to global).
  * `fallback` supplies title/description/ogImage for pages whose page_seo row
  * may not exist yet, so SEO is correct even before the D1 row is added.
@@ -63,6 +74,7 @@ export function pageMeta(path: string, fallback: Partial<PageSeo> = {}): Metadat
   if (title) meta.title = path === "/" ? { absolute: title } : title;
   if (description) meta.description = description;
   meta.openGraph = {
+    ...OG_SITE,
     type: "website",
     url: canonical,
     ...(title ? { title } : {}),
