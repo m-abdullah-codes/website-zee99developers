@@ -1,0 +1,126 @@
+---
+/**
+ * 01 — the proposition, and the arrival into light after the dark cover.
+ * The temperature drift of "one evening" is carried by the images and the
+ * ground tone, never announced.
+ */
+import Picture from './Picture.astro';
+import { proposition } from '../lib/content';
+import { resUnits, comUnits, resCount, possessionMonths, words } from '../lib/inventory';
+
+/* Every figure computed from data/inventory.json — nothing typed. */
+const stats = [
+  { n: '8', label: 'Floors', note: '2 commercial · 6 residential' },
+  { n: String(resUnits.length), label: 'Apartments', note: `${resCount.available} available` },
+  { n: String(comUnits.length), label: 'Commercial units', note: 'Two retail floors' },
+  { n: String(possessionMonths), label: 'Months to possession', note: 'Plan runs 36' },
+];
+---
+
+<section id="proposition" data-section="proposition" data-no="01" data-name="The proposition" data-tone="light" class="section prop">
+  <div class="wrap">
+    <header class="shead">
+      <div class="shead__meta">
+        <span class="shead__no">01</span>
+        <span class="shead__name">The proposition</span>
+      </div>
+      <h2 class="prop__h" id="proposition-h">{proposition.head}</h2>
+    </header>
+
+    <div class="prop__body prose">
+      {proposition.body.map((p) => <p>{p}</p>)}
+    </div>
+  </div>
+
+  <!-- The exterior bleeds past the container on one side only. A symmetrical
+       inset frame is the template look; an asymmetric bleed is the architectural one. -->
+  <figure class="prop__fig">
+    {/* Render 5 rather than render 1. Render 1 is a flat frontal elevation in
+        even daylight — it shows the facade and nothing about the site. This is
+        the corner from below, both faces in one frame, the neighbouring street
+        built up around it, which is what the section's whole argument is. */}
+    <Picture
+      src="exterior/render-5"
+      alt="Zee99 Lifestyle seen from the corner. Eight floors on a corner plot, with shopfronts at ground level and planted balconies above, the built street continuing on both sides."
+      sizes="(min-width: 1100px) 78vw, 100vw"
+      className="prop__img"
+    />
+    <figcaption class="cap">
+      <span class="cap__t">Zee99 Lifestyle</span>
+      <span class="cap__s">Corner plot, facing the Safari Sports Complex</span>
+    </figcaption>
+  </figure>
+
+  <div class="wrap">
+    <dl class="stats">
+      {stats.map((s) => (
+        <div class="stat">
+          <dt class="stat__label label">{s.label}</dt>
+          <dd class="stat__n num">{s.n}</dd>
+          <dd class="stat__note">{s.note}</dd>
+        </div>
+      ))}
+    </dl>
+    <p class="prop__marks label">LDA &amp; TMA approved · Developer FBR-registered · Corner plot</p>
+  </div>
+</section>
+
+<style>
+  .prop__h {
+    font-family: var(--font-display);
+    font-size: var(--t-h1);
+    font-weight: 470;
+    line-height: 1.06;
+    letter-spacing: var(--tr-mega);
+    max-width: 15ch;
+    text-wrap: balance;
+  }
+  .prop__body { margin-top: var(--s7); font-size: var(--t-lead); line-height: 1.46; color: var(--ink-2); }
+  .prop__body :global(p + p) { margin-top: var(--s5); }
+
+  .prop__fig { margin: var(--s10) 0 0; }
+  .prop__fig :global(.prop__img) { aspect-ratio: 16 / 10; }
+
+  @media (min-width: 1100px) {
+    .prop__fig { width: min(78vw, 62rem); margin-left: var(--gutter); }
+    .prop__fig :global(.prop__img) { aspect-ratio: 16 / 9; }
+  }
+
+  .stats {
+    margin: var(--s9) 0 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    border-top: 1px solid var(--line-strong);
+  }
+  .stat {
+    padding: var(--s5) var(--s4) var(--s6) 0;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    align-content: start;
+    gap: var(--s2);
+  }
+  .stat:nth-child(odd) { padding-right: var(--s5); border-right: 1px solid var(--line); }
+  .stat:nth-child(even) { padding-left: var(--s5); }
+
+  .stat__n {
+    font-size: clamp(2.25rem, 6vw, 3.25rem);
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+  }
+  .stat__note { font-size: var(--t-small); color: var(--ink-3); line-height: 1.35; }
+
+  @media (min-width: 760px) {
+    .stats { grid-template-columns: repeat(4, 1fr); }
+    .stat { padding: var(--s6) var(--s5) var(--s7) 0; border-right: 1px solid var(--line); }
+    .stat:nth-child(odd) { padding-right: var(--s5); }
+    .stat:nth-child(even) { padding-left: 0; }
+    .stat:last-child { border-right: 0; }
+  }
+
+  .prop__marks { margin-top: var(--s5); color: var(--ink-3); }
+
+  .cap { margin-top: var(--s4); display: grid; gap: 2px; padding-inline: var(--gutter); }
+  @media (min-width: 1100px) { .cap { padding-inline: 0; } }
+</style>

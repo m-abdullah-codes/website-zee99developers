@@ -1,0 +1,73 @@
+---
+/**
+ * 13 — questions.
+ *
+ * Answered strictly from the source material. The eight that the material
+ * cannot answer are printed rather than omitted: a buyer who notices a missing
+ * answer trusts the page less than one who is told which answers are missing.
+ * Native <details> so it works with no JS and is keyboard-operable by default.
+ */
+import { questions } from '../lib/content';
+---
+
+<section id="questions" data-section="questions" data-no="12" data-name="Questions" data-tone="light" class="section qs">
+  <div class="wrap">
+    <header class="shead">
+      <div class="shead__meta">
+        <span class="shead__no">12</span>
+        <span class="shead__name">Questions</span>
+      </div>
+      <h2 class="t-h2" id="questions-h">{questions.head}</h2>
+    </header>
+
+    <div class="qs__list">
+      {questions.answered.map((q, i) => (
+        <details class="q" open={i === 0}>
+          <summary class="q__s">
+            <span class="q__t">{q.q}</span>
+            <span class="q__i" aria-hidden="true"></span>
+          </summary>
+          <div class="q__a"><p>{q.a}</p></div>
+        </details>
+      ))}
+    </div>
+
+  </div>
+</section>
+
+<style>
+  .qs__list { margin-top: var(--s7); border-top: 1px solid var(--line-strong); }
+
+  .q { border-bottom: 1px solid var(--line); }
+  .q__s {
+    display: flex; align-items: baseline; gap: var(--s4);
+    padding: var(--s5) 0;
+    min-height: 44px;
+    cursor: pointer;
+    list-style: none;
+  }
+  .q__s::-webkit-details-marker { display: none; }
+  .q__t {
+    font-family: var(--font-display);
+    font-size: var(--t-h3);
+    font-weight: 460;
+    letter-spacing: var(--tr-tight);
+    line-height: 1.22;
+    flex: 1;
+    text-wrap: balance;
+  }
+  .q__i {
+    flex: none; width: 13px; height: 13px; position: relative;
+    margin-top: 0.35em;
+  }
+  .q__i::before, .q__i::after {
+    content: ''; position: absolute; background: var(--ink-3);
+    transition: transform var(--dur-mid) var(--ease-out), opacity var(--dur-mid) var(--ease-out);
+  }
+  .q__i::before { inset: 6px 0 6px 0; height: 1px; }
+  .q__i::after { inset: 0 6px 0 6px; width: 1px; }
+  .q[open] .q__i::after { transform: scaleY(0); opacity: 0; }
+
+  .q__a { padding-bottom: var(--s5); max-width: var(--measure-wide); }
+  .q__a p { color: var(--ink-2); }
+</style>

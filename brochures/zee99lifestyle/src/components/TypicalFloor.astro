@@ -1,0 +1,143 @@
+---
+/**
+ * 05 — the typical floor.
+ *
+ * The legend is generated from the unit data, so the "four face the sports
+ * complex, four face the residences" claim is not a sentence someone typed —
+ * it is a count of the file. Uses floor 1 as the exemplar because all six
+ * residential floors are identical.
+ */
+import Drawing from './Drawing.astro';
+import { floor } from '../lib/content';
+import { resUnits, resTypes, num } from '../lib/inventory';
+
+const plate = resUnits.filter((u) => u.floor === 1).sort((a, b) => a.id.localeCompare(b.id));
+const labelOf = (t: string) => resTypes.find((x) => x.key === t)!.label;
+const sqftOf = (t: string) => resTypes.find((x) => x.key === t)!.sqft;
+
+const facingSports = plate.filter((u) => u.facing === 'sports complex');
+const facingRes = plate.filter((u) => u.facing === 'residence');
+---
+
+<section id="floor" data-section="floor" data-no="03" data-name="The typical floor" data-tone="light" class="section floor">
+  <div class="wrap">
+    <header class="shead">
+      <div class="shead__meta">
+        <span class="shead__no">03</span>
+        <span class="shead__name">The typical floor</span>
+      </div>
+      <h2 class="t-h2 floor__h" id="floor-h">{floor.head}</h2>
+    </header>
+
+    <div class="floor__grid">
+      <div class="floor__text">
+        <div class="prose floor__prose">
+          {floor.body.map((p) => <p>{p}</p>)}
+        </div>
+
+        <div class="split">
+          <div class="split__side">
+            <span class="label">Facing sports complex</span>
+            <p class="split__n num">{facingSports.length}</p>
+            <p class="split__ids num">{facingSports.map((u) => u.id.slice(-2)).join(' · ')}</p>
+          </div>
+          <div class="split__side">
+            <span class="label">Facing residence</span>
+            <p class="split__n num">{facingRes.length}</p>
+            <p class="split__ids num">{facingRes.map((u) => u.id.slice(-2)).join(' · ')}</p>
+          </div>
+        </div>
+
+        <ol class="plate">
+          {plate.map((u) => (
+            <li class="plate__row" data-type={u.type}>
+              <span class="plate__no num">{u.id.slice(-2)}</span>
+              <span class="plate__type">{labelOf(u.type)}</span>
+              <span class="plate__sqft num">{num(sqftOf(u.type))} sq ft</span>
+              <span class="plate__facing">{u.facing === 'sports complex' ? 'Sports complex' : 'Residence'}</span>
+            </li>
+          ))}
+        </ol>
+
+        <p class="floor__note">{floor.note}</p>
+      </div>
+
+      <figure class="floor__plan">
+        <Drawing
+          src="plan/residential-1-to-6-floorplan"
+          alt={floor.planAlt}
+          label="Typical residential floor, levels 1 to 6"
+          sizes="(min-width: 1000px) 55vw, 100vw"
+        />
+        <figcaption class="cap">
+          <span class="cap__t">Typical floor, levels 1 to 6</span>
+          <span class="cap__s">Corridor lettered 5&prime;-0&Prime; wide on the drawing. Lift and stair at the centre of the plate.</span>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<style>
+  .floor__h { max-width: 18ch; }
+
+  .floor__grid { display: grid; gap: var(--s8); }
+  @media (min-width: 1000px) {
+    .floor__grid { grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr); gap: var(--s9); align-items: start; }
+    .floor__plan { position: sticky; top: var(--s6); }
+  }
+
+  .floor__prose { color: var(--ink-2); }
+  .floor__prose :global(p + p) { margin-top: var(--s4); }
+
+  .split {
+    margin-top: var(--s7);
+    display: grid; grid-template-columns: 1fr 1fr;
+    border-top: 1px solid var(--line-strong);
+  }
+  .split__side { padding: var(--s4) 0; display: grid; gap: var(--s1); }
+  .split__side:first-child { border-right: 1px solid var(--line); padding-right: var(--s5); }
+  .split__side:last-child { padding-left: var(--s5); }
+  .split__n { font-size: clamp(1.75rem, 5vw, 2.5rem); line-height: 1; font-weight: 400; letter-spacing: -0.03em; }
+  .split__ids { font-size: var(--t-fine); color: var(--ink-3); letter-spacing: 0.04em; }
+
+  .plate { list-style: none; margin: var(--s7) 0 0; padding: 0; border-top: 1px solid var(--line-strong); }
+  .plate__row {
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+    grid-template-areas: 'no type sqft' 'no facing facing';
+    gap: 1px var(--s3);
+    padding: var(--s3) 0;
+    border-bottom: 1px solid var(--line);
+    align-items: baseline;
+  }
+  @media (min-width: 560px) {
+    .plate__row {
+      grid-template-columns: 2.25rem minmax(0, 1fr) auto auto;
+      grid-template-areas: 'no type sqft facing';
+      gap: var(--s4);
+    }
+  }
+  .plate__no { grid-area: no; font-size: var(--t-fine); font-weight: 620; color: var(--ink); }
+  .plate__type { grid-area: type; font-family: var(--font-display); font-size: var(--t-small); color: var(--ink); }
+  .plate__sqft { grid-area: sqft; font-size: var(--t-small); color: var(--ink-2); }
+  .plate__facing {
+    grid-area: facing;
+    font-family: var(--font-display); font-size: var(--t-fine); color: var(--ink-3);
+    text-align: left;
+  }
+  @media (min-width: 560px) { .plate__facing { text-align: right; min-width: 8.5rem; } }
+
+  /* the two-bed and the studio are the exceptions on the plate; mark them quietly */
+  .plate__row[data-type='2bed'] .plate__type,
+  .plate__row[data-type='studio'] .plate__type { font-weight: 560; }
+
+  .floor__note {
+    margin-top: var(--s5);
+    font-family: var(--font-display);
+    font-size: var(--t-small);
+    color: var(--ink-2);
+    max-width: 38ch;
+  }
+
+</style>

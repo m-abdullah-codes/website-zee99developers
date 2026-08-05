@@ -1,0 +1,229 @@
+---
+/**
+ * 08 — commercial.
+ *
+ * Two floors with genuinely different characters, kept apart. Availability is
+ * shown on the plates themselves (see Plate.astro) rather than in a table.
+ */
+import Plate from './Plate.astro';
+import ShopList from './ShopList.astro';
+import { commercialCopy as c } from '../lib/content';
+import { ground, lower, comSplit, groundUnits, lowerUnits, rs, short, num, comCount } from '../lib/inventory';
+
+const legend = [
+  { s: 'available', l: 'Available' },
+  { s: 'reserved', l: 'Reserved' },
+  { s: 'booked', l: 'Booked' },
+  { s: 'sold', l: 'Sold' },
+] as const;
+
+/* Computed, never typed: the cheapest and dearest unit actually on each floor.
+   The section used to print rates only, which left a buyer multiplying square
+   feet by fifty-five thousand in their head. */
+const band = (units: typeof groundUnits) => {
+  const ps = units.map((u) => u.price);
+  return { min: Math.min(...ps), max: Math.max(...ps) };
+};
+const groundBand = band(groundUnits);
+const lowerBand = band(lowerUnits);
+---
+
+<section id="commercial" data-section="commercial" data-no="07" data-name="Commercial" data-tone="sunk" class="section com">
+  <div class="wrap">
+    <header class="shead">
+      <div class="shead__meta">
+        <span class="shead__no">07</span>
+        <span class="shead__name">Commercial</span>
+      </div>
+      <h2 class="t-h2 com__h" id="commercial-h">{c.head}</h2>
+      <p class="t-lead prose">{c.body[0]}</p>
+    </header>
+
+    <div class="legend">
+      {legend.map((x) => (
+        <span class="legend__i" data-status={x.s}><i></i>{x.l}</span>
+      ))}
+      <span class="legend__n num">{comCount.available} of {comCount.total} available</span>
+    </div>
+
+    <div class="floors">
+      <article class="fl">
+        <div class="fl__head">
+          <h3 class="fl__name">{c.ground.head}</h3>
+          <p class="fl__sub">{c.ground.sub}</p>
+          <dl class="fl__facts">
+            <div><dt class="label">Units</dt><dd class="num">{ground.count}</dd></div>
+            <div><dt class="label">Sizes</dt><dd class="num">{num(ground.sqft.min)}–{num(ground.sqft.max)} sq ft</dd></div>
+            <div><dt class="label">Prices</dt><dd class="num">{short(groundBand.min)} – {short(groundBand.max)}</dd></div>
+            <div><dt class="label">Rate</dt><dd class="num">{rs(ground.rate)}/sq ft</dd></div>
+            <div><dt class="label">Available</dt><dd class="num">{ground.available}</dd></div>
+          </dl>
+        </div>
+        <p class="fl__copy">{c.ground.body}</p>
+        <Plate
+          id="ground"
+          src="plan/commercial-ground-floorplan"
+          alt={c.planGroundAlt}
+          units={groundUnits}
+          zoomLabel="Ground floor plan, nine shops behind the arcade"
+          caption={`Ground floor. Arcade ${ground.arcadeWidthFt} feet wide along the frontage; shops 04, 05, 06 and 07 open onto it.`}
+        />
+        <ShopList
+          units={groundUnits}
+          label={`Price of every ground-floor shop`}
+          note={`${ground.count} units · ${short(groundBand.min)} – ${short(groundBand.max)} · down payment and monthly on each`}
+        />
+      </article>
+
+      <article class="fl">
+        <div class="fl__head">
+          <h3 class="fl__name">{c.lower.head}</h3>
+          <p class="fl__sub">{c.lower.sub}</p>
+          <dl class="fl__facts">
+            <div><dt class="label">Units</dt><dd class="num">{lower.shopCount} + {lower.kioskCount} kiosk</dd></div>
+            <div><dt class="label">Sizes</dt><dd class="num">{num(lower.sqft.min)}–{num(lower.sqft.max)} sq ft</dd></div>
+            <div><dt class="label">Prices</dt><dd class="num">{short(lowerBand.min)} – {short(lowerBand.max)}</dd></div>
+            <div><dt class="label">Rate</dt><dd class="num">{rs(lower.rate)}/sq ft</dd></div>
+            <div><dt class="label">Available</dt><dd class="num">{lower.available}</dd></div>
+          </dl>
+        </div>
+        <p class="fl__copy">{c.lower.body}</p>
+        <Plate
+          id="lower"
+          src="plan/commercial-lowerground-floorplan"
+          alt={c.planLowerAlt}
+          units={lowerUnits}
+          zoomLabel="Lower ground floor plan, thirteen shops and the kiosk"
+          caption={`Lower ground. Six-foot corridors, a patio, lift and accessible bath. The kiosk is ${num(lower.kioskSqft)} sq ft.`}
+        />
+        <ShopList
+          units={lowerUnits}
+          label={`Price of every lower-ground unit`}
+          note={`${lower.count} units · ${short(lowerBand.min)} – ${short(lowerBand.max)} · down payment and monthly on each`}
+        />
+      </article>
+    </div>
+
+    <div class="com__foot">
+      <div class="exception">
+        <h3 class="exception__h">{c.exception.head}</h3>
+        <p class="exception__b">{c.exception.body}</p>
+        {ground.offRate.map((u) => (
+          <p class="exception__n num">
+            Shop {u.id.replace('G', '0')} · {num(u.sqft)} sq ft · {rs(u.ratePerSqft)}/sq ft
+            <span> against {rs(ground.rate)} elsewhere on the floor</span>
+          </p>
+        ))}
+      </div>
+
+      <div class="csplit">
+        <h3 class="label csplit__h">Payment, identical on every commercial unit</h3>
+        <ol class="csplit__row">
+          <li><span class="num">{comSplit.downPct}%</span><span>Down</span></li>
+          <li><span class="num">{comSplit.monthlyPct}%</span><span>Across {comSplit.monthlyCount} monthly</span></li>
+          <li><span class="num">{comSplit.biAnnualPct}%</span><span>Across {comSplit.biAnnualCount} bi-annual</span></li>
+          <li><span class="num">{comSplit.structurePct}%</span><span>On structure</span></li>
+          <li><span class="num">{comSplit.possessionPct}%</span><span>At possession</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .com__h { max-width: 20ch; }
+
+  .legend {
+    margin-top: var(--s6);
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--s3) var(--s5);
+    border-top: 1px solid var(--line-strong);
+    padding-top: var(--s3);
+  }
+  .legend__i {
+    display: inline-flex; align-items: center; gap: var(--s2);
+    font-family: var(--font-display); font-size: var(--t-fine); color: var(--ink-2);
+  }
+  /* Each swatch is a miniature of the marker it names, and the four now differ
+     by ground rather than by the hue of a one-pixel ring. The key is set at the
+     marker's own size so the two can be held against each other. */
+  .legend__i i {
+    width: 18px; height: 18px; border-radius: 999px; border: 1px solid;
+    background: var(--paper); flex: none;
+    display: grid; place-items: center;
+  }
+  .legend__i[data-status='available'] i { background: var(--signal); border-color: var(--signal-deep); }
+  .legend__i[data-status='reserved'] i { background: var(--signal-wash); border-color: var(--signal-deep); }
+  .legend__i[data-status='booked'] i { background: var(--paper-edge); border-color: var(--paper-edge); }
+  /* the same strike the sold markers carry */
+  .legend__i[data-status='sold'] i { background: var(--paper); border-color: var(--ink-4); position: relative; }
+  .legend__i[data-status='sold'] i::after {
+    content: ''; width: 12px; height: 1px; background: var(--ink-4);
+  }
+  .legend__n { margin-left: auto; font-size: var(--t-fine); color: var(--ink-3); }
+
+  /* minmax(0,…) is load-bearing. The plate holds a 660px floor below 760px so
+     its markers stay tappable, and pans inside its own scroller. An auto track
+     sizes to that min-content instead, so every floor block grew to 660px in a
+     320px column: the scroller never engaged, and the head, the four facts and
+     the copy beside it were laid out past the right edge and clipped by an
+     ancestor — invisible to the overflow gate, which only sees the document. */
+  .floors { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s9); margin-top: var(--s8); }
+
+  .fl__head { border-top: 1px solid var(--line-strong); padding-top: var(--s4); }
+  .fl__name {
+    font-family: var(--font-display);
+    font-size: var(--t-h3); font-weight: 500; letter-spacing: var(--tr-tight);
+  }
+  .fl__sub {
+    font-family: var(--font-display);
+    font-size: var(--t-lead); font-weight: 400; color: var(--ink-2);
+    margin-top: var(--s2); max-width: 26ch; line-height: 1.22;
+  }
+  /* Five facts now, not four — the price band joined them. auto-fill rather
+     than a fixed count so the row reflows instead of breaking "Rs 55,000/sq ft"
+     across two lines inside a 0.8fr column at 1440. */
+  .fl__facts {
+    margin: var(--s5) 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+    gap: var(--s4) var(--s5);
+  }
+  .fl__facts div { display: grid; gap: 3px; }
+  .fl__facts dd {
+    margin: 0; font-family: var(--font-display); font-size: var(--t-small); font-weight: 520;
+    text-wrap: nowrap;
+  }
+
+  .fl__copy { margin: var(--s5) 0 var(--s6); color: var(--ink-2); max-width: var(--measure); }
+
+  @media (min-width: 1000px) {
+    .fl { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: var(--s8); align-items: start; }
+    .fl__head { grid-column: 1; grid-row: 1; }
+    .fl__copy { grid-column: 1; grid-row: 2; margin-bottom: 0; }
+    .fl > :global([data-plate]) { grid-column: 2; grid-row: 1 / span 2; }
+    /* The price list runs the full measure under both — it is a table, and a
+       table squeezed into a 0.8fr column wraps its figures. */
+    .fl > :global([data-shoplist]) { grid-column: 1 / -1; grid-row: 3; }
+  }
+
+  .com__foot { margin-top: var(--s10); display: grid; gap: var(--s8); }
+  @media (min-width: 900px) { .com__foot { grid-template-columns: 1fr 1fr; gap: var(--s9); } }
+
+  .exception { border-top: 1px solid var(--line-strong); padding-top: var(--s4); }
+  .exception__h { font-family: var(--font-display); font-size: var(--t-h3); font-weight: 470; letter-spacing: var(--tr-tight); }
+  .exception__b { margin-top: var(--s3); color: var(--ink-2); max-width: var(--measure); }
+  .exception__n { margin-top: var(--s4); font-size: var(--t-small); color: var(--ink); }
+  .exception__n span { color: var(--ink-3); }
+
+  .csplit { border-top: 1px solid var(--line-strong); padding-top: var(--s4); }
+  .csplit__h { display: block; margin-bottom: var(--s4); }
+  .csplit__row { list-style: none; margin: 0; padding: 0; display: grid; }
+  .csplit__row li {
+    display: flex; align-items: baseline; gap: var(--s4);
+    padding: var(--s3) 0; border-bottom: 1px solid var(--line);
+  }
+  .csplit__row span:first-child {
+    font-size: var(--t-body); font-weight: 560; color: var(--ink); min-width: 3.25rem;
+  }
+  .csplit__row span:last-child { font-family: var(--font-display); font-size: var(--t-small); color: var(--ink-2); }
+</style>

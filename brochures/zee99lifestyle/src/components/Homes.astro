@@ -1,0 +1,331 @@
+---
+/**
+ * 02 — the three homes. Third in the document, and deliberately so: a reader
+ * who opened this from WhatsApp already knows the price and has already said
+ * they are interested, so the thing itself comes before the evidence for it.
+ *
+ * It opens with the chooser — the whole residential offer in one screen, for
+ * a reader who will not read. Three areas drawn to scale against each other,
+ * each with its area, its price and what is left of it, each a link into the
+ * plan below. That comparison used to be a section of its own, made of three
+ * hatched squares; the hatch is what made it look cheap, and the separation is
+ * what made it feel like preamble.
+ *
+ * The facing device (`FACING SPORTS COMPLEX` / `FACING RESIDENCE`) is lettered
+ * on the drawings themselves, so it is repeated here as a caption rather than
+ * invented as a graphic.
+ */
+import Picture from './Picture.astro';
+import Drawing from './Drawing.astro';
+import Gallery from './Gallery.astro';
+import Schedule from './Schedule.astro';
+import { homes, plans, gallerySequence } from '../lib/content';
+import { resTypes, rs, short, num, resRate } from '../lib/inventory';
+
+const order = ['studio', '1bed', '2bed'] as const;
+
+/* sqrt so the *areas* are proportional — scaling the edge by square footage
+   would square the difference and make the studio look a third of what it is. */
+const maxSqft = Math.max(...resTypes.map((t) => t.sqft));
+const scaled = order.map((key) => {
+  const t = resTypes.find((x) => x.key === key)!;
+  return { ...t, rel: Math.sqrt(t.sqft) / Math.sqrt(maxSqft) };
+});
+const planKey: Record<string, string> = {
+  studio: 'plan/studio-floorplan',
+  '1bed': 'plan/1bed-floorplan',
+  '2bed': 'plan/2bed-floorplan',
+};
+const galleryGroup: Record<string, string> = { studio: 'studio', '1bed': '1bed', '2bed': '2bed' };
+
+const typeOf = (k: string) => resTypes.find((t) => t.key === k)!;
+---
+
+<section id="homes" data-section="homes" data-no="02" data-name="The three homes" data-tone="light" class="section homes">
+  <div class="wrap">
+    <header class="shead">
+      <div class="shead__meta">
+        <span class="shead__no">02</span>
+        <span class="shead__name">The three homes</span>
+      </div>
+      <h2 class="t-h2" id="homes-h">{homes.head}</h2>
+      <p class="t-lead prose">{homes.lead}</p>
+    </header>
+
+    <div class="pick">
+      <div class="pick__say">
+        <h3 class="pick__h">{plans.head}</h3>
+        <p class="pick__lead">{plans.lead}</p>
+      </div>
+
+      {/* Three empty outline squares were the first thing a skimmer met of the
+          homes: honest about relative area, and indistinguishable from a frame
+          whose image failed to load. A room is what is being sold, so a room is
+          what the tile shows; the area comparison keeps its own device below,
+          where a square drawn to scale is unambiguous. */}
+      <ol class="pick__row">
+        {scaled.map((t) => (
+          <li class="pick__i">
+            <a class="pick__a" href={`#home-${t.key}`}>
+              <span class="pick__shot">
+                <Picture
+                  src={gallerySequence[t.key][0]}
+                  alt={`The ${t.label.toLowerCase()} at Zee99 Lifestyle`}
+                  sizes="(min-width: 980px) 15vw, 30vw"
+                  ratio="4 / 3"
+                  className="pick__img"
+                />
+              </span>
+              <span class="pick__name">{t.label}</span>
+              <span class="pick__sqft num">{num(t.sqft)} <i>sq ft</i></span>
+              <span class="pick__price num">{short(t.price)}</span>
+              <span class="pick__avail num" data-none={t.available === 0 ? '' : undefined}>
+                {t.available === 0 ? 'None left' : `${t.available} left`}
+              </span>
+            </a>
+          </li>
+        ))}
+      </ol>
+
+      {/* Said once under the three, rather than three times inside them: at
+          390px a 110px tile wraps "Plan, photos, payment" onto two lines and
+          strands the rule under it. */}
+      <p class="pick__go">{plans.pickHint}</p>
+
+      <div class="scale">
+        <p class="label scale__h">{plans.scaleNote}</p>
+        <ol class="scale__row" aria-hidden="true">
+          {scaled.map((t) => (
+            <li class="scale__i">
+              {/* Height carries the scale, so all three sit on one baseline and
+                  the width follows from the square. Widths would not align. */}
+              <span class="scale__box" style={`--rel:${t.rel}`}></span>
+              <span class="scale__n num">{num(t.sqft)}</span>
+            </li>
+          ))}
+        </ol>
+        <p class="pick__caps">{rs(resRate)} per square foot, every plan</p>
+      </div>
+    </div>
+  </div>
+
+  {order.map((key, idx) => {
+    const t = typeOf(key);
+    const c = homes.types[key];
+    return (
+      <article class="home" id={`home-${key}`}>
+        {/* DOM order is head → schedule → prose → plan, and the plan is the
+            last thing before the photographs. On a phone that keeps the two
+            pictures of the home — the drawing and then the interiors — running
+            into each other, which is how they were read before the schedule
+            existed; the schedule sits with the four figures at the top, where
+            the numbers already are. Above 900px the grid lifts it beside the
+            plan into a column that was otherwise empty. */}
+        <div class="wrap home__wrap">
+          <div class="home__head">
+            <div class="home__id">
+              <span class="home__idx num">{String(idx + 1).padStart(2, '0')}</span>
+              <h3 class="home__name">{t.label}</h3>
+            </div>
+            <dl class="home__facts">
+              <div><dt class="label">Area</dt><dd class="num">{num(t.sqft)} sq ft</dd></div>
+              <div><dt class="label">Price</dt><dd class="num">{rs(t.price)}</dd></div>
+              <div><dt class="label">Rate</dt><dd class="num">{rs(resRate)}/sq ft</dd></div>
+              <div><dt class="label">On each floor</dt><dd class="num">{t.count / 6}</dd></div>
+            </dl>
+          </div>
+
+          <div class="home__sched"><Schedule type={t} /></div>
+
+          <div class="home__body">
+            <h4 class="home__line">{c.head}</h4>
+            <p class="home__copy">{c.body}</p>
+          </div>
+
+          <figure class="home__plan">
+            <Drawing
+              src={planKey[key]}
+              alt={c.planAlt}
+              label={`${t.label}, ${num(t.sqft)} sq ft`}
+              sizes="(min-width: 900px) 54vw, 100vw"
+            />
+            <figcaption class="cap">
+              <span class="cap__t">{c.facing}</span>
+              <span class="cap__s">Lettered on the drawing · {num(t.sqft)} sq ft</span>
+            </figcaption>
+          </figure>
+        </div>
+
+        <Gallery
+          group={galleryGroup[key]}
+          order={gallerySequence[key]}
+          label={`${t.label}, ${homes.galleryLabel.toLowerCase()}`}
+          alts={{}}
+          defaultAlt={`Interior render of the ${t.label.toLowerCase()} at Zee99 Lifestyle, ${num(t.sqft)} square feet, semi-furnished.`}
+        />
+
+      </article>
+    );
+  })}
+</section>
+
+<style>
+  /* --- the chooser ---------------------------------------------------------
+     The whole residential offer above the fold of its own section: three areas
+     to scale, three prices, three counts of what is left. No hatching — a 45°
+     repeat reads as "placeholder", which is what made the old version cheap. */
+  .pick { margin-top: var(--s8); }
+  /* Prose left, the three tiles right. Side by side the comparison stays
+     compact instead of spreading the squares a screen apart at 1440. */
+  @media (min-width: 980px) {
+    .pick {
+      display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+      gap: var(--s5) var(--s9); align-items: start;
+    }
+    /* The scale device drops under the prose in the left column: it belongs
+       with the sentence about area, and it fills a column that was otherwise
+       empty for its whole height. */
+    .pick__say { grid-column: 1; grid-row: 1; }
+    .scale { grid-column: 1; grid-row: 2; align-self: end; margin-top: var(--s7); }
+    .pick__row { grid-column: 2; grid-row: 1; }
+    .pick__go { grid-column: 2; grid-row: 2; }
+  }
+
+  .pick__say { display: grid; gap: var(--s3); max-width: var(--measure-wide); }
+  .pick__h {
+    font-family: var(--font-display);
+    font-size: var(--t-h3); font-weight: 470;
+    letter-spacing: var(--tr-tight); line-height: 1.1;
+  }
+  .pick__lead { color: var(--ink-2); line-height: 1.5; }
+
+  .pick__row {
+    list-style: none; margin: var(--s7) 0 0; padding: 0;
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--s4);
+  }
+  @media (min-width: 980px) { .pick__row { margin-top: 0; max-width: 34rem; } }
+
+  .pick__a {
+    display: grid; gap: 3px; align-content: start;
+    color: inherit; text-decoration: none;
+  }
+  .pick__a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+  .pick__shot { display: block; margin-bottom: var(--s3); overflow: hidden; }
+  .pick__shot :global(.pick__img) {
+    transition: transform var(--dur-slow) var(--ease-out);
+  }
+  .pick__a:hover .pick__shot :global(.pick__img) { transform: scale(1.03); }
+  .pick__a:hover .pick__name { text-decoration: underline; text-underline-offset: 3px; }
+
+  .pick__go {
+    margin-top: var(--s4);
+    font-family: var(--font-display); font-size: var(--t-small);
+    color: var(--ink-2);
+    max-width: 42ch;
+  }
+
+  /* The area comparison, now its own device rather than the tile's picture.
+     Bottom-aligned on one baseline, so the stepping *is* the comparison; the
+     rule stays on each square rather than running the width of the column, a
+     ground line that overshoots what stands on it reads as a stub. */
+  .scale { margin-top: var(--s7); border-top: 1px solid var(--line); padding-top: var(--s3); }
+  .scale__h { display: block; color: var(--ink-3); }
+  .scale__row {
+    list-style: none; margin: var(--s4) 0 0; padding: 0;
+    display: flex; align-items: flex-end; gap: var(--s5);
+    height: clamp(52px, 13vw, 84px);
+  }
+  .scale__i { display: flex; align-items: flex-end; gap: var(--s2); height: 100%; }
+  .scale__box {
+    height: calc(var(--rel) * 100%);
+    aspect-ratio: 1;
+    border: 1px solid var(--ink-4);
+  }
+  .scale__n { font-size: var(--t-fine); color: var(--ink-3); }
+
+  .pick__name { font-family: var(--font-display); font-size: var(--t-small); font-weight: 560; }
+  .pick__sqft { font-size: var(--t-body); color: var(--ink); font-weight: 450; letter-spacing: -0.02em; margin-top: 2px; }
+  .pick__sqft i { font-style: normal; font-size: var(--t-fine); color: var(--ink-3); letter-spacing: 0; }
+  .pick__price { font-size: var(--t-fine); color: var(--ink-3); }
+  /* the sanctioned accent: what is left, as in the inventory section */
+  .pick__avail {
+    font-size: var(--t-fine); font-weight: 560; color: var(--signal-deep);
+    margin-top: var(--s3);
+  }
+  .pick__avail[data-none] { color: var(--ink-4); font-weight: 400; }
+
+  .pick__caps {
+    margin-top: var(--s4);
+    font-family: var(--font-display); font-size: var(--t-fine);
+    color: var(--ink-3);
+  }
+
+  .home { margin-top: var(--s9); }
+
+  .home__head {
+    display: grid; gap: var(--s5);
+    border-top: 1px solid var(--line-strong);
+    padding-top: var(--s4);
+  }
+  @media (min-width: 860px) {
+    .home__head { grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--s8); }
+  }
+
+  .home__id { display: flex; align-items: baseline; gap: var(--s4); }
+  .home__idx { font-size: var(--t-micro); font-weight: 620; letter-spacing: var(--tr-micro); color: var(--ink-3); }
+  .home__name {
+    font-family: var(--font-display);
+    font-size: var(--t-h2);
+    font-weight: 470;
+    letter-spacing: var(--tr-head);
+    line-height: 1.05;
+  }
+
+  .home__facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s4) var(--s6);
+    margin: 0;
+  }
+  @media (min-width: 560px) { .home__facts { grid-template-columns: repeat(4, auto); } }
+  .home__facts div { display: grid; gap: 3px; }
+  .home__facts dd { margin: 0; font-size: var(--t-small); color: var(--ink); font-weight: 500; }
+
+  .home__sched { margin-top: var(--s6); }
+
+  .home__body { margin-top: var(--s7); display: grid; gap: var(--s4); max-width: var(--measure-wide); }
+  @media (min-width: 860px) {
+    .home__body { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--s8); max-width: none; }
+  }
+  .home__line {
+    font-family: var(--font-display);
+    font-size: var(--t-h3);
+    font-weight: 460;
+    line-height: 1.18;
+    letter-spacing: var(--tr-tight);
+    text-wrap: balance;
+    max-width: 20ch;
+  }
+  .home__copy { color: var(--ink-2); max-width: var(--measure); }
+
+  .home__plan { margin: var(--s8) 0 0; }
+
+  @media (min-width: 900px) {
+    .home__wrap {
+      display: grid;
+      grid-template-columns: minmax(0, 1.7fr) minmax(15rem, 0.85fr);
+      column-gap: var(--s8);
+      grid-template-areas:
+        'head  head'
+        'body  body'
+        'plan  sched';
+      align-items: start;
+    }
+    .home__head { grid-area: head; }
+    .home__body { grid-area: body; }
+    .home__plan { grid-area: plan; }
+    .home__sched { grid-area: sched; margin-top: var(--s8); }
+  }
+</style>

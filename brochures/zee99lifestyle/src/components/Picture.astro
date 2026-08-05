@@ -1,0 +1,101 @@
+---
+/**
+ * The only way an image reaches the page.
+ *
+ * Emits AVIF with a WebP fallback (WhatsApp's in-app browser on older Android
+ * is a real share target here), correct intrinsic dimensions so nothing shifts,
+ * and an inline LQIP behind the image so there is never a white flash on a slow
+ * connection. Everything below the fold is lazy by default; `priority` is opt-in
+ * and should be true for exactly one image on the page.
+ */
+import manifest from '../generated/images.json';
+import { asset } from '../lib/asset';
+
+interface Props {
+  src: string;                 // manifest key, e.g. "2bed/scene-14"
+  alt: string;
+  sizes?: string;
+  priority?: boolean;
+  className?: string;
+  ratio?: string;              // override the intrinsic aspect, e.g. "3 / 2"
+  fit?: 'cover' | 'contain';
+  position?: string;
+  style?: string;
+}
+
+const {
+  src, alt, sizes = '100vw', priority = false,
+  className = '', ratio, fit = 'cover', position = 'center', style = '',
+} = Astro.props;
+
+const img = (manifest as Record<string, any>)[src];
+if (!img) {
+  throw new Error(
+    `[Picture] no image "${src}" in the manifest. Run: node scripts/build-images.mjs\n` +
+    `Available keys begin: ${Object.keys(manifest).slice(0, 6).join(', ')}`
+  );
+}
+
+// The manifest records where the files sit on disk, which is not where they sit
+// on the web — the brochure is served from a sub-path. asset() bridges the two.
+const srcset = (fmt: 'avif' | 'webp') =>
+  img[fmt].map((s: any) => `${asset(s.path)} ${s.w}w`).join(', ');
+
+// Smallest rendition as the bare src: it is only ever used by a browser with no
+// srcset support at all, and there it should be cheap rather than enormous.
+const fallback = asset(img.webp[0].path);
+const aspect = ratio ?? `${img.width} / ${img.height}`;
+---
+
+<div
+  class:list={['pic', className]}
+  style={`--pic-aspect:${aspect};--pic-color:${img.color};--pic-lqip:url("${img.lqip}");${style}`}
+>
+  <picture>
+    <!-- AVIF is preferred; the WebP ladder rides on the <img> itself rather than
+         a second <source>, which does the same job for half the markup. -->
+    <source type="image/avif" srcset={srcset('avif')} sizes={sizes} />
+    <img
+      src={fallback}
+      srcset={srcset('webp')}
+      alt={alt}
+      width={img.width}
+      height={img.height}
+      sizes={sizes}
+      loading={priority ? 'eager' : 'lazy'}
+      decoding={priority ? 'sync' : 'async'}
+      fetchpriority={priority ? 'high' : 'auto'}
+      style={`object-fit:${fit};object-position:${position}`}
+    />
+  </picture>
+</div>
+
+<style>
+  .pic {
+    position: relative;
+    aspect-ratio: var(--pic-aspect);
+    overflow: hidden;
+    background-color: var(--pic-color);
+    background-image: var(--pic-lqip);
+    background-size: cover;
+    background-position: center;
+  }
+  .pic picture, .pic img { display: block; width: 100%; height: 100%; }
+  .pic img {
+    opacity: 0;
+    transition: opacity var(--dur-slow) var(--ease-out);
+  }
+  .pic[data-loaded='1'] img { opacity: 1; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pic img { transition-duration: 1ms; }
+  }
+
+  /* If scripting is off entirely, the fade never resolves — so opt the whole
+     effect in from the root element the layout script sets. */
+  html:not(.js) .pic img { opacity: 1; }
+</style>
+
+<!-- No per-instance script here: this component renders 45 times, and an
+     is:inline block would have been emitted 45 times with it. The single
+     load-listener that reveals every .pic lives in Layout.astro. -->

@@ -1,0 +1,936 @@
+{
+  "meta": {
+    "project": "Zee99 Lifestyle",
+    "location": "Bahria Town Lahore, Sector B",
+    "updated": "2026-08-04",
+    "currency": "PKR",
+    "statusKey": {
+      "available": "Available",
+      "reserved": "Token paid",
+      "booked": "On installments",
+      "sold": "Paid in full"
+    },
+    "note": "Prelaunch pricing. Subject to change with construction progress, demand and supply."
+  },
+  "residential": {
+    "ratePerSqft": 18000,
+    "floors": 6,
+    "unitsPerFloor": 8,
+    "possessionMonths": 30,
+    "planMonths": 36,
+    "types": {
+      "studio": {
+        "label": "Studio",
+        "sqft": 380,
+        "price": 6840000,
+        "plan": {
+          "down": 1400000,
+          "monthly": 75000,
+          "monthlyCount": 36,
+          "structure": 700000,
+          "halfYearly": 150000,
+          "halfYearlyCount": 6,
+          "possession": 1140000
+        }
+      },
+      "1bed": {
+        "label": "1 Bedroom",
+        "sqft": 500,
+        "price": 9000000,
+        "plan": {
+          "down": 1800000,
+          "monthly": 90000,
+          "monthlyCount": 36,
+          "structure": 900000,
+          "halfYearly": 260000,
+          "halfYearlyCount": 6,
+          "possession": 1500000
+        }
+      },
+      "2bed": {
+        "label": "2 Bedroom",
+        "sqft": 800,
+        "price": 14400000,
+        "plan": {
+          "down": 3000000,
+          "monthly": 150000,
+          "monthlyCount": 36,
+          "structure": 1500000,
+          "halfYearly": 300000,
+          "halfYearlyCount": 6,
+          "possession": 2700000
+        }
+      }
+    },
+    "units": [
+      {
+        "id": "101",
+        "floor": 1,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "sports complex",
+        "status": "available"
+      },
+      {
+        "id": "102",
+        "floor": 1,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "sports complex",
+        "status": "available"
+      },
+      {
+        "id": "103",
+        "floor": 1,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "sports complex",
+        "status": "available"
+      },
+      {
+        "id": "104",
+        "floor": 1,
+        "type": "2bed",
+        "sqft": 800,
+        "price": 14400000,
+        "facing": "sports complex",
+        "status": "booked"
+      },
+      {
+        "id": "105",
+        "floor": 1,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "residence",
+        "status": "available"
+      },
+      {
+        "id": "106",
+        "floor": 1,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "residence",
+        "status": "available"
+      },
+      {
+        "id": "107",
+        "floor": 1,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "residence",
+        "status": "available"
+      },
+      {
+        "id": "108",
+        "floor": 1,
+        "type": "studio",
+        "sqft": 380,
+        "price": 6840000,
+        "facing": "residence",
+        "status": "available"
+      },
+      {
+        "id": "201",
+        "floor": 2,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "sports complex",
+        "status": "reserved"
+      },
+      {
+        "id": "202",
+        "floor": 2,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "sports complex",
+        "status": "reserved"
+      },
+      {
+        "id": "203",
+        "floor": 2,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "sports complex",
+        "status": "reserved"
+      },
+      {
+        "id": "204",
+        "floor": 2,
+        "type": "2bed",
+        "sqft": 800,
+        "price": 14400000,
+        "facing": "sports complex",
+        "status": "booked"
+      },
+      {
+        "id": "205",
+        "floor": 2,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "residence",
+        "status": "booked"
+      },
+      {
+        "id": "206",
+        "floor": 2,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "residence",
+        "status": "booked"
+      },
+      {
+        "id": "207",
+        "floor": 2,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "residence",
+        "status": "reserved"
+      },
+      {
+        "id": "208",
+        "floor": 2,
+        "type": "studio",
+        "sqft": 380,
+        "price": 6840000,
+        "facing": "residence",
+        "status": "reserved"
+      },
+      {
+        "id": "301",
+        "floor": 3,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "sports complex",
+        "status": "available"
+      },
+      {
+        "id": "302",
+        "floor": 3,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "sports complex",
+        "status": "available"
+      },
+      {
+        "id": "303",
+        "floor": 3,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "sports complex",
+        "status": "available"
+      },
+      {
+        "id": "304",
+        "floor": 3,
+        "type": "2bed",
+        "sqft": 800,
+        "price": 14400000,
+        "facing": "sports complex",
+        "status": "booked"
+      },
+      {
+        "id": "305",
+        "floor": 3,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "residence",
+        "status": "available"
+      },
+      {
+        "id": "306",
+        "floor": 3,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "residence",
+        "status": "available"
+      },
+      {
+        "id": "307",
+        "floor": 3,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "residence",
+        "status": "available"
+      },
+      {
+        "id": "308",
+        "floor": 3,
+        "type": "studio",
+        "sqft": 380,
+        "price": 6840000,
+        "facing": "residence",
+        "status": "available"
+      },
+      {
+        "id": "401",
+        "floor": 4,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "sports complex",
+        "status": "available"
+      },
+      {
+        "id": "402",
+        "floor": 4,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "sports complex",
+        "status": "reserved"
+      },
+      {
+        "id": "403",
+        "floor": 4,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "sports complex",
+        "status": "booked"
+      },
+      {
+        "id": "404",
+        "floor": 4,
+        "type": "2bed",
+        "sqft": 800,
+        "price": 14400000,
+        "facing": "sports complex",
+        "status": "booked"
+      },
+      {
+        "id": "405",
+        "floor": 4,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "residence",
+        "status": "available"
+      },
+      {
+        "id": "406",
+        "floor": 4,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "residence",
+        "status": "available"
+      },
+      {
+        "id": "407",
+        "floor": 4,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "residence",
+        "status": "available"
+      },
+      {
+        "id": "408",
+        "floor": 4,
+        "type": "studio",
+        "sqft": 380,
+        "price": 6840000,
+        "facing": "residence",
+        "status": "available"
+      },
+      {
+        "id": "501",
+        "floor": 5,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "sports complex",
+        "status": "sold"
+      },
+      {
+        "id": "502",
+        "floor": 5,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "sports complex",
+        "status": "sold"
+      },
+      {
+        "id": "503",
+        "floor": 5,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "sports complex",
+        "status": "booked"
+      },
+      {
+        "id": "504",
+        "floor": 5,
+        "type": "2bed",
+        "sqft": 800,
+        "price": 14400000,
+        "facing": "sports complex",
+        "status": "booked"
+      },
+      {
+        "id": "505",
+        "floor": 5,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "residence",
+        "status": "available"
+      },
+      {
+        "id": "506",
+        "floor": 5,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "residence",
+        "status": "available"
+      },
+      {
+        "id": "507",
+        "floor": 5,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "residence",
+        "status": "available"
+      },
+      {
+        "id": "508",
+        "floor": 5,
+        "type": "studio",
+        "sqft": 380,
+        "price": 6840000,
+        "facing": "residence",
+        "status": "available"
+      },
+      {
+        "id": "601",
+        "floor": 6,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "sports complex",
+        "status": "available"
+      },
+      {
+        "id": "602",
+        "floor": 6,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "sports complex",
+        "status": "available"
+      },
+      {
+        "id": "603",
+        "floor": 6,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "sports complex",
+        "status": "available"
+      },
+      {
+        "id": "604",
+        "floor": 6,
+        "type": "2bed",
+        "sqft": 800,
+        "price": 14400000,
+        "facing": "sports complex",
+        "status": "booked"
+      },
+      {
+        "id": "605",
+        "floor": 6,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "residence",
+        "status": "available"
+      },
+      {
+        "id": "606",
+        "floor": 6,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "residence",
+        "status": "available"
+      },
+      {
+        "id": "607",
+        "floor": 6,
+        "type": "1bed",
+        "sqft": 500,
+        "price": 9000000,
+        "facing": "residence",
+        "status": "available"
+      },
+      {
+        "id": "608",
+        "floor": 6,
+        "type": "studio",
+        "sqft": 380,
+        "price": 6840000,
+        "facing": "residence",
+        "status": "available"
+      }
+    ]
+  },
+  "commercial": {
+    "paymentSplit": {
+      "downPct": 20,
+      "monthlyPct": 30,
+      "monthlyCount": 36,
+      "biAnnualPct": 20,
+      "biAnnualCount": 6,
+      "structurePct": 10,
+      "possessionPct": 20
+    },
+    "ground": {
+      "ratePerSqft": 55000,
+      "arcadeWidthFt": 10,
+      "units": [
+        {
+          "id": "G1",
+          "floor": "Ground",
+          "type": "Shop",
+          "sqft": 486,
+          "ratePerSqft": 55000,
+          "price": 26730000,
+          "plan": {
+            "down": 5346000,
+            "monthly": 222750,
+            "monthlyCount": 36,
+            "biAnnual": 891000,
+            "biAnnualCount": 6,
+            "structure": 2673000,
+            "possession": 5346000
+          },
+          "status": "sold"
+        },
+        {
+          "id": "G2",
+          "floor": "Ground",
+          "type": "Shop",
+          "sqft": 380,
+          "ratePerSqft": 55000,
+          "price": 20900000,
+          "plan": {
+            "down": 4180000,
+            "monthly": 174167,
+            "monthlyCount": 36,
+            "biAnnual": 696667,
+            "biAnnualCount": 6,
+            "structure": 2090000,
+            "possession": 4179986
+          },
+          "status": "available"
+        },
+        {
+          "id": "G3",
+          "floor": "Ground",
+          "type": "Shop",
+          "sqft": 380,
+          "ratePerSqft": 55000,
+          "price": 20900000,
+          "plan": {
+            "down": 4180000,
+            "monthly": 174167,
+            "monthlyCount": 36,
+            "biAnnual": 696667,
+            "biAnnualCount": 6,
+            "structure": 2090000,
+            "possession": 4179986
+          },
+          "status": "booked"
+        },
+        {
+          "id": "G4",
+          "floor": "Ground",
+          "type": "Shop",
+          "sqft": 440,
+          "ratePerSqft": 55000,
+          "price": 24200000,
+          "plan": {
+            "down": 4840000,
+            "monthly": 201667,
+            "monthlyCount": 36,
+            "biAnnual": 806667,
+            "biAnnualCount": 6,
+            "structure": 2420000,
+            "possession": 4839986
+          },
+          "status": "sold"
+        },
+        {
+          "id": "G5",
+          "floor": "Ground",
+          "type": "Shop",
+          "sqft": 399,
+          "ratePerSqft": 55000,
+          "price": 21945000,
+          "plan": {
+            "down": 4389000,
+            "monthly": 182875,
+            "monthlyCount": 36,
+            "biAnnual": 731500,
+            "biAnnualCount": 6,
+            "structure": 2194500,
+            "possession": 4389000
+          },
+          "status": "booked"
+        },
+        {
+          "id": "G6",
+          "floor": "Ground",
+          "type": "Shop",
+          "sqft": 410,
+          "ratePerSqft": 55000,
+          "price": 22550000,
+          "plan": {
+            "down": 4510000,
+            "monthly": 187917,
+            "monthlyCount": 36,
+            "biAnnual": 751667,
+            "biAnnualCount": 6,
+            "structure": 2255000,
+            "possession": 4509986
+          },
+          "status": "available"
+        },
+        {
+          "id": "G7",
+          "floor": "Ground",
+          "type": "Shop",
+          "sqft": 390,
+          "ratePerSqft": 55000,
+          "price": 21450000,
+          "plan": {
+            "down": 4290000,
+            "monthly": 178750,
+            "monthlyCount": 36,
+            "biAnnual": 715000,
+            "biAnnualCount": 6,
+            "structure": 2145000,
+            "possession": 4290000
+          },
+          "status": "available"
+        },
+        {
+          "id": "G8",
+          "floor": "Ground",
+          "type": "Shop",
+          "sqft": 305,
+          "ratePerSqft": 55000,
+          "price": 16775000,
+          "plan": {
+            "down": 3355000,
+            "monthly": 139792,
+            "monthlyCount": 36,
+            "biAnnual": 559167,
+            "biAnnualCount": 6,
+            "structure": 1677500,
+            "possession": 3354986
+          },
+          "status": "reserved"
+        },
+        {
+          "id": "G9",
+          "floor": "Ground",
+          "type": "Shop",
+          "sqft": 450,
+          "ratePerSqft": 50000,
+          "price": 22500000,
+          "plan": {
+            "down": 4500000,
+            "monthly": 187500,
+            "monthlyCount": 36,
+            "biAnnual": 750000,
+            "biAnnualCount": 6,
+            "structure": 2250000,
+            "possession": 4500000
+          },
+          "status": "available"
+        }
+      ]
+    },
+    "lowerGround": {
+      "ratePerSqft": 35000,
+      "units": [
+        {
+          "id": "L1",
+          "floor": "Lower Ground",
+          "type": "Shop",
+          "sqft": 180,
+          "ratePerSqft": 35000,
+          "price": 6300000,
+          "plan": {
+            "down": 1260000,
+            "monthly": 52500,
+            "monthlyCount": 36,
+            "biAnnual": 210000,
+            "biAnnualCount": 6,
+            "structure": 630000,
+            "possession": 1260000
+          },
+          "status": "available"
+        },
+        {
+          "id": "L2",
+          "floor": "Lower Ground",
+          "type": "Shop",
+          "sqft": 180,
+          "ratePerSqft": 35000,
+          "price": 6300000,
+          "plan": {
+            "down": 1260000,
+            "monthly": 52500,
+            "monthlyCount": 36,
+            "biAnnual": 210000,
+            "biAnnualCount": 6,
+            "structure": 630000,
+            "possession": 1260000
+          },
+          "status": "available"
+        },
+        {
+          "id": "L3",
+          "floor": "Lower Ground",
+          "type": "Shop",
+          "sqft": 180,
+          "ratePerSqft": 35000,
+          "price": 6300000,
+          "plan": {
+            "down": 1260000,
+            "monthly": 52500,
+            "monthlyCount": 36,
+            "biAnnual": 210000,
+            "biAnnualCount": 6,
+            "structure": 630000,
+            "possession": 1260000
+          },
+          "status": "reserved"
+        },
+        {
+          "id": "L4",
+          "floor": "Lower Ground",
+          "type": "Shop",
+          "sqft": 180,
+          "ratePerSqft": 35000,
+          "price": 6300000,
+          "plan": {
+            "down": 1260000,
+            "monthly": 52500,
+            "monthlyCount": 36,
+            "biAnnual": 210000,
+            "biAnnualCount": 6,
+            "structure": 630000,
+            "possession": 1260000
+          },
+          "status": "available"
+        },
+        {
+          "id": "L5",
+          "floor": "Lower Ground",
+          "type": "Shop",
+          "sqft": 300,
+          "ratePerSqft": 35000,
+          "price": 10500000,
+          "plan": {
+            "down": 2100000,
+            "monthly": 87500,
+            "monthlyCount": 36,
+            "biAnnual": 350000,
+            "biAnnualCount": 6,
+            "structure": 1050000,
+            "possession": 2100000
+          },
+          "status": "available"
+        },
+        {
+          "id": "L6",
+          "floor": "Lower Ground",
+          "type": "Shop",
+          "sqft": 360,
+          "ratePerSqft": 35000,
+          "price": 12600000,
+          "plan": {
+            "down": 2520000,
+            "monthly": 105000,
+            "monthlyCount": 36,
+            "biAnnual": 420000,
+            "biAnnualCount": 6,
+            "structure": 1260000,
+            "possession": 2520000
+          },
+          "status": "booked"
+        },
+        {
+          "id": "L7",
+          "floor": "Lower Ground",
+          "type": "Shop",
+          "sqft": 360,
+          "ratePerSqft": 35000,
+          "price": 12600000,
+          "plan": {
+            "down": 2520000,
+            "monthly": 105000,
+            "monthlyCount": 36,
+            "biAnnual": 420000,
+            "biAnnualCount": 6,
+            "structure": 1260000,
+            "possession": 2520000
+          },
+          "status": "available"
+        },
+        {
+          "id": "L8",
+          "floor": "Lower Ground",
+          "type": "Shop",
+          "sqft": 360,
+          "ratePerSqft": 35000,
+          "price": 12600000,
+          "plan": {
+            "down": 2520000,
+            "monthly": 105000,
+            "monthlyCount": 36,
+            "biAnnual": 420000,
+            "biAnnualCount": 6,
+            "structure": 1260000,
+            "possession": 2520000
+          },
+          "status": "available"
+        },
+        {
+          "id": "L9",
+          "floor": "Lower Ground",
+          "type": "Shop",
+          "sqft": 360,
+          "ratePerSqft": 35000,
+          "price": 12600000,
+          "plan": {
+            "down": 2520000,
+            "monthly": 105000,
+            "monthlyCount": 36,
+            "biAnnual": 420000,
+            "biAnnualCount": 6,
+            "structure": 1260000,
+            "possession": 2520000
+          },
+          "status": "available"
+        },
+        {
+          "id": "L10",
+          "floor": "Lower Ground",
+          "type": "Shop",
+          "sqft": 390,
+          "ratePerSqft": 35000,
+          "price": 13650000,
+          "plan": {
+            "down": 2730000,
+            "monthly": 113750,
+            "monthlyCount": 36,
+            "biAnnual": 455000,
+            "biAnnualCount": 6,
+            "structure": 1365000,
+            "possession": 2730000
+          },
+          "status": "booked"
+        },
+        {
+          "id": "L11",
+          "floor": "Lower Ground",
+          "type": "Shop",
+          "sqft": 320,
+          "ratePerSqft": 35000,
+          "price": 11200000,
+          "plan": {
+            "down": 2240000,
+            "monthly": 93333,
+            "monthlyCount": 36,
+            "biAnnual": 373333,
+            "biAnnualCount": 6,
+            "structure": 1120000,
+            "possession": 2240014
+          },
+          "status": "available"
+        },
+        {
+          "id": "L12",
+          "floor": "Lower Ground",
+          "type": "Shop",
+          "sqft": 320,
+          "ratePerSqft": 35000,
+          "price": 11200000,
+          "plan": {
+            "down": 2240000,
+            "monthly": 93333,
+            "monthlyCount": 36,
+            "biAnnual": 373333,
+            "biAnnualCount": 6,
+            "structure": 1120000,
+            "possession": 2240014
+          },
+          "status": "available"
+        },
+        {
+          "id": "L13",
+          "floor": "Lower Ground",
+          "type": "Shop",
+          "sqft": 340,
+          "ratePerSqft": 35000,
+          "price": 11900000,
+          "plan": {
+            "down": 2380000,
+            "monthly": 99167,
+            "monthlyCount": 36,
+            "biAnnual": 396667,
+            "biAnnualCount": 6,
+            "structure": 1190000,
+            "possession": 2379986
+          },
+          "status": "reserved"
+        },
+        {
+          "id": "LK1",
+          "floor": "Lower Ground",
+          "type": "Kiosk",
+          "sqft": 70,
+          "ratePerSqft": 35000,
+          "price": 2450000,
+          "plan": {
+            "down": 490000,
+            "monthly": 20417,
+            "monthlyCount": 36,
+            "biAnnual": 81667,
+            "biAnnualCount": 6,
+            "structure": 245000,
+            "possession": 489986
+          },
+          "status": "available"
+        }
+      ]
+    }
+  }
+}

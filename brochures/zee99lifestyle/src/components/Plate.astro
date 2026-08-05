@@ -1,0 +1,220 @@
+---
+/**
+ * A commercial floor plate with its live inventory drawn onto it.
+ *
+ * The brief is right that a table cannot show arcade frontage: you have to see
+ * which unit is where. So every shop gets a marker at its true position on the
+ * drawing, lit if it is available and progressively quieter as it is taken.
+ *
+ * On a phone the plate scrolls inside its own container at a larger intrinsic
+ * width, so the markers stay real touch targets instead of collapsing into
+ * each other. The page itself never scrolls sideways.
+ */
+import Drawing from './Drawing.astro';
+import { platePos, arcadeFronted } from '../lib/plate';
+import { rs, num, STATUS_LABEL, STATUS_MEANING, type ComUnit } from '../lib/inventory';
+
+interface Props { id: string; src: string; alt: string; units: ComUnit[]; caption: string; zoomLabel: string }
+const { id, src, alt, units, caption, zoomLabel } = Astro.props;
+
+const placed = units.filter((u) => platePos[u.id]);
+const missing = units.filter((u) => !platePos[u.id]);
+if (missing.length) {
+  throw new Error(`[Plate] no position for: ${missing.map((u) => u.id).join(', ')} — see src/lib/plate.ts`);
+}
+---
+
+<div class="plate2" data-plate={id}>
+  <div class="plate2__scroll">
+    <div class="plate2__inner">
+      <Drawing src={src} alt={alt} label={zoomLabel} sizes="(min-width: 1000px) 60vw, 660px" className="plate2__img" />
+      {placed.map((u) => (
+        <button
+          class="plate2__mk"
+          type="button"
+          data-mk={u.id}
+          data-status={u.status}
+          style={`--x:${platePos[u.id].x * 100}%;--y:${platePos[u.id].y * 100}%`}
+          aria-label={`${u.type} ${u.id}, ${num(u.sqft)} square feet, ${STATUS_LABEL[u.status]}`}
+        >
+          {/* The kiosk is marked K: stripping its prefix numerically would
+              label it "1" alongside shop L1 on the same plate. */}
+          <span class="plate2__pill num">{u.type === 'Kiosk' ? 'K' : u.id.replace(/^[GL]/, '')}</span>
+        </button>
+      ))}
+    </div>
+  </div>
+
+  <!-- Below 760px the plate is held at 660px so its markers stay tappable,
+       which puts nearly half of it off the screen. Panning works and always
+       has; nothing said so, and `scrollbar-width: thin` draws nothing at all
+       on Android. -->
+  {/* The Drawing's own ENLARGE chip sits at the bottom-right of a 660px plate,
+      which below 760px is off the screen at rest — so the one affordance that
+      makes the plan readable was invisible exactly where it is needed most. */}
+  <p class="plate2__pan label" aria-hidden="true">Slide the plan sideways · tap it to enlarge</p>
+
+  <!-- Detail panel. Populated on tap; shows the first available unit at rest so
+       the control is never a dead empty box. -->
+  <div class="plate2__detail" data-detail aria-live="polite">
+    <p class="plate2__hint label" data-hint>Tap a unit on the plan</p>
+    <dl class="plate2__dl" data-dl hidden>
+      <div><dt class="label">Unit</dt><dd class="num" data-f="id"></dd></div>
+      <div><dt class="label">Size</dt><dd class="num" data-f="sqft"></dd></div>
+      <div><dt class="label">Price</dt><dd class="num" data-f="price"></dd></div>
+      <div><dt class="label">Down</dt><dd class="num" data-f="down"></dd></div>
+      <div><dt class="label">Monthly</dt><dd class="num" data-f="monthly"></dd></div>
+      <div><dt class="label">Status</dt><dd data-f="status"></dd></div>
+    </dl>
+    <p class="plate2__flag" data-flag hidden></p>
+  </div>
+
+  <p class="cap plate2__cap"><span class="cap__s">{caption}</span></p>
+
+  <script
+    type="application/json"
+    data-plate-data
+    set:html={JSON.stringify(
+      Object.fromEntries(
+        placed.map((u) => [
+          u.id,
+          {
+            id: u.id,
+            sqft: `${num(u.sqft)} sq ft`,
+            rate: `${rs(u.ratePerSqft)}/sq ft`,
+            price: rs(u.price),
+            down: rs(u.plan.down),
+            monthly: `${rs(u.plan.monthly)} × ${u.plan.monthlyCount}`,
+            status: `${STATUS_LABEL[u.status]}, ${STATUS_MEANING[u.status].toLowerCase()}`,
+            arcade: arcadeFronted.has(u.id),
+            offRate: u.ratePerSqft,
+          },
+        ])
+      )
+    )}
+  />
+</div>
+
+<style>
+  .plate2__scroll {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+  .plate2__inner {
+    position: relative;
+    min-width: 660px;                /* markers stay tappable on a phone */
+  }
+  @media (min-width: 760px) { .plate2__inner { min-width: 0; } }
+
+  .plate2__mk {
+    position: absolute;
+    left: var(--x); top: var(--y);
+    transform: translate(-50%, -50%);
+    width: 46px; height: 46px;       /* real touch target */
+    display: grid; place-items: center;
+    cursor: pointer;
+  }
+  .plate2__pill {
+    display: grid; place-items: center;
+    min-width: 27px; height: 27px;
+    padding-inline: 6px;
+    font-size: 0.688rem; font-weight: 620;
+    border-radius: 999px;
+    border: 1px solid;
+    line-height: 1;
+    transition: transform var(--dur-fast) var(--ease-out),
+                box-shadow var(--dur-fast) var(--ease-out);
+  }
+
+  /* Four states told apart by *ground*, not by hairline colour.
+     They previously differed only in border hue at 1px: an oklch(62%) ring and
+     an oklch(74%) ring at eleven pixels across, on a photographic drawing, are
+     the same circle. Each state now changes something a reader can see without
+     comparing two markers side by side:
+       available  solid accent, dark figure
+       reserved   accent wash ground, full-strength ring
+       booked     flat grey ground, no ring
+       sold       struck through, ground and figure at their faintest          */
+  [data-status='available'] .plate2__pill {
+    background: var(--signal); border-color: var(--signal-deep); color: oklch(26% 0.045 70);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--signal) 26%, transparent);
+  }
+  [data-status='reserved'] .plate2__pill {
+    background: var(--signal-wash); border-color: var(--signal-deep); color: var(--ink);
+  }
+  [data-status='booked'] .plate2__pill {
+    background: var(--paper-edge); border-color: var(--paper-edge); color: var(--ink-2);
+  }
+  [data-status='sold'] .plate2__pill {
+    background: var(--paper); border-color: var(--ink-4); color: var(--ink-4);
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+  }
+  /* lifts every marker off the plan's own lettering */
+  [data-status] .plate2__pill { outline: 2px solid var(--paper); outline-offset: 0; }
+  [data-status='available'] .plate2__pill { outline-color: transparent; }
+
+  .plate2__mk:hover .plate2__pill,
+  .plate2__mk[data-on] .plate2__pill { transform: scale(1.18); }
+  .plate2__mk[data-on] .plate2__pill { box-shadow: 0 0 0 4px color-mix(in oklch, var(--ink) 16%, transparent); }
+
+  .plate2__pan { margin-top: var(--s3); color: var(--ink-3); }
+  /* Above 760px the plate fits and there is nothing to slide. */
+  @media (min-width: 760px) { .plate2__pan { display: none; } }
+
+  .plate2__detail {
+    margin-top: var(--s4);
+    border-top: 1px solid var(--line-strong);
+    padding-top: var(--s4);
+    min-height: 4.5rem;
+  }
+  .plate2__hint { color: var(--ink-3); }
+  .plate2__dl { display: flex; flex-wrap: wrap; gap: var(--s4) var(--s6); margin: 0; }
+  .plate2__dl div { display: grid; gap: 3px; }
+  .plate2__dl dd { margin: 0; font-family: var(--font-display); font-size: var(--t-small); font-weight: 520; color: var(--ink); }
+  .plate2__flag {
+    margin-top: var(--s3);
+    font-family: var(--font-display); font-size: var(--t-fine); color: var(--ink-2);
+    padding-left: var(--s3); border-left: 2px solid var(--signal-quiet);
+    max-width: 46ch;
+  }
+  .plate2__cap { margin-top: var(--s4); }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-plate]').forEach((root) => {
+    const data = JSON.parse(root.querySelector('[data-plate-data]')!.textContent!);
+    const dl = root.querySelector<HTMLElement>('[data-dl]')!;
+    const hint = root.querySelector<HTMLElement>('[data-hint]')!;
+    const flag = root.querySelector<HTMLElement>('[data-flag]')!;
+    const marks = [...root.querySelectorAll<HTMLElement>('[data-mk]')];
+
+    const select = (id: string) => {
+      const d = data[id];
+      if (!d) return;
+      marks.forEach((m) => m.toggleAttribute('data-on', m.dataset.mk === id));
+      hint.hidden = true;
+      dl.hidden = false;
+      for (const f of ['id', 'sqft', 'price', 'down', 'monthly', 'status']) {
+        dl.querySelector<HTMLElement>(`[data-f="${f}"]`)!.textContent = d[f];
+      }
+      // The same unit in the price list below lights up, so tapping the plan
+      // and reading the table are one action rather than two.
+      const scope = root.closest('article') ?? document;
+      scope.querySelectorAll<HTMLElement>('[data-unit-row]')
+        .forEach((r) => r.toggleAttribute('data-on', r.dataset.unitRow === id));
+      // Two things worth saying out loud rather than leaving to be noticed.
+      let note = '';
+      if (d.arcade) note = 'Opens directly onto the ten-foot arcade.';
+      if (d.id === 'G9') {
+        note = 'Priced below the other ground-floor shops: it sits inside the plate with no arcade frontage.';
+      }
+      flag.hidden = !note;
+      flag.textContent = note;
+    };
+
+    marks.forEach((m) => m.addEventListener('click', () => select(m.dataset.mk!)));
+  });
+</script>

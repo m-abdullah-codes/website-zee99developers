@@ -1,0 +1,517 @@
+---
+import '../styles/tokens.css';
+import '../styles/base.css';
+import { sections, jumpTo } from '../lib/content';
+import { asset, absoluteAsset } from '../lib/asset';
+
+interface Props { title: string; description: string }
+const { title, description } = Astro.props;
+
+/* The three faces, declared rather than imported from the packages so only the
+   latin subset ships and the two preloaded above are the only blocking fonts.
+
+   Built as a string because Astro does not evaluate expressions inside a
+   <style> tag, and these URLs have to carry the sub-path the brochure is served
+   from. Emitted with set:html below. */
+const LATIN = 'U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD';
+
+const face = (
+  family: string,
+  file: string,
+  format: string,
+  rest: string,
+) => `@font-face{font-family:'${family}';src:url('${asset(`/fonts/${file}`)}') format('${format}');${rest}font-display:swap;unicode-range:${LATIN};}`;
+
+const fontCss = [
+  face('Archivo Variable', 'archivo-latin-wght-normal.woff2', 'woff2-variations', 'font-weight:100 900;font-style:normal;'),
+  face('Newsreader', 'newsreader-latin-400-normal.woff2', 'woff2', 'font-weight:400;font-style:normal;'),
+  face('Newsreader', 'newsreader-latin-400-italic.woff2', 'woff2', 'font-weight:400;font-style:italic;'),
+].join('');
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#eef1f4" />
+    <meta name="robots" content="noindex" />
+    <!-- A brochure sent over WhatsApp. Not a page anyone should find by searching. -->
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <!-- Absolute: WhatsApp does not resolve a relative og:image when it unfurls
+         the link, and that card is the first thing the buyer sees. -->
+    <meta property="og:image" content={absoluteAsset('/img/exterior/render-3/1400.webp')} />
+    <meta property="og:url" content={absoluteAsset('/')} />
+
+    <link rel="preload" href={asset('/fonts/archivo-latin-wght-normal.woff2')} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={asset('/fonts/newsreader-latin-400-normal.woff2')} as="font" type="font/woff2" crossorigin />
+
+    <script is:inline>
+      // Marks scripting as available before first paint, so the image fade opts
+      // in rather than out and a no-JS reader is never left with blank frames.
+      document.documentElement.classList.add('js');
+    </script>
+
+    <style is:inline set:html={fontCss}></style>
+  </head>
+
+  <body>
+    <a class="skip" href="#proposition">Skip the cover</a>
+
+    <!-- ==================================================================
+         The finiteness device, and the way back.
+
+         A brochure tells you how much is left just by being held, and your hand
+         finds the plans again without being told how. A scrolling page takes
+         both away. So the rail does two jobs: a hairline with a tick per
+         section reports where you are, and one word — INDEX — opens the way to
+         anywhere. Still not a nav bar: nothing here is a menu until it is asked
+         to be, and it is the only persistent chrome on the page.
+         ================================================================== -->
+    <nav class="rail" aria-label="Position in document">
+      <div class="rail__bar" aria-hidden="true">
+        <span class="rail__fill" id="railFill"></span>
+      </div>
+      <ol class="rail__ticks">
+        {sections.map((s) => (
+          <li class="rail__tick" data-tick={s.id}>
+            <a href={`#${s.id}`} tabindex="-1" aria-hidden="true"><span></span></a>
+          </li>
+        ))}
+      </ol>
+      <p class="rail__count num" aria-live="polite">
+        <span id="railNo">00</span><span class="rail__of">/{sections[sections.length - 1].no}</span>
+      </p>
+      <button class="rail__open label" type="button" id="indexOpen" aria-haspopup="dialog">Index</button>
+      <p class="rail__name" id="railName">Cover</p>
+    </nav>
+
+    <dialog class="idx" id="indexDialog" aria-label="Index">
+      <div class="idx__inner">
+        <div class="idx__top">
+          <p class="label idx__eyebrow">Zee99 Lifestyle</p>
+          <button class="idx__close" type="button" id="indexClose" aria-label="Close the index">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+          </button>
+        </div>
+
+        <p class="label idx__hd">Go straight to</p>
+        <ul class="idx__quick">
+          {jumpTo.map((j) => (
+            <li><a href={j.href} data-idx-go>{j.label}</a></li>
+          ))}
+        </ul>
+
+        <p class="label idx__hd idx__hd--2">Everything, in order</p>
+        <ol class="idx__all">
+          {sections.map((s) => (
+            <li>
+              <a href={`#${s.id}`} data-idx-go data-idx-sec={s.id}>
+                <span class="num idx__no">{s.no}</span>
+                <span class="idx__nm">{s.name}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </dialog>
+
+    <main id="doc">
+      <slot />
+    </main>
+
+    <!-- One dialog serves every drawing on the page. The photographs have had
+         tap-to-enlarge since the gallery was built; the floor plans — the one
+         thing on the page a buyer genuinely needs to read — did not, and at
+         360px their lettering renders about four pixels tall. -->
+    <dialog class="zm" id="zoomDialog" aria-label="Enlarged drawing">
+      <div class="zm__inner">
+        <div class="zm__frame" id="zoomFrame">
+          <picture class="zm__pic">
+            <source id="zoomSource" type="image/avif" />
+            <img class="zm__img" id="zoomImg" alt="" />
+          </picture>
+        </div>
+        <div class="zm__bar">
+          <p class="zm__cap" id="zoomCap"></p>
+          <button class="zm__close" type="button" id="zoomClose" aria-label="Close">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+          </button>
+        </div>
+      </div>
+    </dialog>
+
+    <style>
+      .rail {
+        position: fixed;
+        z-index: 40;
+        pointer-events: none;
+        font-variant-numeric: tabular-nums;
+      }
+      /* The rail itself stays untouchable so it never eats a scroll or a tap
+         meant for the page under it. Only the two things that do something
+         take pointer events back. */
+      .rail__open, .rail__ticks a { pointer-events: auto; }
+
+      .rail__open {
+        color: var(--ink-3);
+        text-decoration: none;
+        border-bottom: 1px solid transparent;
+        transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+      }
+      .rail__open:hover { color: var(--ink); border-bottom-color: var(--ink-4); }
+
+      /* --- phone: a hairline across the top, plus a small count ---------- */
+      @media (max-width: 899px) {
+        .rail {
+          top: 0; left: 0; right: 0;
+          display: grid;
+          grid-template-columns: 1fr auto;
+          align-items: center;
+          /* Opaque, because it is fixed over scrolling content. Transparent, the
+             27px bar printed its hairline and its counter straight through
+             whatever passed under it — measured at 11.6% of scroll positions,
+             striking through prices and availability counts. */
+          background: var(--paper);
+          padding-bottom: 2px;
+        }
+        .rail__bar {
+          grid-column: 1 / -1;
+          height: 2px;
+          background: color-mix(in oklch, var(--line) 55%, transparent);
+        }
+        .rail__fill {
+          display: block; height: 100%; width: var(--p, 0%);
+          background: var(--ink-3);
+          transition: width 120ms linear;
+        }
+        .rail__ticks { display: none; }
+        .rail__count {
+          grid-column: 2;
+          margin: var(--s2) var(--s3) 0 0;
+          font-family: var(--font-display);
+          font-size: var(--t-micro);
+          font-weight: 600;
+          letter-spacing: var(--tr-label);
+          color: var(--ink-3);
+        }
+        /* A real 44px target, pulled back out of the flow so the rail stays
+           the ~20px hairline it was. The button paints nothing but the word;
+           the rest of its box is transparent and overlays the scroll. */
+        .rail__open {
+          grid-column: 3;
+          min-width: 44px; height: 44px;
+          margin: var(--s2) var(--gutter) -26px var(--s4);
+          display: flex; align-items: flex-start; justify-content: flex-end;
+        }
+        .rail { grid-template-columns: 1fr auto auto; }
+        .rail__name { display: none; }
+      }
+
+      /* --- desktop: a vertical rail on the right edge -------------------- */
+      @media (min-width: 900px) {
+        .rail {
+          top: 50%; right: clamp(1rem, 2.2vw, 2rem);
+          transform: translateY(-50%);
+          display: grid;
+          justify-items: end;
+          gap: var(--s3);
+        }
+        .rail__bar { display: none; }
+        /* Each tick is a link to its section, so the rail reports position and
+           also returns you to it. The pitch is 24px because that is the size a
+           pointer target has to be: at the old 7px the fourteen hit areas
+           overlapped, and a click meant for §07 landed on §06. */
+        .rail__ticks {
+          list-style: none; margin: 0; padding: 0;
+          display: grid; gap: 0; justify-items: end;
+        }
+        .rail__ticks a {
+          display: flex; align-items: center; justify-content: flex-end;
+          height: 24px; padding-left: 24px;
+        }
+        .rail__tick span {
+          display: block;
+          width: 9px; height: 1px;
+          background: var(--line-strong);
+          transition: width var(--dur-mid) var(--ease-out),
+                      background-color var(--dur-mid) var(--ease-out);
+        }
+        .rail__ticks a:hover span { width: 22px; background: var(--ink-2); }
+        .rail__tick[data-on] span { width: 22px; background: var(--ink); }
+        .rail__tick[data-seen] span { background: var(--ink-4); }
+
+        .rail__open {
+          margin-top: var(--s1);
+          min-height: 44px; min-width: 44px;
+          display: flex; align-items: center; justify-content: flex-end;
+        }
+
+        .rail__count {
+          font-family: var(--font-display);
+          font-size: var(--t-micro);
+          font-weight: 620;
+          letter-spacing: var(--tr-label);
+          color: var(--ink);
+          margin-top: var(--s2);
+        }
+        .rail__of { color: var(--ink-4); }
+        .rail__name {
+          font-family: var(--font-display);
+          font-size: 0.625rem;
+          letter-spacing: var(--tr-label);
+          text-transform: uppercase;
+          color: var(--ink-3);
+          writing-mode: vertical-rl;
+          max-height: 11rem;
+          text-align: right;
+        }
+      }
+
+      /* Over the cover the paper bar would cut the full-bleed render, so it
+         becomes a scrim instead — still opaque enough to separate the counter
+         from whatever is behind it. */
+      @media (max-width: 899px) {
+        .rail[data-over='deep'] { background: color-mix(in oklch, black 42%, transparent); }
+      }
+
+      /* Over the deep panel the rail has to invert or it disappears. */
+      .rail[data-over='deep'] {
+        --line-strong: oklch(46% 0.028 262);
+        --ink: var(--on-deep);
+        --ink-3: var(--on-deep-3);
+        --ink-4: oklch(50% 0.026 260);
+      }
+      .rail[data-over='deep'] .rail__count { color: var(--on-deep); }
+      .rail[data-over='deep'] .rail__open { color: var(--on-deep-2); }
+      .rail[data-over='deep'] .rail__fill { background: var(--on-deep-2); }
+
+      /* --- the index -----------------------------------------------------
+         A sheet, not a menu bar: it is absent until asked for, and it leaves
+         nothing behind. Set like the contents page of the brochure it is. */
+      .idx {
+        border: 0; padding: 0;
+        width: min(30rem, 100vw); max-width: 100vw;
+        max-height: 100dvh; height: 100dvh;
+        margin: 0 0 0 auto;
+        background: var(--paper);
+        color: var(--ink);
+      }
+      .idx::backdrop { background: oklch(23% 0.021 258 / 0.42); }
+      .idx__inner {
+        height: 100%; overflow-y: auto;
+        padding: var(--s5) var(--gutter) max(var(--s8), env(safe-area-inset-bottom));
+      }
+      .idx__top {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: var(--s4);
+        border-bottom: 1px solid var(--line-strong);
+        padding-bottom: var(--s3);
+      }
+      .idx__eyebrow { color: var(--ink-2); }
+      .idx__close {
+        width: 44px; height: 44px; margin-right: -10px;
+        display: grid; place-items: center; color: var(--ink-2);
+      }
+      .idx__close:hover { color: var(--ink); }
+
+      .idx__hd { margin-top: var(--s6); color: var(--ink-3); }
+      .idx__hd--2 { margin-top: var(--s8); }
+
+      .idx__quick { list-style: none; margin: var(--s3) 0 0; padding: 0; }
+      .idx__quick a {
+        display: flex; align-items: center;
+        min-height: 52px;
+        border-bottom: 1px solid var(--line);
+        font-family: var(--font-display);
+        font-size: var(--t-lead); font-weight: 450;
+        letter-spacing: var(--tr-tight);
+        text-decoration: none;
+      }
+      .idx__quick a:hover { color: var(--ink-2); }
+
+      .idx__all { list-style: none; margin: var(--s3) 0 0; padding: 0; }
+      .idx__all a {
+        display: flex; align-items: baseline; gap: var(--s4);
+        min-height: 44px; padding-block: var(--s2);
+        border-bottom: 1px solid var(--line-soft);
+        text-decoration: none;
+      }
+      .idx__no { font-size: var(--t-micro); font-weight: 620; letter-spacing: var(--tr-micro); color: var(--ink-4); }
+      .idx__nm { font-family: var(--font-display); font-size: var(--t-small); color: var(--ink-2); }
+      .idx__all a:hover .idx__nm { color: var(--ink); }
+      .idx__all a[data-here] .idx__no { color: var(--signal-deep); }
+      .idx__all a[data-here] .idx__nm { color: var(--ink); font-weight: 540; }
+
+      /* --- the drawing zoom ---------------------------------------------- */
+      .zm {
+        border: 0; padding: 0;
+        width: 100vw; max-width: 100vw;
+        height: 100dvh; max-height: 100dvh;
+        background: oklch(16% 0.018 260);
+        color: var(--on-deep);
+      }
+      .zm::backdrop { background: oklch(12% 0.015 260 / 0.94); }
+      .zm__inner { height: 100%; display: grid; grid-template-rows: 1fr auto; }
+      /* The frame scrolls in both axes: a 1:1 floor plate blown up to
+         readable lettering is bigger than a phone, and panning it is the
+         point. `touch-action: pinch-zoom` keeps the browser's own zoom. */
+      .zm__frame {
+        min-height: 0; overflow: auto;
+        overscroll-behavior: contain;
+        display: grid; place-items: center;
+        touch-action: pan-x pan-y pinch-zoom;
+      }
+      .zm__pic { display: block; margin: auto; }
+      .zm__img { display: block; width: auto; max-width: none; height: auto; background: var(--paper); }
+      .zm__bar {
+        display: flex; align-items: center; justify-content: space-between; gap: var(--s4);
+        padding: var(--s3) var(--gutter) max(var(--s3), env(safe-area-inset-bottom));
+        border-top: 1px solid oklch(30% 0.02 260);
+      }
+      .zm__cap { font-family: var(--font-display); font-size: var(--t-fine); color: var(--on-deep-2); }
+      .zm__close {
+        width: 48px; height: 48px; flex: none;
+        display: grid; place-items: center;
+        border: 1px solid oklch(34% 0.02 260); color: var(--on-deep);
+      }
+      .zm__close:hover { background: oklch(26% 0.022 260); }
+    </style>
+
+    <script>
+      // One listener reveals every image on the page. `load` does not bubble,
+      // so this captures. Replaces a per-instance handler on 45 <img> tags.
+      const reveal = (el: Element | null) => {
+        const pic = el?.closest?.('.pic') as HTMLElement | null;
+        if (pic) pic.dataset.loaded = '1';
+      };
+      document.addEventListener('load', (e) => reveal(e.target as Element), true);
+      // Images already complete at parse time, or restored from bfcache, never
+      // fire load — sweep those.
+      const sweep = () =>
+        document.querySelectorAll<HTMLImageElement>('.pic:not([data-loaded]) img')
+          .forEach((i) => { if (i.complete && i.naturalWidth > 0) reveal(i); });
+      addEventListener('pageshow', sweep);
+      sweep();
+
+      // Position reporting only. No scroll-driven animation of content lives
+      // here — the page's single orchestrated moment is the payment timeline,
+      // and everything else stays still on purpose.
+      const rail = document.querySelector<HTMLElement>('.rail')!;
+      const fill = document.getElementById('railFill')!;
+      const noEl = document.getElementById('railNo')!;
+      const nameEl = document.getElementById('railName');
+      const secs = [...document.querySelectorAll<HTMLElement>('[data-section]')];
+      const ticks = new Map(
+        [...document.querySelectorAll<HTMLElement>('[data-tick]')].map((t) => [t.dataset.tick!, t])
+      );
+
+      let raf = 0;
+      let currentId = secs[0]?.dataset.section ?? '';
+      const update = () => {
+        raf = 0;
+        const y = window.scrollY;
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        fill.style.setProperty('--p', `${max > 0 ? Math.min(100, (y / max) * 100) : 0}%`);
+
+        // the section occupying the middle of the viewport is "current"
+        const mid = y + window.innerHeight * 0.5;
+        let current = secs[0];
+        for (const s of secs) if (s.offsetTop <= mid) current = s;
+        if (!current) return;
+
+        const { section: id, no, name } = current.dataset;
+        currentId = id!;
+        if (noEl.textContent !== no) {
+          noEl.textContent = no!;
+          if (nameEl) nameEl.textContent = name!;
+          let seen = true;
+          for (const [tid, el] of ticks) {
+            el.toggleAttribute('data-on', tid === id);
+            el.toggleAttribute('data-seen', seen && tid !== id);
+            if (tid === id) seen = false;
+          }
+        }
+        rail.dataset.over = current.dataset.tone === 'deep' ? 'deep' : 'light';
+      };
+
+      const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+      addEventListener('scroll', onScroll, { passive: true });
+      addEventListener('resize', onScroll, { passive: true });
+      update();
+
+      // --- the index ------------------------------------------------------
+      const idx = document.getElementById('indexDialog') as HTMLDialogElement | null;
+      if (idx) {
+        const openBtn = document.getElementById('indexOpen')!;
+        const links = [...idx.querySelectorAll<HTMLAnchorElement>('[data-idx-sec]')];
+        openBtn.addEventListener('click', () => {
+          // mark where the reader currently is, so the sheet answers
+          // "where am I" as well as "where can I go"
+          links.forEach((a) => a.toggleAttribute('data-here', a.dataset.idxSec === currentId));
+          idx.showModal();
+        });
+        document.getElementById('indexClose')!.addEventListener('click', () => idx.close());
+        idx.addEventListener('click', (e) => { if (e.target === idx) idx.close(); });
+        // Closing before the jump: a modal dialog traps focus, and Chrome's
+        // smooth scroll will not run while it is open.
+        idx.querySelectorAll<HTMLAnchorElement>('[data-idx-go]').forEach((a) =>
+          a.addEventListener('click', (e) => {
+            e.preventDefault();
+            idx.close();
+            const t = document.querySelector(a.getAttribute('href')!);
+            t?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+            history.replaceState(null, '', a.getAttribute('href')!);
+          })
+        );
+      }
+
+      // --- the drawing zoom -------------------------------------------------
+      // Delegated: every [data-zoom] figure on the page shares one dialog, so
+      // adding a drawing costs no script.
+      const zm = document.getElementById('zoomDialog') as HTMLDialogElement | null;
+      if (zm) {
+        const zImg = document.getElementById('zoomImg') as HTMLImageElement;
+        const zSrc = document.getElementById('zoomSource') as HTMLSourceElement;
+        const zCap = document.getElementById('zoomCap')!;
+        const frame = document.getElementById('zoomFrame')!;
+        let opener: HTMLElement | null = null;
+
+        document.addEventListener('click', (e) => {
+          const btn = (e.target as Element)?.closest?.('[data-zoom]') as HTMLElement | null;
+          if (!btn) return;
+          const pic = btn.querySelector('img') as HTMLImageElement | null;
+          const src = btn.querySelector('source') as HTMLSourceElement | null;
+          if (!pic) return;
+          opener = btn;
+          zSrc.srcset = src?.getAttribute('srcset') || '';
+          zSrc.sizes = '250vw';
+          zImg.srcset = pic.getAttribute('srcset') || '';
+          zImg.sizes = '250vw';
+          zImg.src = pic.src;
+          zImg.alt = pic.alt;
+          zCap.textContent = btn.dataset.zoom || '';
+          zm.showModal();
+          // Open at a width the lettering can be read at, centred, rather than
+          // fitted to the screen — fitting it is exactly the state the reader
+          // is trying to escape.
+          requestAnimationFrame(() => {
+            const w = Math.max(frame.clientWidth * 2.1, 900);
+            zImg.style.width = `${w}px`;
+            frame.scrollLeft = (frame.scrollWidth - frame.clientWidth) / 2;
+            frame.scrollTop = (frame.scrollHeight - frame.clientHeight) / 2;
+          });
+        });
+        const closeZ = () => zm.close();
+        document.getElementById('zoomClose')!.addEventListener('click', closeZ);
+        zm.addEventListener('close', () => { opener?.focus(); opener = null; });
+        zm.addEventListener('click', (e) => { if (e.target === zm) closeZ(); });
+      }
+    </script>
+  </body>
+</html>

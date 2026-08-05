@@ -1,0 +1,58 @@
+---
+/**
+ * Zee99 Lifestyle — a digital brochure.
+ *
+ * One page, two covers, twelve sections between them. Read top to bottom; there
+ * is deliberately no navigation, because a brochure does not have one.
+ *
+ * Order note 1: the homes come third. This is sent over WhatsApp to someone who
+ * already knows the price and has already said they are interested — they are
+ * here for the thing, not for six screens of preamble about the neighbourhood.
+ * The address, the specification and the floor plate are all evidence, and
+ * evidence reads better after the thing it supports than in front of it.
+ *
+ * Order note 2: the builder sits *after* the numbers. The brief offers either and
+ * calls both defensible; after is right because doubt peaks the moment the price
+ * is seen, and the run that follows — record, what is left, the site itself —
+ * answers a buyer's questions in the order they actually occur.
+ */
+import Layout from '../layouts/Layout.astro';
+import Opening from '../components/Opening.astro';
+import Proposition from '../components/Proposition.astro';
+import Address from '../components/Address.astro';
+import Spec from '../components/Spec.astro';
+import TypicalFloor from '../components/TypicalFloor.astro';
+import Homes from '../components/Homes.astro';
+import Building from '../components/Building.astro';
+import Commercial from '../components/Commercial.astro';
+import Numbers from '../components/Numbers.astro';
+import Builder from '../components/Builder.astro';
+import LiveInventory from '../components/LiveInventory.astro';
+import SiteProgress from '../components/SiteProgress.astro';
+import Questions from '../components/Questions.astro';
+import Closing from '../components/Closing.astro';
+
+import { resUnits, comUnits, resRate, possessionMonths, num } from '../lib/inventory';
+
+const description =
+  `${resUnits.length} apartments and ${comUnits.length} commercial units on a corner plot facing the ` +
+  `Safari Sports Complex, Bahria Town Lahore Sector B. Rs ${num(resRate)} per square foot, ` +
+  `${possessionMonths} months to possession.`;
+---
+
+<Layout title="Zee99 Lifestyle · Bahria Town Lahore, Sector B" description={description}>
+  <Opening />
+  <Proposition />
+  <Homes />
+  <TypicalFloor />
+  <Spec />
+  <Address />
+  <Building />
+  <Commercial />
+  <Numbers />
+  <Builder />
+  <LiveInventory />
+  <SiteProgress />
+  <Questions />
+  <Closing />
+</Layout>

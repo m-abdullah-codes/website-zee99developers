@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "pull": "node scripts/pull-content.mjs",
-    "build": "next build",
+    "build:brochure": "node scripts/build-brochure.mjs",
+    "build": "npm run build:brochure && next build",
     "start": "next start",
     "lint": "eslint"
   },

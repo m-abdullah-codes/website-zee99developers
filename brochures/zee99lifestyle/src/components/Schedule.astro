@@ -1,0 +1,155 @@
+---
+/**
+ * One apartment type's payment schedule, beside its own plan.
+ *
+ * It used to live only in §08, nineteen screens below the plan it belongs to,
+ * so a reader looking at the studio and wondering what it costs a month had to
+ * scroll most of the document and find a tab strip.
+ *
+ * Folded shut, though. Printed open on all three types it put fifteen rupee
+ * figures into the homes section, and a page that answers a question nobody
+ * asked yet reads as a mess of numbers rather than as an answer. The summary
+ * carries the two figures anyone actually wants at a glance — the total and the
+ * monthly — and the five components that reach the total are one tap away.
+ *
+ * Native <details>: correct with scripting off, keyboard-operable for free.
+ */
+import { rs, num, resRate, resTypes, possessionMonths, planMonths, keysBeforeFinalMonths } from '../lib/inventory';
+
+interface Props { type: (typeof resTypes)[number] }
+const { type: t } = Astro.props;
+const p = t.plan;
+
+const rows = [
+  { k: 'Down payment', v: rs(p.down), n: 'On booking' },
+  { k: `Monthly × ${p.monthlyCount}`, v: rs(p.monthly), n: `${rs(p.monthly * p.monthlyCount)} in all` },
+  { k: 'On structure', v: rs(p.structure), n: 'Month not defined' },
+  { k: `Half-yearly × ${p.halfYearlyCount}`, v: rs(p.halfYearly), n: `${rs(p.halfYearly * p.halfYearlyCount)} in all` },
+  { k: 'At possession', v: rs(p.possession), n: `Month ${possessionMonths}` },
+];
+---
+
+<details class="sch">
+  <summary class="sch__s">
+    <span class="sch__lead">
+      <span class="label sch__h">Payment plan</span>
+      <span class="sch__two num">
+        <b>{rs(p.monthly)}</b> a month for {p.monthlyCount}
+      </span>
+      <span class="sch__tot num">{rs(t.price)} in total · {rs(p.down)} down</span>
+    </span>
+    <span class="sch__i" aria-hidden="true"></span>
+  </summary>
+
+  <div class="sch__open">
+    <dl class="sch__list">
+      {rows.map((r) => (
+        <div class="sch__row">
+          <dt class="sch__k">{r.k}</dt>
+          <dd class="sch__v num">{r.v}</dd>
+          <dd class="sch__n">{r.n}</dd>
+        </div>
+      ))}
+      <div class="sch__row sch__row--tot">
+        <dt class="sch__k">Total</dt>
+        <dd class="sch__v num">{rs(t.price)}</dd>
+        <dd class="sch__n num">{num(t.sqft)} sq ft at {rs(resRate)}/sq ft</dd>
+      </div>
+    </dl>
+
+    <p class="sch__keys">
+      Keys at month {possessionMonths}. The plan runs to {planMonths}, so the last
+      {' '}{keysBeforeFinalMonths} installments are paid in a flat you already live in.
+    </p>
+
+    <a class="sch__go" href="#tl-plot" data-plan-link={t.key}>
+      See the {planMonths} months drawn
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M4 12h15m-6-7 7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+    </a>
+  </div>
+</details>
+
+<style>
+  .sch { border-top: 1px solid var(--line-strong); }
+
+  .sch__s {
+    display: flex; align-items: flex-start; gap: var(--s4);
+    padding: var(--s4) 0;
+    min-height: 44px;
+    cursor: pointer;
+    list-style: none;
+  }
+  .sch__s::-webkit-details-marker { display: none; }
+  .sch__lead { display: grid; gap: 3px; flex: 1; }
+  .sch__h { color: var(--ink-3); }
+
+  /* The monthly figure is the one anyone asks for first, so it is the one set
+     large enough to read without opening anything. */
+  .sch__two {
+    font-size: var(--t-h3); font-weight: 380; letter-spacing: -0.025em;
+    color: var(--ink); line-height: 1.1;
+  }
+  .sch__two b { font-weight: 420; }
+  .sch__tot { font-size: var(--t-fine); color: var(--ink-3); }
+
+  .sch__i { flex: none; width: 13px; height: 13px; position: relative; margin-top: 0.9em; }
+  .sch__i::before, .sch__i::after {
+    content: ''; position: absolute; background: var(--ink-3);
+    transition: transform var(--dur-mid) var(--ease-out), opacity var(--dur-mid) var(--ease-out);
+  }
+  .sch__i::before { inset: 6px 0 6px 0; height: 1px; }
+  .sch__i::after { inset: 0 6px 0 6px; width: 1px; }
+  .sch[open] .sch__i::after { transform: scaleY(0); opacity: 0; }
+
+  .sch__open { padding-bottom: var(--s5); }
+
+  .sch__list { margin: 0; display: grid; border-top: 1px solid var(--line); }
+  .sch__row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: 'k v' 'n v';
+    column-gap: var(--s4);
+    padding: var(--s3) 0;
+    border-bottom: 1px solid var(--line);
+    align-items: baseline;
+  }
+  .sch__k {
+    grid-area: k;
+    font-family: var(--font-display); font-size: var(--t-small); font-weight: 500;
+    color: var(--ink);
+  }
+  .sch__v {
+    grid-area: v; margin: 0;
+    font-size: var(--t-small); font-weight: 520; color: var(--ink);
+    text-align: right; white-space: nowrap;
+  }
+  .sch__n {
+    grid-area: n; margin: 0;
+    font-family: var(--font-display); font-size: var(--t-fine); color: var(--ink-3);
+  }
+
+  /* The total is the only line that changes weight — it is the number the
+     reader came for, and the five above it are how it is reached. */
+  .sch__row--tot { border-bottom: 0; border-top: 1px solid var(--line-strong); padding-top: var(--s4); }
+  .sch__row--tot .sch__k { font-size: var(--t-body); font-weight: 540; }
+  .sch__row--tot .sch__v { font-size: var(--t-h3); font-weight: 400; letter-spacing: -0.025em; }
+
+  .sch__keys {
+    margin-top: var(--s4);
+    padding-left: var(--s3);
+    border-left: 2px solid var(--signal-quiet);
+    font-family: var(--font-display); font-size: var(--t-fine); line-height: 1.5;
+    color: var(--ink-2);
+  }
+
+  .sch__go {
+    margin-top: var(--s3);
+    display: inline-flex; align-items: center; gap: var(--s2);
+    min-height: 44px;
+    font-family: var(--font-display); font-size: var(--t-fine);
+    letter-spacing: var(--tr-label); text-transform: uppercase;
+    color: var(--ink-2); text-decoration: none;
+  }
+  .sch__go:hover { color: var(--ink); }
+  .sch__go svg { flex: none; }
+</style>

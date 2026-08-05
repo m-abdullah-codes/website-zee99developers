@@ -1,0 +1,125 @@
+---
+/**
+ * 02 — the address.
+ *
+ * The bird's-eye render is the primary map: it is cleaner than any embed,
+ * roads are drawn at their real widths, and it carries its own numbered key.
+ * A live map is offered as a small secondary link for anyone who wants to
+ * navigate — deliberately not an iframe, which would cost ~900KB and hand
+ * Google a tracking surface on a page that has no analytics.
+ */
+import Drawing from './Drawing.astro';
+import { address } from '../lib/content';
+---
+
+<section id="address" data-section="address" data-no="05" data-name="The address" data-tone="sunk" class="section addr">
+  <div class="wrap">
+    <header class="shead">
+      <div class="shead__meta">
+        <span class="shead__no">05</span>
+        <span class="shead__name">The address</span>
+      </div>
+      <h2 class="t-h2 addr__h" id="address-h">{address.head}</h2>
+      <p class="t-lead prose">{address.body[0]}</p>
+    </header>
+  </div>
+
+  <div class="addr__grid wrap">
+    <figure class="addr__map">
+      <Drawing
+        src="map/zee99-lifestyle-bird-eye-view-jpg"
+        alt={address.mapAlt}
+        label="Sector B from above, the numbered key"
+        sizes="(min-width: 1000px) 62vw, 100vw"
+        fit="cover"
+      />
+      <figcaption class="addr__cap">
+        <span class="cap">
+          <span class="cap__t">{address.mapCaption}</span>
+          <span class="cap__s">Numbered as drawn on the render</span>
+        </span>
+        <!-- A secondary control, not an embed: a Maps iframe would cost about
+             900KB and hand a third party a tracking surface on a page with no
+             analytics of its own. -->
+        <a
+          class="addr__maps"
+          href="https://www.google.com/maps/search/?api=1&query=Bahria+Town+Lahore+Sector+B+Safari+Sports+Complex"
+          target="_blank"
+          rel="noopener noreferrer"
+        >Open in Maps</a>
+      </figcaption>
+    </figure>
+
+    <div class="addr__side">
+      <ol class="keys">
+        {address.mapKeys.map((k) => (
+          <li class="key">
+            <span class="key__n num">{k.n}</span>
+            <span class="key__l">{k.label}</span>
+          </li>
+        ))}
+      </ol>
+
+      <div class="near">
+        <h3 class="label near__h">Within a few blocks</h3>
+        <ul class="near__list">
+          {address.near.map((n) => (
+            <li class="near__item">
+              <span class="near__name">{n.name}</span>
+              {n.note && <span class="near__note">{n.note}</span>}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .addr__h { max-width: 16ch; }
+
+  .addr__grid { display: grid; gap: var(--s8); margin-top: var(--s6); }
+  @media (min-width: 1000px) {
+    .addr__grid { grid-template-columns: minmax(0, 1.55fr) minmax(15rem, 0.85fr); gap: var(--s8); align-items: start; }
+  }
+
+  .keys { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s2); }
+  .key { display: grid; grid-template-columns: 1.75rem 1fr; align-items: baseline; gap: var(--s3); }
+  .key__n {
+    font-size: var(--t-fine); font-weight: 620; color: var(--ink);
+    border: 1px solid var(--line-strong); border-radius: 50%;
+    width: 1.5rem; height: 1.5rem; display: grid; place-items: center;
+    line-height: 1;
+  }
+  .key__l { font-family: var(--font-display); font-size: var(--t-small); color: var(--ink-2); }
+
+  .near { margin-top: var(--s8); border-top: 1px solid var(--line-strong); padding-top: var(--s4); }
+  .near__h { display: block; margin-bottom: var(--s4); }
+  .near__list { list-style: none; margin: 0; padding: 0; display: grid; }
+  .near__item {
+    padding: var(--s3) 0;
+    border-bottom: 1px solid var(--line);
+    display: grid; gap: 1px;
+  }
+  .near__name { font-family: var(--font-display); font-size: var(--t-small); font-weight: 500; color: var(--ink); }
+  .near__note { font-family: var(--font-display); font-size: var(--t-fine); color: var(--ink-3); line-height: 1.4; }
+
+  .addr__cap {
+    margin-top: var(--s4);
+    display: flex; flex-wrap: wrap; align-items: flex-end;
+    justify-content: space-between; gap: var(--s4);
+  }
+  .addr__cap .cap { margin-top: 0; }
+  /* Was the only button-shaped thing in the document, and it sent the reader
+     off the page. A link, set like every other link here. */
+  .addr__maps {
+    display: inline-flex; align-items: center;
+    min-height: 44px;
+    font-family: var(--font-display); font-size: var(--t-fine);
+    letter-spacing: var(--tr-label); text-transform: uppercase;
+    color: var(--ink-3); text-decoration: none;
+    border-bottom: 1px solid var(--line);
+    transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  }
+  .addr__maps:hover { border-bottom-color: var(--ink-4); color: var(--ink); }
+</style>

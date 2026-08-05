@@ -20,6 +20,16 @@
 # build-time content pulled from D1 (public repo: content lives in D1, not git)
 /content/
 
+# e-brochure build output, written into public/ by scripts/build-brochure.mjs
+# so next build copies it into out/. Generated on every build, in CI too.
+/public/zee99lifestyle-e-brochure/
+
+# 640MB of raw camera/render source for the Zee99 Lifestyle brochure, dropped
+# here by hand. It is a duplicate of brochures/zee99lifestyle/assets/ (which is
+# also ignored) and is *not* a web asset — nothing links to it, and leaving it
+# under public/ would push all of it into out/ and up to Cloudflare.
+/public/images/zee99 lifestyle/
+
 # client handover document (sales collateral — not part of the public codebase)
 /handover/
 

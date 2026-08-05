@@ -1,0 +1,224 @@
+---
+/**
+ * 10 — what is left.
+ *
+ * Residential reads as a floor-by-floor stack, top floor first, because that is
+ * how a building is actually pictured. Every count here is derived in
+ * src/lib/inventory.ts from data/inventory.json; nothing on this page is typed.
+ * Flip a status in the data file and this section tells the truth next build.
+ *
+ * Commercial availability lives on the floor plates in section 07, where a
+ * buyer can see which unit is where. Repeating those two large drawings here
+ * would cost about 400KB to say something already said better.
+ */
+import { inventoryCopy as c } from '../lib/content';
+import {
+  resByFloor, resCount, comCount, resTypes, ground, lower,
+  STATUS_LABEL, STATUS_MEANING, STATUS_ORDER, meta, num,
+} from '../lib/inventory';
+
+const labelOf = (t: string) => resTypes.find((x) => x.key === t)!.label;
+const updated = new Date(meta.updated).toLocaleDateString('en-GB', {
+  day: 'numeric', month: 'long', year: 'numeric',
+});
+---
+
+<section id="inventory" data-section="inventory" data-no="10" data-name="What is left" data-tone="sunk" class="section inv">
+  <div class="wrap">
+    <header class="shead">
+      <div class="shead__meta">
+        <span class="shead__no">10</span>
+        <span class="shead__name">What is left</span>
+      </div>
+      <h2 class="t-h2" id="inventory-h">{c.head}</h2>
+      <p class="t-lead prose">{c.lead}</p>
+    </header>
+
+    <p class="inv__updated label">{c.updatedPrefix} {updated}</p>
+
+    <!-- The four states, and what each actually means. Publishing the
+         difference between a token and a full payment is unusually candid.
+         The split is shown under each total so the combined figure is never
+         mistaken for the apartment count alone. -->
+    <h3 class="inv__h label">All {resCount.total + comCount.total} units</h3>
+    <dl class="states">
+      {STATUS_ORDER.map((s) => (
+        <div class="state" data-status={s}>
+          <dt class="state__l"><i></i>{STATUS_LABEL[s]}</dt>
+          <dd class="state__m">{STATUS_MEANING[s]}</dd>
+          <dd class="state__n num">{resCount[s] + comCount[s]}</dd>
+          <dd class="state__split num">{resCount[s]} apartments · {comCount[s]} commercial</dd>
+        </div>
+      ))}
+    </dl>
+
+    <h3 class="inv__h label">{c.resLabel}</h3>
+    {/* Forty-eight bordered cards, two across, ran 3,947px on a phone — five
+        screens of identical rectangles to answer a question the four totals
+        above already answer. The floor is the unit of interest and the unit
+        number is the whole label, so each floor is one row of eight marks: the
+        same information in a fifth of the height, and scannable in a glance
+        rather than a scroll. What the cards added — type and area — is fixed by
+        unit number on every floor, and is stated once under the stack. */}
+    <div class="stack">
+      {resByFloor.map((f) => (
+        <div class="stack__floor">
+          <div class="stack__meta">
+            <span class="stack__no num">{f.floor}</span>
+            <span class="stack__lab label">Floor</span>
+            <span class="stack__avail num" data-none={f.available === 0 ? '' : undefined}>
+              {f.available === 0 ? 'Fully taken' : `${f.available} available`}
+            </span>
+          </div>
+          <ol class="stack__units">
+            {f.units.map((u) => (
+              <li
+                class="unit num"
+                data-status={u.status}
+                title={`${u.id} · ${labelOf(u.type)} · ${num(u.sqft)} sq ft · ${STATUS_LABEL[u.status]}`}
+              >
+                <span class="vh">{`${u.id}, ${labelOf(u.type)}, ${num(u.sqft)} square feet, ${STATUS_LABEL[u.status]}`}</span>
+                <span aria-hidden="true">{u.id.slice(-2)}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      ))}
+    </div>
+
+    <p class="stack__legend">
+      {resTypes.map((t, i) => {
+        const ids = [...new Set(
+          resByFloor[0].units.filter((u) => u.type === t.key).map((u) => u.id.slice(-2))
+        )];
+        return (
+          <span class="stack__leg">
+            <b class="num">{ids.join(' · ')}</b> {t.label}, {num(t.sqft)} sq ft
+          </span>
+        );
+      })}
+    </p>
+
+    <div class="inv__tot">
+      <p class="inv__totn num">{resCount.available}<span> of {resCount.total} apartments available</span></p>
+      <p class="inv__totn num">{comCount.available}<span> of {comCount.total} commercial units available</span></p>
+      <p class="inv__link">
+        Commercial availability is drawn on the floor plates in
+        <a href="#commercial">section 07</a>, where the unit's position is the point.
+      </p>
+    </div>
+
+    <p class="inv__foot">{c.footnote}</p>
+  </div>
+</section>
+
+<style>
+  .inv__updated { display: block; margin-top: var(--s5); color: var(--ink-3); }
+
+  .states {
+    margin: var(--s6) 0 var(--s9);
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    border-top: 1px solid var(--line-strong);
+  }
+  @media (min-width: 700px) { .states { grid-template-columns: repeat(4, 1fr); } }
+  .state {
+    padding: var(--s4) var(--s4) var(--s5) 0;
+    border-bottom: 1px solid var(--line);
+    display: grid; gap: 3px; align-content: start;
+  }
+  @media (min-width: 700px) { .state { border-right: 1px solid var(--line); } .state:last-child { border-right: 0; } }
+  .state__l {
+    display: flex; align-items: center; gap: var(--s2);
+    font-family: var(--font-display); font-size: var(--t-small); font-weight: 540; color: var(--ink);
+  }
+  /* Each swatch is a miniature of the tile it names, down to the dashed edge —
+     a ring of dots explains nothing about a grid of rectangles, and reads as a
+     radio group besides. These four rules are the four below, kept in step. */
+  .state__l i { width: 19px; height: 13px; border: 1px solid var(--line); flex: none; }
+  .state[data-status='available'] .state__l i { background: var(--signal-wash); border-color: var(--signal-deep); }
+  .state[data-status='reserved'] .state__l i { background: var(--paper); }
+  .state[data-status='booked'] .state__l i { background: transparent; border-color: var(--line-soft); }
+  .state[data-status='sold'] .state__l i { background: transparent; border-color: var(--line-soft); border-style: dashed; }
+  .state__m { margin: 0; font-family: var(--font-display); font-size: var(--t-fine); color: var(--ink-3); }
+  .state__n { margin: 0; font-size: var(--t-h3); font-weight: 400; letter-spacing: -0.02em; margin-top: var(--s2); }
+  .state__split { margin: 0; font-family: var(--font-display); font-size: 0.625rem; color: var(--ink-4); letter-spacing: 0.02em; }
+
+  .inv__h { display: block; margin-bottom: var(--s4); }
+
+  /* The page's only under-44px target: a 60×15px cross-reference sitting in a
+     sentence. Padding it to full height without disturbing the line. */
+  .inv__link a {
+    display: inline-block;
+    padding-block: 0.72rem;
+    margin-block: -0.72rem;
+  }
+
+  .stack { border-top: 1px solid var(--line-strong); }
+  .stack__floor { border-bottom: 1px solid var(--line); padding: var(--s4) 0; }
+  .stack__meta { display: flex; align-items: baseline; gap: var(--s3); margin-bottom: var(--s3); }
+  .stack__no { font-size: var(--t-h3); font-weight: 420; line-height: 1; letter-spacing: -0.02em; }
+  .stack__lab { color: var(--ink-3); }
+  .stack__avail {
+    margin-left: auto; font-size: var(--t-fine); color: var(--ink-2);
+    font-family: var(--font-display);
+  }
+  .stack__avail[data-none] { color: var(--ink-4); }
+
+  .stack__units {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 4px;
+    max-width: 30rem;
+  }
+
+  .unit {
+    display: grid; place-items: center;
+    height: 34px;
+    font-size: var(--t-fine); font-weight: 560;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink-3);
+  }
+
+  /* Available is lit. Everything else goes progressively quiet — which is what
+     makes scanning the stack for what is free take about a second. The four
+     rules here are the four swatches in the key above, kept in step. */
+  .unit[data-status='available'] {
+    border-color: var(--signal-deep);
+    background: var(--signal-wash);
+    color: var(--signal-deep);
+    font-weight: 620;
+  }
+  .unit[data-status='reserved'] { background: var(--paper); color: var(--ink-2); }
+  .unit[data-status='booked'] { background: transparent; border-color: var(--line-soft); color: var(--ink-4); }
+  .unit[data-status='sold'] {
+    background: transparent; border-style: dashed; border-color: var(--line-soft);
+    color: var(--ink-4);
+  }
+
+  /* What the deleted cards used to carry, said once: the unit number fixes the
+     type on every floor, so printing it forty-eight times was repetition. */
+  /* One entry per line, no separators: a slash sitting at the end of a wrapped
+     line points at nothing, which is the same defect the amenity lists had. */
+  .stack__legend {
+    margin-top: var(--s4);
+    display: grid; gap: 2px;
+    font-family: var(--font-display); font-size: var(--t-fine); color: var(--ink-3);
+  }
+  @media (min-width: 720px) {
+    .stack__legend { grid-template-columns: repeat(3, auto); justify-content: start; gap: var(--s5); }
+  }
+  .stack__leg b { font-weight: 620; color: var(--ink-2); }
+
+  .inv__tot { margin-top: var(--s8); display: grid; gap: var(--s2); }
+  .inv__totn { font-size: var(--t-h3); font-weight: 420; letter-spacing: -0.02em; }
+  .inv__totn span { font-size: var(--t-small); color: var(--ink-3); font-weight: 400; letter-spacing: 0; }
+  .inv__link { margin-top: var(--s3); font-family: var(--font-display); font-size: var(--t-small); color: var(--ink-2); }
+  .inv__link a { text-decoration: underline; text-underline-offset: 3px; }
+
+  .inv__foot {
+    margin-top: var(--s7); padding-top: var(--s4);
+    border-top: 1px solid var(--line);
+    font-family: var(--font-display); font-size: var(--t-fine); color: var(--ink-3);
+  }
+</style>

@@ -1,0 +1,55 @@
+---
+/**
+ * An architectural drawing that can actually be read.
+ *
+ * Every photograph on this page has opened to full screen since the gallery was
+ * built. The floor plans — the one thing on the page a buyer needs to *read*
+ * rather than look at — did not: at 360px the residential plate renders about
+ * 318px wide, which puts its lettering at three or four pixels. The caption
+ * pointed at words the reader could not see.
+ *
+ * So the drawings become controls. The affordance is stated, because a picture
+ * that happens to be tappable is a picture nobody taps.
+ */
+import Picture from './Picture.astro';
+
+interface Props {
+  src: string;
+  alt: string;
+  /** shown in the enlarged view's bar, and used as the control's label */
+  label: string;
+  sizes?: string;
+  className?: string;
+  fit?: 'cover' | 'contain';
+}
+const { src, alt, label, sizes = '100vw', className = '', fit = 'contain' } = Astro.props;
+---
+
+<button class="dw" type="button" data-zoom={label} aria-label={`Enlarge the drawing: ${label}`}>
+  <Picture src={src} alt={alt} sizes={sizes} fit={fit} className={`dw__img ${className}`} />
+  <span class="dw__hint label" aria-hidden="true">Enlarge</span>
+</button>
+
+<style>
+  .dw {
+    display: block; width: 100%;
+    position: relative;
+    cursor: zoom-in;
+    background: var(--paper-sunk);
+    border: 1px solid var(--line);
+  }
+  .dw :global(.dw__img) { background: var(--paper-sunk); }
+
+  .dw__hint {
+    position: absolute; right: 0; bottom: 0;
+    display: flex; align-items: center;
+    height: 30px; padding-inline: var(--s3);
+    background: var(--paper);
+    border-top: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+    color: var(--ink-2);
+    transition: color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
+  }
+  .dw:hover .dw__hint { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .dw:focus-visible { outline: 2px solid var(--signal-deep); outline-offset: 3px; }
+</style>

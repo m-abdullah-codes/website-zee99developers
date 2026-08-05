@@ -21,8 +21,18 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            brochures/zee99lifestyle/package-lock.json
 
       - run: npm ci
+
+      # The e-brochure is a separate Astro app under brochures/, built into
+      # public/ by `npm run build` below. --omit=dev skips Playwright, which
+      # only its local screenshot scripts use.
+      - name: Install e-brochure dependencies
+        working-directory: brochures/zee99lifestyle
+        run: npm ci --omit=dev
 
       - name: Pull content from D1
         run: node scripts/pull-content.mjs

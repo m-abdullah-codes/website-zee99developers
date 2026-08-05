@@ -1,0 +1,180 @@
+---
+/**
+ * 07 — the building.
+ *
+ * The amenity list is split in two. Presenting a hospital across the road as a
+ * building feature is exactly the move that costs trust on a page whose only
+ * job is to build it, so the separation is made explicit and explained.
+ */
+import Picture from './Picture.astro';
+import { building } from '../lib/content';
+---
+
+<section id="building" data-section="building" data-no="06" data-name="The building" data-tone="light" class="section bldg">
+  <div class="wrap">
+    <header class="shead">
+      <div class="shead__meta">
+        <span class="shead__no">06</span>
+        <span class="shead__name">The building</span>
+      </div>
+      <h2 class="t-h2 bldg__h" id="building-h">{building.head}</h2>
+      <p class="t-lead prose">{building.body[0]}</p>
+    </header>
+  </div>
+
+  <!-- The rooftop renders are the only portrait assets in the folder; run them
+       as a three-up band rather than cropping them to landscape. -->
+  <div class="roof">
+    <Picture src="rooftop/rooftop-1" alt="The rooftop at night, cinema screen and seating." sizes="(min-width: 800px) 32vw, 82vw" className="roof__img" />
+    <Picture src="rooftop/rooftop-2" alt="The rooftop BBQ lounge at night." sizes="(min-width: 800px) 32vw, 82vw" className="roof__img" />
+    <Picture src="rooftop/rooftop-3" alt="The rooftop terrace at night, looking out over Sector B." sizes="(min-width: 800px) 32vw, 82vw" className="roof__img" />
+  </div>
+  <div class="wrap">
+    <p class="cap"><span class="cap__t">The roof</span><span class="cap__s">Cinema, BBQ lounge, and solar above both.</span></p>
+  </div>
+
+  <div class="wrap">
+    <div class="amen">
+      <div class="amen__col">
+        <h3 class="amen__h">{building.inBuilding.label}</h3>
+        {building.inBuilding.groups.map((g) => (
+          <div class="amen__group">
+            <h4 class="label amen__gh">{g.g}</h4>
+            <ul class="amen__list">
+              {g.items.map((i) => <li>{i}</li>)}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      {/* "Across the road" listed the same eleven landmarks that §05 already
+          prints twice — once as the map's numbered key and once as its own
+          list, 1,400px earlier and in the same words. Three printings of one
+          list read as padding. The map key is the one that earns its place,
+          because it puts each name where the thing actually is; this column is
+          now the pointer back to it. */}
+      <div class="amen__col amen__col--away">
+        <h3 class="amen__h">{building.acrossRoad.label}</h3>
+        <p class="amen__note">{building.acrossRoad.note}</p>
+        <p class="amen__ref">
+          Everything named on the site plan in <a href="#address">section 05</a> is
+          within a few blocks.
+        </p>
+      </div>
+    </div>
+
+    <div class="serviced">
+      <h3 class="serviced__h">{building.serviced.head}</h3>
+      <p class="serviced__body">{building.serviced.body}</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .bldg__h { max-width: 16ch; }
+
+  .roof {
+    margin-top: var(--s7);
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 78%;
+    gap: var(--s3);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-inline: var(--gutter);
+    scrollbar-width: none;
+  }
+  .roof::-webkit-scrollbar { display: none; }
+  .roof :global(.roof__img) { scroll-snap-align: center; }
+  @media (min-width: 800px) {
+    .roof {
+      grid-auto-flow: initial;
+      grid-template-columns: repeat(3, 1fr);
+      overflow: visible;
+      max-width: var(--maxw);
+      margin-inline: auto;
+      gap: var(--s5);
+    }
+  }
+
+  .amen {
+    margin-top: var(--s10);
+    display: grid;
+    gap: var(--s9);
+    border-top: 1px solid var(--line-strong);
+    padding-top: var(--s6);
+  }
+  @media (min-width: 900px) {
+    .amen { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: var(--s10); }
+  }
+
+  .amen__h {
+    font-family: var(--font-display);
+    font-size: var(--t-h3);
+    font-weight: 470;
+    letter-spacing: var(--tr-tight);
+    margin-bottom: var(--s5);
+  }
+  .amen__group { margin-bottom: var(--s6); }
+  .amen__gh { display: block; margin-bottom: var(--s3); }
+
+  /* Separators were drawn as a right border on every item bar the last, which
+     is correct on one line and wrong on four: each wrapped line ended with a
+     pipe pointing at nothing — six of them in this list alone. A ruled column
+     needs no separator at all, and twenty-four amenities are read down a column
+     faster than across a paragraph of them. */
+  .amen__list {
+    list-style: none; margin: 0; padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+    column-gap: var(--s5);
+    font-family: var(--font-display);
+    font-size: var(--t-small);
+    color: var(--ink-2);
+  }
+  .amen__list li {
+    padding: 5px 0;
+    border-bottom: 1px solid var(--line-soft);
+    line-height: 1.3;
+  }
+
+  /* Across the road is set quieter, and visibly separated — the point is that
+     it is not ours. */
+  .amen__col--away { color: var(--ink-3); }
+  .amen__col--away .amen__h { color: var(--ink-2); }
+  .amen__note {
+    font-size: var(--t-small);
+    color: var(--ink-3);
+    max-width: 34ch;
+    margin-bottom: var(--s5);
+    padding-left: var(--s4);
+    border-left: 1px solid var(--line-strong);
+  }
+  .amen__ref { margin-top: var(--s4); color: var(--ink-3); max-width: var(--measure); }
+  .amen__ref a { display: inline-block; padding-block: 0.72rem; margin-block: -0.72rem; }
+
+  .amen__list--away { color: var(--ink-3); }
+  .amen__list--away li { display: block; width: 100%; border-right: 0; padding: var(--s2) 0; border-bottom: 1px solid var(--line-soft); margin-right: 0; }
+
+  .serviced {
+    margin-top: var(--s9);
+    padding: var(--s7) 0 0;
+    border-top: 1px solid var(--line-strong);
+    display: grid; gap: var(--s4);
+    max-width: var(--measure-wide);
+  }
+  .serviced__h {
+    font-family: var(--font-display);
+    font-size: var(--t-h3);
+    font-weight: 470;
+    letter-spacing: var(--tr-tight);
+  }
+  .serviced__body { color: var(--ink-2); }
+  .serviced__gap {
+    font-family: var(--font-display);
+    font-size: var(--t-small);
+    color: var(--ink-3);
+    padding-left: var(--s4);
+    border-left: 2px solid var(--signal-quiet);
+  }
+</style>

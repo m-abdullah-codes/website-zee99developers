@@ -1,0 +1,251 @@
+---
+/**
+ * 09 — the numbers. The emotional peak.
+ *
+ * The whole document stays light. This section earns its status through scale
+ * and air rather than by inverting to a dark slab: the rate is set larger than
+ * anything else on the page, the space around it is the most generous, and the
+ * accent colour appears here and in the live inventory and nowhere else.
+ * Restraint is the expensive-looking option; a dark panel is the cheap one.
+ */
+import PaymentTimeline from './PaymentTimeline.astro';
+import { numbers } from '../lib/content';
+import {
+  resTypes, resRate, rs, num, short, possessionMonths, planMonths,
+  allSchedulesReconcile, ground, lower, comSplit,
+} from '../lib/inventory';
+---
+
+<section id="numbers" data-section="numbers" data-no="08" data-name="The numbers" data-tone="light" class="section nums">
+  <div class="wrap">
+    <header class="shead nums__shead">
+      <div class="shead__meta">
+        <span class="shead__no">08</span>
+        <span class="shead__name">The numbers</span>
+      </div>
+    </header>
+
+    <!-- The rate, set as the largest thing in the document. -->
+    <div class="rate">
+      <p class="rate__n num"><span class="rate__cur">Rs</span>{num(resRate)}</p>
+      <p class="rate__u">per square foot</p>
+    </div>
+
+    <div class="rate__say">
+      <h2 class="rate__h" id="numbers-h">{numbers.head}</h2>
+      <p class="rate__lead">{numbers.lead}</p>
+    </div>
+
+    <div class="prices">
+      {resTypes.map((t) => (
+        <div class="price">
+          <span class="price__label">{t.label}</span>
+          <span class="price__sqft num">{num(t.sqft)} sq ft</span>
+          <span class="price__n num">{rs(t.price)}</span>
+          <span class="price__short num">{short(t.price)}</span>
+        </div>
+      ))}
+    </div>
+
+    {allSchedulesReconcile && (
+      <p class="reconcile">
+        <span class="reconcile__mark" aria-hidden="true"></span>
+        {numbers.reconcile}
+      </p>
+    )}
+
+    <!-- The insight nobody has used, given its own frame. -->
+    <div class="keys">
+      <h3 class="keys__h">{numbers.keys.head}</h3>
+      <p class="keys__b">{numbers.keys.body}</p>
+      {/* Was one flat grey rectangle with an orange tail — a headline paid off
+          by what reads as a loading skeleton, and with the colour logic
+          inverted: the grey mass was the waiting and the small tail the good
+          news. It is now the thirty-six months themselves, one mark each, with
+          the handover marked where it falls. The six after it are the argument,
+          so they are the only ones carrying the accent. */}
+      <div class="keys__bar" aria-hidden="true">
+        <ol class="keys__months">
+          {Array.from({ length: planMonths }, (_, i) => (
+            <li class="keys__m" data-after={i >= possessionMonths ? '' : undefined}></li>
+          ))}
+        </ol>
+        <div class="keys__marks">
+          <span class="keys__mk num" style={`--at:${(possessionMonths / planMonths) * 100}%`}>
+            Keys · month {possessionMonths}
+          </span>
+        </div>
+        <div class="keys__ends">
+          <span class="num">Booking</span>
+          <span class="num keys__end--a">{planMonths - possessionMonths} paid after you move in</span>
+        </div>
+      </div>
+    </div>
+
+    <PaymentTimeline />
+
+    <div class="comm">
+      <div class="comm__head">
+        <h3 class="comm__h">{numbers.commercial.head}</h3>
+        <p class="comm__b">{numbers.commercial.body}</p>
+      </div>
+      <dl class="comm__rates">
+        <div>
+          <dt class="label">Ground</dt>
+          <dd class="num">{rs(ground.rate)}</dd>
+          <dd class="comm__note">Per square foot · {ground.count} shops, {num(ground.sqft.min)}–{num(ground.sqft.max)} sq ft</dd>
+        </div>
+        <div>
+          <dt class="label">Lower Ground</dt>
+          <dd class="num">{rs(lower.rate)}</dd>
+          <dd class="comm__note">Per square foot · {lower.shopCount} shops + kiosk, {num(lower.sqft.min)}–{num(lower.sqft.max)} sq ft</dd>
+        </div>
+        <div>
+          <dt class="label">Split, every unit</dt>
+          <dd class="num">{comSplit.downPct}/{comSplit.monthlyPct}/{comSplit.biAnnualPct}/{comSplit.structurePct}/{comSplit.possessionPct}</dd>
+          <dd class="comm__note">Down · monthly · bi-annual · structure · possession</dd>
+        </div>
+      </dl>
+    </div>
+
+    <p class="nums__foot">{numbers.footnote}</p>
+  </div>
+</section>
+
+<style>
+  /* the most air on the page, deliberately */
+  .nums { padding-block: clamp(6rem, 13vw, 15rem); }
+  .nums__shead { margin-bottom: var(--s10); }
+
+  .rate { display: grid; gap: var(--s4); }
+  .rate__n {
+    font-size: var(--t-mega);
+    font-weight: 300;
+    line-height: 0.82;
+    letter-spacing: -0.035em;
+    display: flex; align-items: baseline; gap: 0.12em;
+  }
+  .rate__cur {
+    font-size: 0.26em; font-weight: 480;
+    letter-spacing: 0.04em; color: var(--ink-3);
+    transform: translateY(-0.28em);
+  }
+  .rate__u {
+    font-family: var(--font-display);
+    font-size: var(--t-small);
+    letter-spacing: var(--tr-micro);
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .rate__say { margin-top: var(--s10); display: grid; gap: var(--s5); }
+  .rate__h {
+    font-family: var(--font-display);
+    font-size: var(--t-h2); font-weight: 450;
+    letter-spacing: var(--tr-head); line-height: 1.08;
+    max-width: 17ch;
+  }
+  .rate__lead { font-size: var(--t-lead); line-height: 1.45; color: var(--ink-2); max-width: var(--measure-wide); }
+
+  .prices { margin-top: var(--s10); display: grid; border-top: 1px solid var(--line-strong); }
+  @media (min-width: 720px) { .prices { grid-template-columns: repeat(3, 1fr); } }
+  .price {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: 'label price' 'sqft short';
+    gap: var(--s1) var(--s4);
+    padding: var(--s5) 0;
+    border-bottom: 1px solid var(--line);
+    align-items: baseline;
+  }
+  @media (min-width: 720px) {
+    .price {
+      grid-template-columns: 1fr;
+      grid-template-areas: 'label' 'sqft' 'price' 'short';
+      gap: var(--s2);
+      padding: var(--s6) var(--s5) var(--s8) 0;
+      border-right: 1px solid var(--line);
+      align-content: start;
+    }
+    .price:last-child { border-right: 0; }
+  }
+  .price__label { grid-area: label; font-family: var(--font-display); font-size: var(--t-small); font-weight: 540; }
+  .price__sqft { grid-area: sqft; font-size: var(--t-fine); color: var(--ink-3); }
+  .price__n {
+    grid-area: price;
+    font-size: clamp(1.3rem, 3.4vw, 2rem);
+    font-weight: 380; letter-spacing: -0.03em; line-height: 1.04;
+  }
+  @media (min-width: 720px) { .price__n { margin-top: var(--s5); } }
+  .price__short { grid-area: short; font-size: var(--t-fine); color: var(--ink-3); }
+
+  .reconcile {
+    margin-top: var(--s5);
+    display: flex; align-items: center; gap: var(--s3);
+    font-family: var(--font-display); font-size: var(--t-small); color: var(--ink-2);
+  }
+  .reconcile__mark { width: 6px; height: 6px; border-radius: 999px; background: var(--signal); flex: none; }
+
+  .keys { margin-top: var(--s10); padding-top: var(--s6); border-top: 1px solid var(--line-strong); display: grid; gap: var(--s5); }
+  .keys__h {
+    font-family: var(--font-display);
+    font-size: var(--t-h2); font-weight: 440;
+    letter-spacing: var(--tr-head); line-height: 1.08;
+    max-width: 21ch;
+  }
+  .keys__b { color: var(--ink-2); max-width: var(--measure-wide); font-size: var(--t-lead); line-height: 1.46; }
+
+  .keys__bar { margin-top: var(--s6); }
+  .keys__months {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+    gap: 2px; height: 2.25rem;
+    align-items: end;
+  }
+  .keys__m { height: 55%; background: var(--ink-4); }
+  .keys__m[data-after] { height: 100%; background: var(--signal-deep); }
+
+  .keys__marks { position: relative; height: 1.5rem; }
+  .keys__mk {
+    position: absolute; left: var(--at); top: 5px;
+    transform: translateX(-50%);
+    font-family: var(--font-display);
+    font-size: var(--t-fine); font-weight: 620;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--signal-deep); white-space: nowrap;
+  }
+  .keys__mk::before {
+    content: ''; position: absolute;
+    left: 50%; bottom: 100%; height: 8px; width: 1px;
+    background: var(--signal-deep);
+  }
+  @media (max-width: 560px) {
+    /* At 360 the label is wider than the 19% of the bar left to its right, so
+       it stops centring on the mark and hangs off its left instead. */
+    .keys__mk { transform: translateX(-100%); padding-right: var(--s2); }
+    .keys__mk::before { left: auto; right: 0; }
+  }
+
+  .keys__ends {
+    display: flex; justify-content: space-between; gap: var(--s4);
+    font-family: var(--font-display); font-size: var(--t-fine); color: var(--ink-3);
+  }
+  .keys__end--a { color: var(--signal-deep); font-weight: 560; text-align: right; }
+
+  .nums :global([data-timeline]) { margin-top: var(--s10); padding-top: var(--s6); border-top: 1px solid var(--line-strong); }
+
+  .comm { margin-top: var(--s10); padding-top: var(--s6); border-top: 1px solid var(--line-strong); }
+  .comm__h { font-family: var(--font-display); font-size: var(--t-h3); font-weight: 460; letter-spacing: var(--tr-tight); }
+  .comm__b { margin-top: var(--s2); color: var(--ink-2); }
+  .comm__rates { margin: var(--s7) 0 0; display: grid; gap: var(--s6); }
+  @media (min-width: 760px) { .comm__rates { grid-template-columns: repeat(3, 1fr); gap: var(--s7); } }
+  .comm__rates div { display: grid; gap: var(--s2); border-top: 1px solid var(--line); padding-top: var(--s3); }
+  .comm__rates dd { margin: 0; font-family: var(--font-display); font-size: var(--t-h3); font-weight: 400; letter-spacing: -0.022em; }
+  .comm__rates dd i { font-style: normal; font-size: var(--t-small); color: var(--ink-3); margin-left: 0.3em; letter-spacing: 0; }
+  .comm__note {
+    font-size: var(--t-fine) !important; font-weight: 400 !important;
+    color: var(--ink-3) !important; letter-spacing: 0 !important;
+  }
+
+  .nums__foot { margin-top: var(--s9); font-family: var(--font-display); font-size: var(--t-fine); color: var(--ink-3); }
+</style>

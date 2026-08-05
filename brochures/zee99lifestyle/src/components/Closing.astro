@@ -1,0 +1,142 @@
+---
+/**
+ * 14 — the back cover.
+ *
+ * Not a call to action. The back of a brochure: name, place, approval marks,
+ * address and a number, set with air around them. No button styling, no form,
+ * no urgency, nothing that behaves like a funnel. Without it the page dead-ends
+ * and the reader has to go hunting through WhatsApp for whoever sent it, which
+ * is the exact moment you lose them.
+ *
+ * Light, like the rest of the document. The image is held inside the page
+ * rather than bled behind type, so the closing reads as a printed leaf.
+ */
+import Picture from './Picture.astro';
+import { closing } from '../lib/content';
+import { meta } from '../lib/inventory';
+
+const updated = new Date(meta.updated).toLocaleDateString('en-GB', {
+  day: 'numeric', month: 'long', year: 'numeric',
+});
+const tel = `tel:+${closing.contact.whatsappHref.split('/').pop()}`;
+---
+
+<section id="closing" data-section="closing" data-no="13" data-name="End" data-tone="light" class="close">
+  <div class="wrap">
+    <figure class="close__fig">
+      {/* The one dusk exterior in the folder, kept for last: the shopfronts
+          are lit, the sky has gone pink, and the document that opened on a
+          night frame closes on the same hour. */}
+      <Picture
+        src="exterior/render-3"
+        alt="Zee99 Lifestyle at dusk, the arcade and shopfronts lit."
+        sizes="(min-width: 1100px) 76vw, 100vw"
+        className="close__img"
+        position="center 42%"
+      />
+    </figure>
+
+    <div class="close__id">
+      <h2 class="close__title" id="closing-h">{closing.title}</h2>
+      <div class="close__lines">
+        {closing.lines.map((l) => <p class="close__line">{l}</p>)}
+      </div>
+    </div>
+
+    <div class="close__grid">
+      <ul class="marks" aria-label="Approvals">
+        {closing.marks.map((m) => <li class="mark num">{m}</li>)}
+      </ul>
+
+      <address class="contact">
+        <p class="contact__co">{closing.contact.company}</p>
+        <p class="contact__addr">{closing.contact.address}</p>
+        <p class="contact__wa">
+          <span class="contact__lab">WhatsApp</span>
+          <a class="contact__num num" href={closing.contact.whatsappHref} rel="noopener noreferrer">
+            {closing.contact.whatsappLabel}
+          </a>
+          {/* The page had no `tel:` anywhere. A number that cannot be dialled
+              from the phone it is being read on is a number set as decoration. */}
+          <a class="contact__tel" href={tel}>Or call it</a>
+        </p>
+      </address>
+    </div>
+
+    <div class="colophon">
+      <p>{closing.colophon}</p>
+      <p class="colophon__d num">{updated}</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .close { padding-block: clamp(4rem, 8vw, 8rem) clamp(4rem, 7vw, 7rem); }
+
+  .close__fig { margin: 0 0 var(--s10); }
+  .close__fig :global(.close__img) { aspect-ratio: 21 / 9; }
+  @media (max-width: 700px) { .close__fig :global(.close__img) { aspect-ratio: 4 / 3; } }
+
+  .close__id { display: grid; gap: var(--s5); }
+  .close__title {
+    font-family: var(--font-display);
+    font-size: var(--t-h1);
+    font-weight: 440;
+    line-height: 1;
+    letter-spacing: var(--tr-mega);
+  }
+  .close__lines { display: grid; gap: var(--s1); }
+  .close__line { font-size: var(--t-lead); line-height: 1.4; color: var(--ink-2); max-width: 34ch; }
+
+  .close__grid {
+    margin-top: var(--s10);
+    padding-top: var(--s6);
+    border-top: 1px solid var(--line-strong);
+    display: grid; gap: var(--s8);
+  }
+  @media (min-width: 820px) {
+    .close__grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--s10); align-items: start; }
+  }
+
+  .marks { list-style: none; margin: 0; padding: 0; display: flex; gap: var(--s6); align-items: baseline; }
+  .mark { font-size: var(--t-fine); font-weight: 620; letter-spacing: var(--tr-micro); color: var(--ink-3); }
+
+  .contact { font-style: normal; display: grid; gap: var(--s2); }
+  .contact__co { font-family: var(--font-display); font-size: var(--t-body); font-weight: 540; }
+  .contact__addr { font-family: var(--font-display); font-size: var(--t-small); color: var(--ink-2); max-width: 30ch; }
+  .contact__wa { margin-top: var(--s5); display: grid; gap: var(--s2); }
+  .contact__lab {
+    font-family: var(--font-display); font-size: var(--t-micro);
+    letter-spacing: var(--tr-micro); text-transform: uppercase; color: var(--ink-3);
+  }
+  /* A link, not a button. Nothing here implies a funnel. */
+  .contact__num {
+    font-size: var(--t-h3); font-weight: 400; letter-spacing: -0.01em;
+    text-decoration: none;
+    border-bottom: 1px solid var(--line-strong);
+    justify-self: start; padding-bottom: 3px;
+    min-height: 44px; display: inline-flex; align-items: center;
+    transition: border-color var(--dur-fast) var(--ease-out);
+  }
+  .contact__num:hover { border-bottom-color: var(--signal-deep); }
+
+  .contact__tel {
+    justify-self: start;
+    min-height: 44px; display: inline-flex; align-items: center;
+    font-family: var(--font-display); font-size: var(--t-fine);
+    letter-spacing: var(--tr-label); text-transform: uppercase;
+    color: var(--ink-3); text-decoration: none;
+    border-bottom: 1px solid var(--line);
+  }
+  .contact__tel:hover { color: var(--ink); border-bottom-color: var(--ink-4); }
+
+  .colophon {
+    margin-top: var(--s10);
+    padding-top: var(--s5);
+    border-top: 1px solid var(--line);
+    display: grid; gap: var(--s2);
+    font-family: var(--font-display); font-size: var(--t-fine); color: var(--ink-3);
+    max-width: 54ch; line-height: 1.55;
+  }
+  .colophon__d { color: var(--ink-2); }
+</style>

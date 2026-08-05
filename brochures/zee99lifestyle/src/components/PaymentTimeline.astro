@@ -1,0 +1,362 @@
+---
+/**
+ * The page's single orchestrated moment.
+ *
+ * Not a calculator — it computes nothing the reader inputs. It draws the
+ * published plan honestly: 36 months on the axis, the down payment at month 0,
+ * the monthly installments along it, and the possession payment landing at
+ * month 30. The six bars standing to the right of the keys marker are the
+ * argument, so they are the only bars carrying the accent colour.
+ *
+ * Built in CSS rather than SVG: an SVG scaled to fit would either shrink the
+ * labels to 5px on a 360px phone or distort them, and this plot's labels are
+ * the part that has to stay readable.
+ *
+ * What is NOT drawn: the structure payment and the six half-yearly payments.
+ * Their months are undefined in the source (docs/facts.md is explicit), so they
+ * are listed as amounts and kept off the axis rather than placed at a guess.
+ */
+import { resTypes, possessionMonths, planMonths, rs, num } from '../lib/inventory';
+import { numbers } from '../lib/content';
+
+const months = planMonths;                         // 36
+const afterCount = planMonths - possessionMonths;  // 6
+
+const series = resTypes.map((t) => {
+  const p = t.plan;
+  const bars = [{ m: 0, base: p.down, extra: 0, total: p.down, kind: 'down' as const }];
+  for (let m = 1; m <= months; m++) {
+    const extra = m === possessionMonths ? p.possession : 0;
+    bars.push({
+      m, base: p.monthly, extra, total: p.monthly + extra,
+      kind: m === possessionMonths ? ('poss' as const) : m > possessionMonths ? ('after' as const) : ('monthly' as const),
+    });
+  }
+  const max = Math.max(...bars.map((b) => b.total));
+  return {
+    ...t,
+    bars: bars.map((b) => ({ ...b, baseH: (b.base / max) * 100, extraH: (b.extra / max) * 100 })),
+  };
+});
+
+const possPct = (possessionMonths / (months + 1)) * 100;
+const afterPct = 100 - possPct;
+const defaultKey = '1bed';
+---
+
+<figure class="tl" data-timeline>
+  <figcaption class="tl__cap">
+    <h3 class="tl__h">{numbers.timeline.head}</h3>
+    <p class="tl__hint">{numbers.timeline.hint}</p>
+  </figcaption>
+
+  <div class="tl__switch" role="tablist" aria-label="Unit type">
+    {series.map((s) => (
+      <button class="tl__tab" role="tab" type="button" data-tab={s.key}
+        aria-selected={s.key === defaultKey ? 'true' : 'false'} aria-controls="tl-plot">
+        <span class="tl__tabname">{s.label}</span>
+        <span class="tl__tabsqft num">{num(s.sqft)} sq ft</span>
+      </button>
+    ))}
+  </div>
+
+  <div class="tl__figures">
+    {/* All five components, not the three that happen to sit on the axis. With
+        only down, monthly and possession shown against the total, the card came
+        up Rs 2,460,000 short of its own headline figure — a reader who adds it
+        up either misses the gap or stops trusting the page. The two undated
+        payments are amounts here; the axis below is where they cannot go,
+        because no month is defined for them. */}
+    {series.map((s) => (
+      <>
+      <dl class="tl__f" data-figs={s.key} hidden={s.key !== defaultKey}>
+        <div><dt class="label">Total</dt><dd class="num tl__big">{rs(s.price)}</dd></div>
+        <div><dt class="label">Down</dt><dd class="num">{rs(s.plan.down)}</dd></div>
+        <div><dt class="label">Monthly &times; {s.plan.monthlyCount}</dt><dd class="num">{rs(s.plan.monthly)}</dd></div>
+        <div><dt class="label">On structure</dt><dd class="num">{rs(s.plan.structure)}</dd></div>
+        <div><dt class="label">Half-yearly &times; {s.plan.halfYearlyCount}</dt><dd class="num">{rs(s.plan.halfYearly)}</dd></div>
+        <div><dt class="label">At possession</dt><dd class="num">{rs(s.plan.possession)}</dd></div>
+      </dl>
+      <p class="tl__sum num" data-figs={s.key} hidden={s.key !== defaultKey}>
+        {rs(s.plan.down)} + {rs(s.plan.monthly)}&times;{s.plan.monthlyCount} + {rs(s.plan.structure)}
+        + {rs(s.plan.halfYearly)}&times;{s.plan.halfYearlyCount} + {rs(s.plan.possession)} = {rs(s.scheduleSum)}
+      </p>
+      </>
+    ))}
+  </div>
+
+  <div class="tl__plot" id="tl-plot">
+    <div class="tl__band" style={`--after:${afterPct}%`} aria-hidden="true">
+      <span class="tl__bandlabel num">{afterCount} paid after handover</span>
+    </div>
+
+    <div class="tl__mark" style={`--at:${possPct}%`} aria-hidden="true">
+      <span class="tl__marklabel">Keys · month {possessionMonths}</span>
+    </div>
+
+    {series.map((s) => (
+      <div class="tl__bars" data-series={s.key} hidden={s.key !== defaultKey}>
+        {s.bars.map((b, i) => (
+          <div class="tl__col" style={`--i:${i}`} data-kind={b.kind}>
+            <div class="tl__stack">
+              {b.extraH > 0 && <span class="tl__seg tl__seg--poss" style={`--h:${b.extraH}%`}></span>}
+              <span class="tl__seg tl__seg--base" style={`--h:${b.baseH}%`}></span>
+            </div>
+          </div>
+        ))}
+      </div>
+    ))}
+
+    <div class="tl__axis" aria-hidden="true">
+      <span class="tl__ax tl__ax--a num">Booking</span>
+      <span class="tl__ax tl__ax--b num" style={`--at:${possPct}%`}>{possessionMonths}</span>
+      <span class="tl__ax tl__ax--c num">Month {months}</span>
+    </div>
+  </div>
+
+  <p class="vh">
+    Down payment at booking, then {months} monthly installments. The payment at
+    possession falls in month {possessionMonths}; the final {afterCount} installments
+    fall after handover. Exact figures are listed above.
+  </p>
+
+  <ul class="tl__key">
+    <li><i class="k k--down"></i>Down payment</li>
+    <li><i class="k k--m"></i>Monthly installment</li>
+    <li><i class="k k--p"></i>At possession</li>
+    <li><i class="k k--a"></i>After you have the keys</li>
+  </ul>
+
+</figure>
+
+<style>
+  .tl { margin: 0; }
+
+  .tl__cap { display: grid; gap: var(--s2); margin-bottom: var(--s6); }
+  .tl__h { font-family: var(--font-display); font-size: var(--t-h3); font-weight: 460; letter-spacing: var(--tr-tight); }
+  .tl__hint { font-family: var(--font-display); font-size: var(--t-small); color: var(--ink-3); }
+
+  .tl__switch {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .tl__tab {
+    display: grid; gap: 2px; justify-items: start;
+    padding: var(--s4) var(--s3); min-height: 56px;
+    border-right: 1px solid var(--line);
+    color: var(--ink-3);
+    transition: color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
+  }
+  .tl__tab:last-child { border-right: 0; }
+  .tl__tab:hover { color: var(--ink-2); }
+  .tl__tab[aria-selected='true'] { color: var(--ink); background: var(--paper); }
+  .tl__tabname { font-family: var(--font-display); font-size: var(--t-small); font-weight: 540; }
+  .tl__tabsqft { font-size: var(--t-fine); color: var(--ink-3); }
+
+  .tl__figures { margin-top: var(--s7); }
+  .tl__f { display: flex; flex-wrap: wrap; gap: var(--s5) var(--s8); margin: 0; }
+  .tl__f div { display: grid; gap: 4px; }
+  .tl__f dd { margin: 0; font-family: var(--font-display); font-size: var(--t-body); font-weight: 500; }
+  .tl__f :global(.tl__big) { font-size: var(--t-h3); font-weight: 420; letter-spacing: -0.025em; }
+  /* The arithmetic, shown rather than asserted — the one line that lets a
+     reader check the total instead of taking it. */
+  .tl__sum {
+    margin: var(--s4) 0 0;
+    font-size: var(--t-fine); color: var(--ink-3); line-height: 1.6;
+    max-width: var(--measure-wide);
+  }
+
+  /* --- the plot ----------------------------------------------------------- */
+  .tl__plot {
+    position: relative;
+    /* headroom for the two stacked labels that sit above the plot box */
+    margin-top: calc(var(--s10) + 3rem);
+    /* A monthly installment is 5% of the down payment, so most of this box is
+       necessarily empty — that ratio is the truth and the bars keep it. What
+       was wrong was the box: 300px of height to draw a 15px run made the plot
+       look unfinished rather than lopsided. */
+    height: clamp(170px, 24vw, 250px);
+    padding-bottom: 1.75rem;
+    border-bottom: 1px solid var(--line-strong);
+  }
+
+  .tl__band {
+    position: absolute; right: 0; top: 0; bottom: 1.75rem;
+    width: var(--after);
+    background: var(--signal-wash);
+    border-left: 1px solid var(--signal-quiet);
+  }
+  /* Sits a line above the keys label. Both want the same corner — month 30 is
+     at 81% of the axis — so they are stacked rather than left to collide. */
+  .tl__bandlabel {
+    position: absolute; bottom: calc(100% + 1.35rem); right: 0;
+    font-size: var(--t-fine); font-weight: 560; color: var(--signal-deep);
+    white-space: nowrap;
+  }
+
+  .tl__mark { position: absolute; left: var(--at); top: 0; bottom: 1.75rem; width: 0; z-index: 2; }
+  .tl__mark::before {
+    content: ''; position: absolute; inset: 0 auto 0 0;
+    width: 1px; background: var(--signal-deep);
+  }
+  .tl__marklabel {
+    position: absolute; bottom: 100%; left: 0;
+    transform: translateX(-50%); margin-bottom: 6px;
+    font-family: var(--font-display);
+    font-size: var(--t-fine); font-weight: 620; letter-spacing: 0.09em;
+    text-transform: uppercase; color: var(--signal-deep);
+    white-space: nowrap;
+  }
+
+  .tl__bars { position: absolute; inset: 0 0 1.75rem 0; display: flex; align-items: flex-end; }
+  .tl__col { flex: 1 1 0; display: flex; justify-content: center; align-items: flex-end; height: 100%; }
+  /* A monthly installment is 5% of the down payment, so its bar is ~14px tall
+     however wide the plot gets. At 1440 the column pitch is 30px, and a 17px
+     cap left 13px of gap between each — which turned the run of thirty-six into
+     a dotted line, the exact defect the height was already fighting. The cap is
+     set high enough that the percentage governs at every width the plot reaches,
+     so the gap stays proportional: the run coheres, and thirty-six of them are
+     still countable. Heights are untouched — the 20:1 ratio is the truth. */
+  .tl__stack {
+    width: min(74%, 26px); height: 100%;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    transform-origin: center bottom;
+  }
+  .tl__seg { display: block; width: 100%; }
+  .tl__seg--base { height: var(--h); min-height: 4px; background: var(--ink-4); }
+  .tl__seg--poss { height: var(--h); background: var(--signal); }
+
+  [data-kind='down'] .tl__seg--base { background: var(--ink); }
+  /* the six that matter: the only other place the accent appears */
+  [data-kind='after'] .tl__seg--base,
+  [data-kind='poss'] .tl__seg--base { background: var(--signal-deep); }
+
+  .tl__axis { position: absolute; left: 0; right: 0; bottom: 0; height: 1.75rem; }
+  .tl__ax { position: absolute; top: 7px; font-size: var(--t-fine); color: var(--ink-3); white-space: nowrap; }
+  .tl__ax--a { left: 0; }
+  .tl__ax--b { left: var(--at); transform: translateX(-50%); color: var(--signal-deep); font-weight: 560; }
+  .tl__ax--c { right: 0; }
+
+  /* --- the orchestration ---------------------------------------------------
+     Everything is visible by default and only hidden once JS has confirmed it
+     will animate ([data-anim]). If the observer never fires, or scripting is
+     off, the plot is simply drawn — it can never be left blank. */
+  [data-timeline][data-play] .tl__stack {
+    animation: tlgrow 420ms var(--ease-out) backwards;
+    animation-delay: calc(var(--i) * 19ms);
+  }
+  @keyframes tlgrow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+  [data-timeline][data-anim]:not([data-play]) .tl__mark,
+  [data-timeline][data-anim]:not([data-play]) .tl__band { opacity: 0; }
+  [data-timeline][data-play] .tl__mark { animation: tlfade 460ms var(--ease-out) 640ms backwards; }
+  [data-timeline][data-play] .tl__band { animation: tlfade 560ms var(--ease-out) 790ms backwards; }
+  @keyframes tlfade { from { opacity: 0; } to { opacity: 1; } }
+
+  [data-timeline][data-switch] .tl__stack {
+    animation: tlsettle 300ms var(--ease-out) backwards;
+    animation-delay: calc(var(--i) * 4ms);
+  }
+  @keyframes tlsettle { from { transform: scaleY(0.85); opacity: 0.45; } to { transform: scaleY(1); opacity: 1; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-timeline][data-anim]:not([data-play]) .tl__mark,
+    [data-timeline][data-anim]:not([data-play]) .tl__band { opacity: 1; }
+    [data-timeline][data-play] .tl__stack,
+    [data-timeline][data-switch] .tl__stack,
+    [data-timeline][data-play] .tl__mark,
+    [data-timeline][data-play] .tl__band { animation: none; }
+  }
+
+  .tl__key {
+    list-style: none; margin: var(--s6) 0 0; padding: 0;
+    display: flex; flex-wrap: wrap; gap: var(--s2) var(--s5);
+    font-family: var(--font-display); font-size: var(--t-fine); color: var(--ink-3);
+  }
+  .tl__key li { display: inline-flex; align-items: center; gap: var(--s2); }
+  .k { width: 10px; height: 10px; display: inline-block; flex: none; }
+  .k--down { background: var(--ink); }
+  .k--m { background: var(--ink-4); }
+  .k--p { background: var(--signal); }
+  .k--a { background: var(--signal-deep); }
+
+  @media (max-width: 640px) {
+    /* Stacked, the three tabs read as a list rather than as a control: the
+       only thing distinguishing the live one was its weight. An accent edge
+       and a step in ground say which is showing, and give the other two
+       somewhere obvious to be tapped. */
+    .tl__switch { grid-template-columns: 1fr; }
+    .tl__tab {
+      border-right: 0; border-bottom: 1px solid var(--line);
+      border-left: 2px solid transparent;
+      padding-left: var(--s4);
+      grid-template-columns: 1fr auto; align-items: baseline;
+    }
+    .tl__tab:last-child { border-bottom: 0; }
+    .tl__tab[aria-selected='true'] {
+      border-left-color: var(--signal-deep);
+      background: var(--paper-sunk);
+    }
+    .tl__plot { margin-top: var(--s11); }
+    .tl__bandlabel, .tl__marklabel { font-size: 0.625rem; }
+  }
+</style>
+
+<script>
+  (() => {
+    const root = document.querySelector<HTMLElement>('[data-timeline]');
+    if (!root) return;
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-tab]')];
+    const show = (key: string) => {
+      for (const el of root.querySelectorAll<HTMLElement>('[data-series],[data-figs],[data-unplaced]')) {
+        const k = el.dataset.series ?? el.dataset.figs ?? el.dataset.unplaced;
+        el.hidden = k !== key;
+      }
+      tabs.forEach((t) => t.setAttribute('aria-selected', String(t.dataset.tab === key)));
+      root.removeAttribute('data-switch');
+      void root.offsetWidth;
+      root.setAttribute('data-switch', '');
+    };
+    tabs.forEach((t) => t.addEventListener('click', () => show(t.dataset.tab!)));
+
+    // A link from a home block arrives asking for that type. Switching first,
+    // then scrolling, means the reader lands on their own numbers rather than
+    // on the default and has to find the tab strip.
+    document.querySelectorAll<HTMLAnchorElement>('[data-plan-link]').forEach((a) =>
+      a.addEventListener('click', (e) => {
+        const key = a.dataset.planLink!;
+        if (!tabs.some((t) => t.dataset.tab === key)) return;
+        e.preventDefault();
+        show(key);
+        root.scrollIntoView({
+          behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+          block: 'start',
+        });
+      })
+    );
+    root.querySelector('[role="tablist"]')!.addEventListener('keydown', (e: Event) => {
+      const ev = e as KeyboardEvent;
+      const i = tabs.findIndex((t) => t.getAttribute('aria-selected') === 'true');
+      let n = i;
+      if (ev.key === 'ArrowRight') n = (i + 1) % tabs.length;
+      else if (ev.key === 'ArrowLeft') n = (i - 1 + tabs.length) % tabs.length;
+      else return;
+      ev.preventDefault();
+      show(tabs[n].dataset.tab!);
+      tabs[n].focus();
+    });
+    // Opt into the hidden-then-revealed state only now that we can guarantee
+    // the reveal will happen.
+    root.setAttribute('data-anim', '');
+    const play = () => { root.setAttribute('data-play', ''); io.disconnect(); clearTimeout(safety); };
+    const io = new IntersectionObserver(
+      (entries) => { for (const e of entries) if (e.isIntersecting) play(); },
+      { threshold: 0.15 }
+    );
+    io.observe(root);
+    // If the figure is already on screen at load, or the observer never fires,
+    // draw it anyway rather than leaving a blank plot.
+    const safety = setTimeout(play, 4000);
+  })();
+</script>

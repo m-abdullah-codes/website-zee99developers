@@ -1,0 +1,113 @@
+---
+/**
+ * 10 — the builder, placed immediately after the price.
+ *
+ * The brief offers this before or after the numbers and calls both defensible.
+ * After, because that is when the doubt actually peaks: the question "who is
+ * asking me for 14.4 million rupees" only becomes urgent once the figure has
+ * been seen. The run that follows — record, then what is left, then the site —
+ * answers it in the order a buyer thinks of it.
+ */
+import { builder } from '../lib/content';
+---
+
+<section id="builder" data-section="builder" data-no="09" data-name="The builder" data-tone="light" class="section bld">
+  <div class="wrap">
+    <header class="shead">
+      <div class="shead__meta">
+        <span class="shead__no">09</span>
+        <span class="shead__name">The builder</span>
+      </div>
+      <h2 class="t-h2 bld__h" id="builder-h">{builder.head}</h2>
+    </header>
+
+    <div class="bld__grid">
+      <div>
+        <div class="prose bld__prose">
+          {builder.body.map((p) => <p>{p}</p>)}
+        </div>
+        <dl class="bld__stats">
+          {builder.stats.map((s) => (
+            <div>
+              <dd class="bld__n num">{s.n}<i>{s.unit}</i></dd>
+              <dt class="bld__l label">{s.label}</dt>
+            </div>
+          ))}
+        </dl>
+      </div>
+
+      <ol class="track">
+        {builder.projects.map((p) => (
+          <li class="track__i" data-current={p.status === 'Current' ? '' : undefined}>
+            <span class="track__dot" aria-hidden="true"></span>
+            <div class="track__b">
+              <span class="track__n">{p.name}</span>
+              <span class="track__s">{p.status}</span>
+              {p.note && <span class="track__note">{p.note}</span>}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+
+    <p class="bld__cust">{builder.customers}</p>
+  </div>
+</section>
+
+<style>
+  .bld__h { max-width: 18ch; }
+  .bld__grid { display: grid; gap: var(--s9); }
+  @media (min-width: 940px) { .bld__grid { grid-template-columns: minmax(0, 1fr) minmax(0, 0.95fr); gap: var(--s10); } }
+
+  .bld__prose { color: var(--ink-2); font-size: var(--t-lead); line-height: 1.46; }
+
+  .bld__stats {
+    margin: var(--s8) 0 0;
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    border-top: 1px solid var(--line-strong);
+  }
+  @media (min-width: 620px) { .bld__stats { grid-template-columns: repeat(4, 1fr); } }
+  .bld__stats div {
+    display: grid; gap: var(--s1);
+    padding: var(--s4) var(--s3) var(--s5) 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .bld__n { font-size: clamp(1.75rem, 5vw, 2.5rem); font-weight: 400; line-height: 1; letter-spacing: -0.03em; }
+  .bld__n i { font-style: normal; font-size: var(--t-small); color: var(--ink-3); margin-left: 2px; letter-spacing: 0; }
+  .bld__l { color: var(--ink-3); }
+
+  .track { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line-strong); }
+  .track__i {
+    display: grid; grid-template-columns: 1.5rem 1fr; gap: var(--s4);
+    padding: var(--s5) 0;
+    border-bottom: 1px solid var(--line);
+    align-items: start;
+  }
+  .track__dot {
+    width: 9px; height: 9px; border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    margin-top: 0.45em;
+    justify-self: center;
+  }
+  /* delivered reads as complete; the current one is the only lit mark */
+  .track__i:nth-child(1) .track__dot,
+  .track__i:nth-child(2) .track__dot { background: var(--ink-4); border-color: var(--ink-4); }
+  .track__i:nth-child(3) .track__dot { background: var(--ink-2); border-color: var(--ink-2); }
+  .track__i[data-current] .track__dot {
+    background: var(--signal); border-color: var(--signal-deep);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--signal) 22%, transparent);
+  }
+
+  .track__b { display: grid; gap: 3px; }
+  .track__n { font-family: var(--font-display); font-size: var(--t-body); font-weight: 520; color: var(--ink); }
+  .track__s { font-family: var(--font-display); font-size: var(--t-small); color: var(--ink-2); }
+  .track__note { font-family: var(--font-display); font-size: var(--t-fine); color: var(--ink-3); }
+
+  .bld__cust {
+    margin-top: var(--s9);
+    padding-top: var(--s5);
+    border-top: 1px solid var(--line);
+    max-width: var(--measure-wide);
+    color: var(--ink-2);
+  }
+</style>

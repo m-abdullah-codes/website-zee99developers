@@ -1,0 +1,131 @@
+---
+/**
+ * 11 — site progress.
+ *
+ * Four photographs of the same corner at four points in the build, in the order
+ * the building rose: frame going up behind the crane, slabs poured to the upper
+ * floors, topped out, then the facade and the planting going in.
+ *
+ * A 2×2 grid, equal cells, at every width. The first arrangement gave the most
+ * recent frame full width and ran the other three small beneath it, on the
+ * theory that "where is it now" is the only question. That was wrong twice: it
+ * made the first image read as a different kind of object from the other three,
+ * and it shrank the three that carry the actual progression to about a hundred
+ * pixels each. All four are the same photograph of the same corner taken at
+ * different times, so all four are the same size, and the sequence reads across
+ * then down like any other grid of four.
+ *
+ * Approval milestones carry no date, because no date is sourced for them.
+ */
+import Picture from './Picture.astro';
+import { progress } from '../lib/content';
+
+const stages = progress.stages;
+const latestIndex = stages.length - 1;
+---
+
+<section id="progress" data-section="progress" data-no="11" data-name="Site progress" data-tone="sunk" class="section prog">
+  <div class="wrap">
+    <header class="shead">
+      <div class="shead__meta">
+        <span class="shead__no">11</span>
+        <span class="shead__name">Site progress</span>
+      </div>
+      <h2 class="t-h2" id="progress-h">{progress.head}</h2>
+      <p class="t-lead prose">{progress.lead}</p>
+    </header>
+
+    <ol class="shots">
+      {stages.map((s, i) => (
+        <li class="shot" data-latest={i === latestIndex ? '' : undefined}>
+          <Picture
+            src={s.src}
+            alt={s.alt}
+            sizes="(min-width: 900px) 38vw, 46vw"
+            ratio="3 / 2"
+            className="shot__img"
+          />
+          <div class="shot__cap">
+            <span class="shot__no num">{String(i + 1).padStart(2, '0')}</span>
+            <span class="shot__t">{s.caption}</span>
+            {i === latestIndex && <span class="shot__now num">{progress.latestLabel}</span>}
+          </div>
+        </li>
+      ))}
+    </ol>
+
+    <ol class="mile">
+      {progress.milestones.map((m) => (
+        <li class="mile__i">
+          <span class="mile__dot" aria-hidden="true"></span>
+          <span class="mile__l">{m.label}</span>
+          <span class="mile__s">{m.status}</span>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<style>
+  /* Two across, two down, at every width. The gutter is the only thing that
+     changes between a phone and a desktop. */
+  .shots {
+    list-style: none; margin: 0; padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s4);
+  }
+  @media (min-width: 700px) { .shots { gap: var(--s5); } }
+  @media (min-width: 1100px) {
+    /* Capped, so four photographs do not open to 600px each on a wide screen
+       and turn a progress note into a gallery. */
+    .shots { max-width: 62rem; gap: var(--s6); }
+  }
+
+  .shot { display: grid; }
+  .shot :global(.shot__img) { border: 1px solid var(--line); }
+
+  .shot__cap {
+    margin-top: var(--s3);
+    display: grid; gap: 2px;
+    align-content: start;
+  }
+  .shot__no {
+    font-size: var(--t-micro); font-weight: 620;
+    letter-spacing: var(--tr-label); color: var(--ink-4);
+  }
+  .shot__t {
+    font-family: var(--font-display);
+    font-size: var(--t-small); color: var(--ink-2);
+    line-height: 1.3;
+  }
+  /* The only accent in the section, and it marks the one fact a reader is
+     actually looking for: which of the four is now. */
+  .shot__now {
+    margin-top: 1px;
+    font-size: var(--t-micro); font-weight: 620;
+    letter-spacing: var(--tr-label); text-transform: uppercase;
+    color: var(--signal-deep);
+  }
+  .shot[data-latest] :global(.shot__img) { border-color: var(--signal-deep); }
+
+  .mile { list-style: none; margin: var(--s9) 0 0; padding: 0; border-top: 1px solid var(--line-strong); }
+  .mile__i {
+    display: grid;
+    grid-template-columns: 1.25rem 1fr auto;
+    grid-template-areas: 'dot label status';
+    gap: var(--s3);
+    padding: var(--s4) 0;
+    border-bottom: 1px solid var(--line);
+    align-items: baseline;
+  }
+  @media (min-width: 620px) { .mile__i { gap: var(--s5); } }
+  .mile__dot {
+    grid-area: dot;
+    width: 9px; height: 9px; border-radius: 999px;
+    background: var(--ink-2);
+    justify-self: center;
+  }
+  .mile__l { grid-area: label; font-family: var(--font-display); font-size: var(--t-body); font-weight: 520; }
+  .mile__s { grid-area: status; font-family: var(--font-display); font-size: var(--t-small); color: var(--ink-2); }
+</style>

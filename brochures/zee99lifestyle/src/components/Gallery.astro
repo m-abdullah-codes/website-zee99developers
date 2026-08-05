@@ -1,0 +1,318 @@
+---
+/**
+ * The interiors gallery.
+ *
+ * Phone first, because that is where this opens: a full-bleed snap track with
+ * the next frame peeking, driven by the thumb, with a counter that tells you
+ * how many are left. Desktop gets a staggered run that breaks the container
+ * rather than a tidy card grid (docs/reference/NOTES.md, point 3).
+ *
+ * Tapping opens a native <dialog> — real focus trapping and Esc handling for
+ * free, rather than a hand-rolled modal that loses the keyboard.
+ */
+import Picture from './Picture.astro';
+import manifest from '../generated/images.json';
+
+interface Props {
+  group: string; label: string; alts: Record<string, string>; defaultAlt: string;
+  /** editorial sequence; see gallerySequence in lib/content.ts */
+  order?: string[];
+}
+const { group, label, alts = {}, defaultAlt, order } = Astro.props;
+
+const inGroup = Object.values(manifest as Record<string, any>).filter((m) => m.group === group);
+
+// Fail loudly on a sequence that has drifted from the asset folder, rather than
+// silently dropping or duplicating an interior.
+if (order) {
+  const have = new Set(inGroup.map((m) => m.key));
+  const missing = order.filter((k) => !have.has(k));
+  const unlisted = [...have].filter((k) => !order.includes(k));
+  if (missing.length || unlisted.length) {
+    throw new Error(
+      `[Gallery:${group}] sequence does not match assets.` +
+      (missing.length ? ` Listed but absent: ${missing.join(', ')}.` : '') +
+      (unlisted.length ? ` Present but unlisted: ${unlisted.join(', ')}.` : '')
+    );
+  }
+}
+
+const ordered = order ? order.map((k) => inGroup.find((m) => m.key === k)!) : inGroup;
+const items = ordered.map((m) => ({ key: m.key, alt: alts[m.key] ?? defaultAlt }));
+
+/* A small deterministic vertical offset per cell keeps the editorial rhythm of
+   a staggered grid without its cost: 29 interiors stacked vertically ran to
+   22,000px on desktop and made the document unfinishable. Horizontal keeps the
+   gallery a discrete object you can put down. */
+const offsetFor = (i: number) => [0, 1, 0, 1, 2, 1][i % 6];
+---
+
+<div class="gal" data-gallery={group}>
+  <div class="gal__bar">
+    <h4 class="label gal__label">{label}</h4>
+    <div class="gal__ctrl">
+      <p class="gal__count num">
+        <span data-gal-current>1</span><span class="gal__of">/{items.length}</span>
+      </p>
+      <!-- Pointer users get explicit controls; a horizontal track is not
+           discoverable with a mouse the way it is with a thumb. -->
+      <div class="gal__arrows">
+        <button class="gal__arrow" type="button" data-gal-scroll="-1" aria-label={`${label}: scroll back`}>
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15 4 7 12l8 8" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+        </button>
+        <button class="gal__arrow" type="button" data-gal-scroll="1" aria-label={`${label}: scroll forward`}>
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <ul class="gal__track" data-gal-track tabindex="0" aria-label={`${label}, ${items.length} images, scroll or use arrow keys`}>
+    {items.map((it, i) => (
+      <li class="gal__cell" style={`--off:${offsetFor(i)}`}>
+        <button
+          class="gal__btn"
+          type="button"
+          data-gal-open={i}
+          aria-label={`Enlarge image ${i + 1} of ${items.length}`}
+        >
+          <Picture src={it.key} alt={it.alt} sizes="(min-width: 1000px) 46vw, 86vw" className="gal__img" />
+        </button>
+      </li>
+    ))}
+  </ul>
+
+  <dialog class="lb" data-gal-dialog aria-label={`${label}, enlarged`}>
+    <div class="lb__inner">
+      <!-- sources are copied from the thumbnail that was clicked, so the
+           lightbox costs no duplicated srcset data in the document -->
+      <picture class="lb__pic">
+        <source data-gal-source type="image/avif" />
+        <img class="lb__img" data-gal-img alt="" />
+      </picture>
+      <div class="lb__bar">
+        <p class="lb__count num"><span data-gal-lbcur>1</span><span class="gal__of">/{items.length}</span></p>
+        <div class="lb__nav">
+          <button class="lb__b" type="button" data-gal-prev aria-label="Previous image">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M15 4 7 12l8 8" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+          </button>
+          <button class="lb__b" type="button" data-gal-next aria-label="Next image">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+          </button>
+          <button class="lb__b lb__b--close" type="button" data-gal-close aria-label="Close">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+</div>
+
+<style>
+  .gal { margin-top: var(--s6); }
+
+  .gal__bar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--s4);
+    padding-inline: var(--gutter);
+    border-top: 1px solid var(--line);
+    padding-top: var(--s3);
+    margin-bottom: var(--s4);
+    max-width: var(--maxw); margin-inline: auto;
+  }
+  .gal__ctrl { display: flex; align-items: center; gap: var(--s4); }
+  .gal__count { font-size: var(--t-fine); font-weight: 560; color: var(--ink); }
+  .gal__of { color: var(--ink-4); }
+
+  .gal__arrows { display: none; gap: var(--s2); }
+  @media (hover: hover) and (pointer: fine) { .gal__arrows { display: flex; } }
+  .gal__arrow {
+    width: 44px; height: 44px;
+    display: grid; place-items: center;
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+    transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  }
+  .gal__arrow:hover { border-color: var(--line-strong); color: var(--ink); }
+  .gal__arrow[disabled] { opacity: 0.32; cursor: default; }
+
+  /* --- one horizontal track at every width --------------------------------
+     The offset gives the run an editorial rhythm without the vertical cost of
+     a staggered grid. Full-bleed on purpose: the track runs off the right edge
+     so it is visibly continuable. */
+  .gal__track {
+    list-style: none; margin: 0;
+    padding: var(--s6) var(--gutter) var(--s5);
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 86%;
+    gap: var(--s3);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    align-items: start;
+  }
+  .gal__track::-webkit-scrollbar { display: none; }
+  .gal__cell { scroll-snap-align: center; margin-top: calc(var(--off) * var(--s5)); }
+
+  .gal__btn {
+    display: block; width: 100%;
+    cursor: zoom-in;
+    background: none;
+    min-height: 44px;             /* the whole image is the control */
+  }
+  .gal__btn :global(.gal__img) {
+    aspect-ratio: 4 / 3;
+    transition: opacity var(--dur-mid) var(--ease-out);
+  }
+
+  @media (min-width: 720px) {
+    .gal__track { grid-auto-columns: 46%; gap: var(--s4); scroll-snap-type: x proximity; }
+  }
+  @media (min-width: 1100px) {
+    .gal__track { grid-auto-columns: 34%; gap: var(--s5); padding-left: max(var(--gutter), calc((100vw - var(--maxw)) / 2 + var(--gutter))); }
+    .gal__btn :global(.gal__img) { aspect-ratio: 3 / 2; }
+    .gal__btn:hover :global(.gal__img) { opacity: 0.92; }
+  }
+
+  /* --- lightbox ----------------------------------------------------------- */
+  .lb {
+    border: 0; padding: 0;
+    width: 100vw; max-width: 100vw;
+    height: 100dvh; max-height: 100dvh;
+    background: oklch(16% 0.018 260);
+    color: var(--on-deep);
+  }
+  .lb::backdrop { background: oklch(12% 0.015 260 / 0.94); }
+  .lb__inner {
+    height: 100%;
+    display: grid;
+    grid-template-rows: 1fr auto;
+  }
+  .lb__pic { display: block; width: 100%; height: 100%; min-height: 0; }
+  .lb__img {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    padding: var(--s4);
+    touch-action: pan-y pinch-zoom;
+  }
+  .lb__bar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--s4);
+    padding: var(--s4) var(--gutter) max(var(--s4), env(safe-area-inset-bottom));
+    border-top: 1px solid oklch(30% 0.02 260);
+  }
+  .lb__count { font-size: var(--t-small); font-weight: 560; }
+  .lb__nav { display: flex; gap: var(--s2); }
+  .lb__b {
+    width: 48px; height: 48px;
+    display: grid; place-items: center;
+    border: 1px solid oklch(34% 0.02 260);
+    color: var(--on-deep);
+    transition: background-color var(--dur-fast) var(--ease-out);
+  }
+  .lb__b:hover { background: oklch(26% 0.022 260); }
+  .lb__b--close { margin-left: var(--s3); }
+
+  @media (min-width: 1000px) {
+    .lb__img { padding: var(--s7) var(--s8) var(--s5); }
+  }
+</style>
+
+<script>
+  // One controller per gallery instance on the page.
+  document.querySelectorAll<HTMLElement>('[data-gallery]').forEach((root) => {
+    const track = root.querySelector<HTMLElement>('[data-gal-track]')!;
+    const dialog = root.querySelector<HTMLDialogElement>('[data-gal-dialog]')!;
+    const img = root.querySelector<HTMLImageElement>('[data-gal-img]')!;
+    const source = root.querySelector<HTMLSourceElement>('[data-gal-source]')!;
+    const curEl = root.querySelector<HTMLElement>('[data-gal-current]')!;
+    const lbCur = root.querySelector<HTMLElement>('[data-gal-lbcur]')!;
+    const cells = [...root.querySelectorAll<HTMLElement>('.gal__cell')];
+    // the thumbnails already carry every rendition; reuse them
+    const thumbs = cells.map((c) => ({
+      img: c.querySelector('img') as HTMLImageElement,
+      src: c.querySelector('source') as HTMLSourceElement,
+    }));
+    let i = 0;
+
+    const show = (n: number) => {
+      i = (n + thumbs.length) % thumbs.length;
+      const t = thumbs[i];
+      source.srcset = t.src.getAttribute('srcset') || '';
+      source.sizes = '100vw';
+      img.srcset = t.img.getAttribute('srcset') || '';
+      img.sizes = '100vw';
+      img.src = t.img.src;
+      img.alt = t.img.alt;
+      lbCur.textContent = String(i + 1);
+    };
+
+    const open = (n: number) => { show(n); dialog.showModal(); };
+    const close = () => dialog.close();
+
+    root.querySelectorAll<HTMLElement>('[data-gal-open]').forEach((b) =>
+      b.addEventListener('click', () => open(Number(b.dataset.galOpen)))
+    );
+    root.querySelector('[data-gal-next]')!.addEventListener('click', () => show(i + 1));
+    root.querySelector('[data-gal-prev]')!.addEventListener('click', () => show(i - 1));
+    root.querySelector('[data-gal-close]')!.addEventListener('click', close);
+
+    dialog.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); show(i + 1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); show(i - 1); }
+    });
+    // click the backdrop (but not the image) to dismiss
+    dialog.addEventListener('click', (e) => { if (e.target === dialog) close(); });
+
+    // swipe, phone
+    let x0 = 0, y0 = 0;
+    dialog.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+    dialog.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].clientX - x0;
+      const dy = e.changedTouches[0].clientY - y0;
+      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) show(i + (dx < 0 ? 1 : -1));
+    }, { passive: true });
+
+    // counter follows the snap track on phones
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting && e.intersectionRatio > 0.6) {
+              curEl.textContent = String(cells.indexOf(e.target as HTMLElement) + 1);
+            }
+          }
+        },
+        { root: track, threshold: [0.6] }
+      );
+      cells.forEach((c) => io.observe(c));
+    }
+
+    // arrow keys move the track when it has focus
+    const step = (dir: number) =>
+      track.scrollBy({ left: dir * track.clientWidth * 0.7, behavior: 'smooth' });
+
+    track.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault();
+      step(e.key === 'ArrowRight' ? 1 : -1);
+    });
+
+    const arrows = [...root.querySelectorAll<HTMLButtonElement>('[data-gal-scroll]')];
+    arrows.forEach((b) => b.addEventListener('click', () => step(Number(b.dataset.galScroll))));
+    const syncArrows = () => {
+      const atStart = track.scrollLeft < 8;
+      const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 8;
+      arrows.forEach((b) => {
+        b.disabled = Number(b.dataset.galScroll) < 0 ? atStart : atEnd;
+      });
+    };
+    track.addEventListener('scroll', syncArrows, { passive: true });
+    addEventListener('resize', syncArrows, { passive: true });
+    syncArrows();
+  });
+</script>

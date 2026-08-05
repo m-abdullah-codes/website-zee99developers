@@ -1,0 +1,24 @@
+node_modules/
+dist/
+.astro/
+
+# ~640MB of source renders and photography. The pipeline that consumes them
+# (scripts/build-images.mjs) is a manual step whose *output* — public/img — is
+# committed, so a deploy never needs these. Kept out of the repo deliberately;
+# the masters live in the shared drive, not in git.
+assets/
+
+# Playwright output from scripts/shoot.mjs and capture-refs.mjs — review aids.
+shots/
+refs/
+
+# 27MB of screenshots captured from other practices' live sites as design
+# benchmarks. This repo is public, so their imagery does not belong in it.
+# docs/reference/NOTES.md stays and lists exactly what the set is; re-capture
+# it any time with `npm run refs`.
+docs/reference/*.png
+
+# ffmpeg's intermediate full-size frame, kept on disk so re-running the image
+# pipeline can skip the extract. Nothing on the page references it, and at
+# 2.3MB it would be the third-largest file in the deploy.
+public/img/video-poster/frame.png
