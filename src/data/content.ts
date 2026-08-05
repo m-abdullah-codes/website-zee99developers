@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import sectionsJson from "../../content/sections.json";
 import pageSeoJson from "../../content/page-seo.json";
 import settingsJson from "../../content/settings.json";
+import lastmodJson from "../../content/lastmod.json";
 
 const sections = sectionsJson as Record<string, Record<string, unknown>>;
 
@@ -28,6 +29,21 @@ export function sectionOr<T>(page: string, key: string, fallback: T): T {
   const block = sections[page]?.[key];
   return (block === undefined ? fallback : block) as T;
 }
+
+/**
+ * Real last-modified time per route, written by `npm run pull` from the D1
+ * `updated_at` columns. Empty until a pull runs (CI always pulls before it
+ * builds); callers omit lastmod rather than substitute build time, since a
+ * timestamp that is always "now" is worse than none at all.
+ */
+const LASTMOD = lastmodJson as Record<string, string>;
+
+export const lastmodFor = (path: string): Date | undefined => {
+  const iso = LASTMOD[path];
+  if (!iso) return undefined;
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? undefined : d;
+};
 
 export type PageSeo = {
   title: string;
