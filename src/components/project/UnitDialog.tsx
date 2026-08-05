@@ -163,7 +163,12 @@ export default function UnitDialog({
       : "";
 
   return (
+    // data-lenis-prevent: while the overlay is up Lenis is stopped, and a
+    // stopped Lenis still swallows every wheel/touch event on the page — which
+    // would leave the schedule and the thumbnail rail unscrollable. The
+    // attribute makes it hand events inside the dialog back to the browser.
     <div
+      data-lenis-prevent
       className={cn(
         "fixed inset-0 z-[80] flex items-end justify-center transition-[opacity,visibility] duration-400 sm:items-center sm:p-5",
         open ? "visible opacity-100" : "invisible opacity-0",
