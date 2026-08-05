@@ -8,7 +8,6 @@ import Residences from "@/components/project/Residences";
 import Amenities from "@/components/project/Amenities";
 import UpdatesTimeline from "@/components/project/UpdatesTimeline";
 import ArcadeChart from "@/components/project/ArcadeChart";
-import PaymentVisualizer from "@/components/tools/PaymentVisualizer";
 import InvestmentCalculator from "@/components/tools/InvestmentCalculator";
 import SectionHead from "@/components/ui/SectionHead";
 import Reveal from "@/components/motion/Reveal";
@@ -59,8 +58,7 @@ export default async function ProjectPage({
   const anchors: AnchorItem[] = booking
     ? [
         { id: "overview", label: "Overview" },
-        { id: "residences", label: "Residences" },
-        { id: "payment", label: "Payment" },
+        { id: "residences", label: "Residences & plans" },
         { id: "returns", label: "Returns" },
         { id: "amenities", label: "Amenities" },
         { id: "location", label: "Location" },
@@ -133,33 +131,18 @@ export default async function ProjectPage({
 
       {booking && project.units && (
         <>
-          <Residences units={project.units} />
-
-          {/* payment */}
-          <section id="payment" className="border-t border-ink/10 bg-paper-2/55 py-24 md:py-32">
-            <div className="container-x">
-              <SectionHead
-                no="03"
-                label="Payment plans"
-                title={
-                  <>
-                    Choose how you <em className="italic text-gold">pay.</em>
-                  </>
-                }
-                lede="Slide the down payment. Watch the installments adjust. The full timeline to ownership, on one screen."
-                className="mb-16"
-              />
-              <Reveal y={36}>
-                <PaymentVisualizer />
-              </Reveal>
-            </div>
-          </section>
+          <Residences
+            units={project.units}
+            projectName={project.name}
+            plan={project.plan}
+            brochure={project.brochure}
+          />
 
           {/* returns */}
           <section id="returns" className="border-t border-ink/10 bg-paper py-24 md:py-32">
             <div className="container-x">
               <SectionHead
-                no="04"
+                no="03"
                 label="Run your numbers"
                 title={
                   <>
@@ -175,7 +158,7 @@ export default async function ProjectPage({
             </div>
           </section>
 
-          <Amenities items={project.amenities!} media={project.amenityMedia} />
+          <Amenities items={project.amenities!} media={project.amenityMedia} no="04" />
 
           {/* location */}
           <section id="location" className="border-t border-ink/10 bg-paper py-24 md:py-32">
@@ -183,7 +166,7 @@ export default async function ProjectPage({
               <div className="grid items-start gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
                 <div>
                   <Reveal as="p" y={14} className="folio mb-9 text-ink-2">
-                    06&ensp;—&ensp;Location
+                    05&ensp;—&ensp;Location
                   </Reveal>
                   <SplitReveal
                     as="h2"
@@ -226,13 +209,13 @@ export default async function ProjectPage({
             </div>
           </section>
 
-          <UpdatesTimeline updates={project.updates!} no="07" />
+          <UpdatesTimeline updates={project.updates!} no="06" />
 
           {/* faqs */}
           <section id="faqs" className="border-t border-ink/10 bg-paper-2/55 py-24 md:py-32">
             <div className="container-x grid items-start gap-14 lg:grid-cols-[0.75fr_1.25fr]">
               <SectionHead
-                no="08"
+                no="07"
                 label="FAQs"
                 title={
                   <>

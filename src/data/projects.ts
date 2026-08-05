@@ -24,6 +24,10 @@ export type Milestone = {
   everyMonths?: number;
 };
 
+/** A render in a unit's gallery. Mirrors `AmenityMedia` so the dashboard's
+ *  media picker recognises the `image` field. */
+export type UnitImage = { image: string; alt: string };
+
 export type Unit = {
   id: UnitId;
   name: string;
@@ -43,8 +47,13 @@ export type Unit = {
   /** Current Bahria Town rent estimate, PKR/month. */
   rentEst: number;
   blurb: string;
-  /** Floor-plan drawing shown in the residences modal (R2 URL). Optional. */
+  /** Floor-plan drawing shown in the residences dialog (R2 URL). Optional. */
   floorPlan?: string;
+  /**
+   * Interior renders shown in the residences dialog (R2 URLs). Optional —
+   * falls back to the shipped set in `src/data/unitMedia.ts`.
+   */
+  gallery?: UnitImage[];
 };
 
 /**
