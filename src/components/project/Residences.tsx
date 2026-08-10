@@ -5,10 +5,12 @@ import Image from "next/image";
 import SectionHead from "@/components/ui/SectionHead";
 import Reveal from "@/components/motion/Reveal";
 import UnitDialog, { type UnitTab } from "@/components/project/UnitDialog";
+import CurrencySwitch, { useCurrency } from "@/components/tools/Currency";
 import { cn } from "@/lib/utils";
 import type { Brochure, Milestone, PlanConfig, Unit } from "@/data/projects";
+import type { CurrencyCode } from "@/data/rates";
 import { milestoneTotal, planConfig, unitTotal } from "@/lib/pricing";
-import { fmtInt, pkrCompact } from "@/lib/format";
+import { money } from "@/lib/format";
 import { unitGallery } from "@/data/unitMedia";
 
 const ACTIONS: { id: UnitTab; label: string; icon: React.ReactNode }[] = [
@@ -61,8 +63,9 @@ export default function Residences({
 }) {
   const [open, setOpen] = useState<{ unit: Unit; tab: UnitTab } | null>(null);
   const [compared, setCompared] = useState(0);
+  const [cur, setCur] = useCurrency();
   const cfg = planConfig({ plan });
-  const rows = compareRows(units);
+  const rows = compareRows(units, cur);
   const picked = Math.min(compared, units.length - 1);
 
   const show = (unit: Unit, tab: UnitTab) => setOpen({ unit, tab });
@@ -135,7 +138,7 @@ export default function Residences({
                   </div>
 
                   <p className="mt-7 font-display text-[2rem] font-[380] leading-none tracking-[-0.01em] text-ink">
-                    ₨ {pkrCompact(unitTotal(u))}
+                    {money(unitTotal(u), cur, { compact: true })}
                     <span className="mt-2 block font-sans text-[0.8rem] font-normal tracking-normal text-ink-2">
                       total price
                     </span>
@@ -144,12 +147,12 @@ export default function Residences({
                   <dl className="mt-6 space-y-2.5 border-t border-ink/10 pt-6 font-mono text-[13px] tracking-[0.06em] text-ink">
                     <div className="flex items-baseline justify-between gap-3">
                       <dt className="font-sans text-[0.8rem] tracking-normal text-ink-2">Down</dt>
-                      <dd>₨ {fmtInt(u.down)}</dd>
+                      <dd>{money(u.down, cur)}</dd>
                     </div>
                     <div className="flex items-baseline justify-between gap-3">
                       <dt className="font-sans text-[0.8rem] tracking-normal text-ink-2">Monthly</dt>
                       <dd>
-                        {u.months} × ₨ {fmtInt(u.monthly)}
+                        {u.months} × {money(u.monthly, cur)}
                       </dd>
                     </div>
                   </dl>
@@ -191,11 +194,16 @@ export default function Residences({
 
         {/* the poster plan, side by side */}
         <Reveal delay={0.1} className="mt-16 border border-ink/10 bg-paper">
-          <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border-b border-ink/10 px-5 py-4 sm:px-7">
+          {/* The currency sits with the plans, not only with the projection
+              further down — an overseas buyer meets the figures here first. */}
+          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-ink/10 px-5 py-4 sm:px-7">
             <p className="eyebrow text-ink">Payment plans, side by side</p>
-            <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-ink-2">
-              {[cfg.tenureLabel, cfg.handoverLabel].filter(Boolean).join(" · ")}
-            </p>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-ink-2">
+                {[cfg.tenureLabel, cfg.handoverLabel].filter(Boolean).join(" · ")}
+              </p>
+              <CurrencySwitch value={cur} onChange={setCur} className="-my-1.5" />
+            </div>
           </div>
 
           {/* phone + tablet: one plan at a time, nothing to scroll sideways */}
@@ -349,8 +357,10 @@ export default function Residences({
           </div>
 
           <p className="border-t border-ink/10 px-5 py-4 font-mono text-[9px] uppercase leading-[1.8] tracking-[0.18em] text-ink-2/80 sm:px-7">
-            All figures in PKR · construction-linked, never rate-linked · schedules issued in
-            writing at booking
+            {cur === "PKR"
+              ? "All figures in PKR"
+              : `All figures in ${cur}, converted from PKR at today's rate`}{" "}
+            · construction-linked, never rate-linked · schedules issued in writing at booking
           </p>
         </Reveal>
       </div>
@@ -363,6 +373,7 @@ export default function Residences({
         projectName={projectName}
         plan={plan}
         brochure={brochure}
+        currency={cur}
       />
     </section>
   );
@@ -387,18 +398,19 @@ function milestoneOrder(units: Unit[]): string[] {
 const findMilestone = (u: Unit, label: string): Milestone | undefined =>
   (u.milestones ?? []).find((m) => (m.label || "Milestone payment") === label);
 
-/** The poster table: one row per payment stream, one column per unit. */
-function compareRows(units: Unit[]): CompareRow[] {
-  const money = (n: number) => (n > 0 ? fmtInt(n) : "—");
+/** The poster table: one row per payment stream, one column per unit. The
+ *  currency is named once in the footnote, not thirty times in the cells. */
+function compareRows(units: Unit[], cur: CurrencyCode): CompareRow[] {
+  const amount = (n: number) => (n > 0 ? money(n, cur, { symbol: false }) : "—");
   const months = units.every((u) => u.months === units[0]?.months) ? units[0]?.months : null;
 
   const rows: CompareRow[] = [
-    { label: "Total price", values: units.map((u) => money(unitTotal(u))), strong: true },
-    { label: "Down payment", note: "At booking", values: units.map((u) => money(u.down)) },
+    { label: "Total price", values: units.map((u) => amount(unitTotal(u))), strong: true },
+    { label: "Down payment", note: "At booking", values: units.map((u) => amount(u.down)) },
     {
       label: "Monthly instalment",
       note: months ? `× ${months}` : "Each",
-      values: units.map((u) => money(u.monthly)),
+      values: units.map((u) => amount(u.monthly)),
     },
   ];
 
@@ -410,7 +422,7 @@ function compareRows(units: Unit[]): CompareRow[] {
       note: count > 1 ? `× ${count}` : undefined,
       values: units.map((u) => {
         const m = findMilestone(u, label);
-        return m && milestoneTotal(m) > 0 ? money(m.amount) : "—";
+        return m && milestoneTotal(m) > 0 ? amount(m.amount) : "—";
       }),
     });
   });

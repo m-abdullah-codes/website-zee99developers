@@ -82,3 +82,44 @@ updated_at, date_iso.
 SEO is emitted at build time: per-page meta from `page_seo` (posts/projects
 override via their own `seo` JSON), plus `sitemap.xml`, `robots.txt`, and
 `rss.xml`.
+
+### Commercial section
+
+The retail floors on a project page come from a `commercial` key in the
+project's JSON document (Projects → the project → Project content). Every
+field is optional: whatever D1 does not set falls back to the shipped copy and
+drawings in `src/data/commercial.ts`, so the section can never render empty.
+
+To take it over from the dashboard, switch the editor to **Raw JSON** once and
+paste the block below; after saving, the form view shows it as ordinary fields
+and each `image` gets a **Pick** button wired to the media library — so new
+floor plans are uploaded under Media and picked here, no deploy needed.
+
+```json
+"commercial": {
+  "title": "Two floors of *shopfront.*",
+  "lede": "…one line…",
+  "floors": [
+    {
+      "id": "ground",
+      "name": "Ground",
+      "sub": "Nine shops behind a ten-foot arcade.",
+      "units": "9 shops",
+      "sqftFrom": 305,
+      "sqftTo": 486,
+      "rate": 55000,
+      "priceFrom": 16775000,
+      "image": "",
+      "alt": ""
+    }
+  ],
+  "split": [{ "pct": 20, "label": "Down" }],
+  "note": "Prelaunch rates. Every commercial unit is sold on the same split."
+}
+```
+
+`*asterisks*` in `title` mark the gold italic span. `rate` and `priceFrom` are
+PKR and are converted live by the currency switch, so they must stay numbers.
+Floor plans that ship with the site are built from the masters by
+`node scripts/build-unit-images.mjs` (one `.webp` each, no size ladder — the
+same file is what gets uploaded to R2).

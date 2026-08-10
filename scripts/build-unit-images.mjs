@@ -46,6 +46,14 @@ const PLANS = [
   ["floor-plans/2Bed-floorplan.jpg", "2-bed-floor-plan"],
 ];
 
+// The two commercial floors. Rendered plates rather than line drawings — full
+// of furniture, lighting and marble — so they are treated like the renders
+// above (capped and compressed) instead of like the apartment drawings.
+const COMMERCIAL_PLANS = [
+  ["floor-plans/commercial-ground-floorplan.jpg", "commercial-ground-floor-plan"],
+  ["floor-plans/commercial-lowerGround-floorplan.jpg", "commercial-lower-ground-floor-plan"],
+];
+
 await mkdir(OUT, { recursive: true });
 
 // 1400px is ~1.8× the largest place a render is ever shown (the dialog plate on
@@ -66,6 +74,15 @@ for (const [src, name] of PLANS) {
   const file = path.join(OUT, `${name}.webp`);
   const { size } = await sharp(path.join(ASSETS, src))
     .webp({ quality: 90, effort: 6 })
+    .toFile(file);
+  console.log(`${file}  ${(size / 1024).toFixed(0)} KB`);
+}
+
+for (const [src, name] of COMMERCIAL_PLANS) {
+  const file = path.join(OUT, `${name}.webp`);
+  const { size } = await sharp(path.join(ASSETS, src))
+    .resize({ width: 1400, withoutEnlargement: true })
+    .webp({ quality: 82, effort: 6 })
     .toFile(file);
   console.log(`${file}  ${(size / 1024).toFixed(0)} KB`);
 }

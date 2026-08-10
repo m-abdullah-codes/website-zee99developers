@@ -109,6 +109,42 @@ export type AmenityMedia = {
   captionRight: string;
 };
 
+/**
+ * One retail floor. Deliberately three facts and a drawing — the site says
+ * where the shops are and what they cost per foot; the shop-by-shop ledger and
+ * live availability stay in the e-brochure, which is built for that.
+ */
+export type CommercialFloor = {
+  id: string;
+  /** "Ground" / "Lower Ground". */
+  name: string;
+  /** One line on what the floor is. */
+  sub: string;
+  /** Unit count as it reads, e.g. "9 shops" or "13 shops + a kiosk". */
+  units: string;
+  /** Smallest and largest unit on the floor, in sq ft. */
+  sqftFrom: number;
+  sqftTo: number;
+  /** PKR per sq ft. */
+  rate: number;
+  /** Cheapest unit on the floor, PKR — so nobody has to do the multiplication. */
+  priceFrom: number;
+  /** Floor-plan drawing (R2 URL). Falls back to the shipped plate. */
+  image?: string;
+  alt?: string;
+};
+
+/** The commercial section: two floors, one payment split, no ledger. */
+export type Commercial = {
+  /** Section heading; *asterisks* mark the gold italic span. */
+  title?: string;
+  lede?: string;
+  floors?: CommercialFloor[];
+  /** The split every commercial unit is sold on. */
+  split?: { pct: number; label: string }[];
+  note?: string;
+};
+
 export type PricePoint = { label: string; twoBed: number; oneBed: number };
 
 export type Update = { date: string; title: string; body: string; img?: string };
@@ -142,6 +178,8 @@ export type Project = {
   appreciation?: { low: number; high: number };
   amenities?: { id: string; label: string }[];
   amenityMedia?: AmenityMedia[];
+  /** Retail floors. Partial in D1: unset fields fall back to `COMMERCIAL`. */
+  commercial?: Commercial;
   locationSec?: {
     title: string;
     body: string;

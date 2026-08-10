@@ -9,6 +9,8 @@ type Props = {
   /** Tailwind aspect class, e.g. "aspect-[16/9]". */
   ratio: string;
   caption?: { left: string; right?: string };
+  /** Drawings are shown whole; photographs fill the frame. */
+  fit?: "cover" | "contain";
   parallax?: number;
   zoom?: boolean;
   priority?: boolean;
@@ -27,6 +29,7 @@ export default function Plate({
   alt,
   ratio,
   caption,
+  fit = "cover",
   parallax,
   zoom,
   priority,
@@ -36,6 +39,7 @@ export default function Plate({
   children,
 }: Props) {
   const night = tone === "night";
+  const contain = fit === "contain";
   const img = (
     <Image
       src={src}
@@ -44,7 +48,7 @@ export default function Plate({
       priority={priority}
       sizes={sizes}
       className={cn(
-        "object-cover",
+        contain ? "object-contain p-2 sm:p-3" : "object-cover",
         zoom &&
           "transition-transform duration-[1400ms] ease-[var(--ease-out-expo)] group-hover:scale-[1.055]",
       )}
@@ -57,7 +61,9 @@ export default function Plate({
         className={cn(
           "group relative overflow-hidden border",
           ratio,
-          night ? "border-paper/15 bg-night-2" : "border-ink/10 bg-paper-2",
+          night ? "border-paper/15 bg-night-2" : "border-ink/10",
+          // A drawing sits on white; a photograph never shows its ground.
+          !night && (contain ? "bg-white" : "bg-paper-2"),
         )}
       >
         {parallax ? <Parallax strength={parallax}>{img}</Parallax> : img}

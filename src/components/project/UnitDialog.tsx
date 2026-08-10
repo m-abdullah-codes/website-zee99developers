@@ -6,8 +6,9 @@ import { cn } from "@/lib/utils";
 import Button from "@/components/ui/Button";
 import BrochureDownload from "@/components/tools/BrochureDownload";
 import type { Brochure, PlanConfig, Unit } from "@/data/projects";
+import type { CurrencyCode } from "@/data/rates";
 import { listedStop, planConfig, planFor, scheduleFor, type ScheduleRow } from "@/lib/pricing";
-import { fmtInt, pkrCompact } from "@/lib/format";
+import { fmtInt, money } from "@/lib/format";
 import { waLink } from "@/data/site";
 import { unitFloorPlan, unitGallery } from "@/data/unitMedia";
 import { getLenis } from "@/components/motion/SmoothScroll";
@@ -39,6 +40,8 @@ type Props = {
   projectName: string;
   plan?: PlanConfig;
   brochure?: Brochure;
+  /** Follows the switch on the section behind it; the schedule stays PKR-based. */
+  currency?: CurrencyCode;
 };
 
 /**
@@ -54,8 +57,13 @@ export default function UnitDialog({
   projectName,
   plan,
   brochure,
+  currency = "PKR",
 }: Props) {
   const open = unit !== null;
+  /** Signed for the sentences that carry one figure; bare inside the ledger,
+   *  where the lead line above has already said what the money is. */
+  const amount = (n: number) => money(n, currency);
+  const cell = (n: number) => money(n, currency, { symbol: false });
 
   // The panel fades out rather than vanishing, so it keeps rendering the unit
   // it was opened with until the transition is over.
@@ -203,7 +211,8 @@ export default function UnitDialog({
                   {u?.name}
                 </h2>
                 <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-2">
-                  ~{u?.area} sq ft · ₨ {schedule ? pkrCompact(schedule.total) : "—"}
+                  ~{u?.area} sq ft ·{" "}
+                  {schedule ? money(schedule.total, currency, { compact: true }) : "—"}
                   {cfg.tenureLabel && (
                     <span className="hidden sm:inline"> · {cfg.tenureLabel}</span>
                   )}
@@ -387,8 +396,8 @@ export default function UnitDialog({
           {tab === "payment" && schedule && (
             <section role="tabpanel" id="unit-panel-payment" aria-labelledby="unit-tab-payment">
               <p className="max-w-3xl font-display text-[clamp(1.25rem,2.4vw,1.9rem)] font-[380] leading-[1.45] tracking-[-0.01em] text-ink">
-                Pay <span className="text-gold">₨ {fmtInt(schedule.down)}</span> at booking, then{" "}
-                <span className="text-gold">₨ {fmtInt(schedule.monthly)}</span> a month.{" "}
+                Pay <span className="text-gold">{amount(schedule.down)}</span> at booking, then{" "}
+                <span className="text-gold">{amount(schedule.monthly)}</span> a month.{" "}
                 <em className="italic">The keys are yours in month {schedule.handoverMonths}.</em>
               </p>
 
@@ -421,20 +430,20 @@ export default function UnitDialog({
                               )}
                               {r.count > 1 && (
                                 <span className="mt-1 block font-mono text-[11px] tracking-[0.06em] text-ink-2 sm:hidden">
-                                  {r.count} × {fmtInt(r.amount)}
+                                  {r.count} × {cell(r.amount)}
                                 </span>
                               )}
                             </span>
                           </span>
                         </td>
                         <td className="hidden py-3.5 pr-4 text-right font-mono text-[12.5px] tracking-[0.04em] text-ink-2 sm:table-cell">
-                          {fmtInt(r.amount)}
+                          {cell(r.amount)}
                         </td>
                         <td className="hidden py-3.5 pr-4 text-right font-mono text-[12.5px] text-ink-2 sm:table-cell">
                           {r.count}
                         </td>
                         <td className="py-3.5 text-right font-mono text-[12.5px] tracking-[0.04em] text-ink">
-                          {fmtInt(r.total)}
+                          {cell(r.total)}
                         </td>
                       </tr>
                     ))}
@@ -444,7 +453,7 @@ export default function UnitDialog({
                       </td>
                       <td className="hidden sm:table-cell" colSpan={2} />
                       <td className="py-4 text-right font-mono text-[13.5px] tracking-[0.05em] text-gold">
-                        {fmtInt(schedule.total)}
+                        {cell(schedule.total)}
                       </td>
                     </tr>
                   </tbody>
@@ -457,7 +466,7 @@ export default function UnitDialog({
                   {rows.map((r, i) => (
                     <span
                       key={r.key}
-                      title={`${r.label} — ₨ ${fmtInt(r.total)}`}
+                      title={`${r.label} — ${amount(r.total)}`}
                       className="h-full"
                       style={{
                         width: `${(r.total / schedule.total) * 100}%`,
@@ -487,7 +496,8 @@ export default function UnitDialog({
               <p className="mt-9 max-w-2xl text-[11px] leading-[1.85] text-ink-2/85">
                 The price is fixed. The structure, half-yearly and possession payments are tied to
                 construction, never to a rate — no interest, no premium for paying over time. Every
-                schedule is issued in writing at booking.
+                schedule is issued in writing at booking
+                {currency === "PKR" ? "." : ", in PKR; the figures above are converted at today’s rate."}
               </p>
               <BrochureDownload brochure={brochure} className="mt-6" />
             </section>

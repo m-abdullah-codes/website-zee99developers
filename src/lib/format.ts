@@ -25,24 +25,39 @@ function trim(v: number): string {
 export const crFmt = (n: number) => `${(n / 1e7).toFixed(2)} Cr`;
 export const lacFmt = (n: number) => `${Math.round(n / 1e5)} Lacs`;
 
-/** Format a PKR amount in the chosen currency. */
+/**
+ * Format a PKR amount in the chosen currency. `symbol: false` drops the sign
+ * for ledgers that name their currency once in a heading or footnote rather
+ * than on every one of thirty cells.
+ */
 export function money(
   amountPKR: number,
   currency: CurrencyCode = "PKR",
-  opts: { compact?: boolean } = {},
+  opts: { compact?: boolean; symbol?: boolean } = {},
 ): string {
   const cur = CURRENCIES[currency];
+  const sign = opts.symbol === false ? "" : null;
   if (currency === "PKR") {
-    return opts.compact && amountPKR >= 1e5
-      ? `₨ ${pkrCompact(amountPKR)}`
-      : `₨ ${fmtInt(amountPKR)}`;
+    const body =
+      opts.compact && amountPKR >= 1e5 ? pkrCompact(amountPKR) : fmtInt(amountPKR);
+    return sign === null ? `₨ ${body}` : body;
   }
   const v = amountPKR / cur.pkrPerUnit;
   const rounded = v >= 1000 ? Math.round(v / 10) * 10 : Math.round(v);
-  return `${cur.symbol}${rounded.toLocaleString("en-US")}`;
+  return `${sign ?? cur.symbol}${rounded.toLocaleString("en-US")}`;
 }
 
 /** "1.28 – 1.45 Cr" style range in PKR. */
 export function pkrRange(low: number, high: number): string {
   return `${pkrCompact(low)} – ${pkrCompact(high)}`;
+}
+
+/**
+ * The same range in whichever currency is on. PKR keeps the crore/lac shorthand
+ * with one rupee sign for the pair; every other currency prints both figures in
+ * full, since "$45,000 – $51,000" is how they are read.
+ */
+export function moneyRange(low: number, high: number, currency: CurrencyCode = "PKR"): string {
+  if (currency === "PKR") return `₨ ${pkrRange(low, high)}`;
+  return `${money(low, currency, { compact: true })} – ${money(high, currency, { compact: true })}`;
 }

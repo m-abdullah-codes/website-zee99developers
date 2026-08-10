@@ -200,7 +200,9 @@ export default function PlannerView({ nav }: { nav: (hash: string) => void }) {
               <div>
                 <p className="mb-3 text-[12.5px] leading-relaxed text-ink-2">
                   Switch a line off to hide it from every buyer. The monthly instalment
-                  headline always shows — it is the answer the tool exists to give.
+                  headline always shows — it is the answer the tool exists to give. On the
+                  project page, where the plans are already printed above it, the tool leads
+                  with the projection instead and that line is never repeated below.
                 </p>
                 <ul className="divide-y divide-ink/10 border border-ink/15">
                   {rows.map((r) => {

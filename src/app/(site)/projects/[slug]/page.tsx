@@ -5,10 +5,12 @@ import { SITE, WA, waLink } from "@/data/site";
 import DetailHero from "@/components/project/DetailHero";
 import AnchorNav, { type AnchorItem } from "@/components/project/AnchorNav";
 import Residences from "@/components/project/Residences";
+import Commercial from "@/components/project/Commercial";
 import Amenities from "@/components/project/Amenities";
 import UpdatesTimeline from "@/components/project/UpdatesTimeline";
 import ArcadeChart from "@/components/project/ArcadeChart";
 import InvestmentCalculator from "@/components/tools/InvestmentCalculator";
+import { CurrencyProvider } from "@/components/tools/Currency";
 import SectionHead from "@/components/ui/SectionHead";
 import Reveal from "@/components/motion/Reveal";
 import SplitReveal from "@/components/motion/SplitReveal";
@@ -59,6 +61,7 @@ export default async function ProjectPage({
     ? [
         { id: "overview", label: "Overview" },
         { id: "residences", label: "Residences & plans" },
+        { id: "commercial", label: "Commercial" },
         { id: "returns", label: "Returns" },
         { id: "amenities", label: "Amenities" },
         { id: "location", label: "Location" },
@@ -130,7 +133,9 @@ export default async function ProjectPage({
       </section>
 
       {booking && project.units && (
-        <>
+        // One currency for the whole page: the plans, the shops and the
+        // projection all follow whichever switch a visitor touches first.
+        <CurrencyProvider>
           <Residences
             units={project.units}
             projectName={project.name}
@@ -138,27 +143,33 @@ export default async function ProjectPage({
             brochure={project.brochure}
           />
 
+          <Commercial data={project.commercial} projectName={project.name} no="03" />
+
           {/* returns */}
           <section id="returns" className="border-t border-ink/10 bg-paper py-24 md:py-32">
             <div className="container-x">
               <SectionHead
-                no="03"
+                no="04"
                 label="Run your numbers"
                 title={
                   <>
                     Then see what it <em className="italic text-gold">returns.</em>
                   </>
                 }
-                lede="Total investment, projected value at handover, and expected rental yield — based on Arcade's actual price history, not wishful thinking."
+                lede="Projected value at handover and expected rental yield — based on Arcade's actual price history, not wishful thinking."
                 className="mb-16"
               />
               <Reveal y={36}>
-                <InvestmentCalculator defaultMode="unit" defaultUnit="studio" />
+                <InvestmentCalculator
+                  defaultMode="unit"
+                  defaultUnit="studio"
+                  headline="projected"
+                />
               </Reveal>
             </div>
           </section>
 
-          <Amenities items={project.amenities!} media={project.amenityMedia} no="04" />
+          <Amenities items={project.amenities!} media={project.amenityMedia} no="05" />
 
           {/* location */}
           <section id="location" className="border-t border-ink/10 bg-paper py-24 md:py-32">
@@ -166,7 +177,7 @@ export default async function ProjectPage({
               <div className="grid items-start gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
                 <div>
                   <Reveal as="p" y={14} className="folio mb-9 text-ink-2">
-                    05&ensp;—&ensp;Location
+                    06&ensp;—&ensp;Location
                   </Reveal>
                   <SplitReveal
                     as="h2"
@@ -209,13 +220,13 @@ export default async function ProjectPage({
             </div>
           </section>
 
-          <UpdatesTimeline updates={project.updates!} no="06" />
+          <UpdatesTimeline updates={project.updates!} no="07" />
 
           {/* faqs */}
           <section id="faqs" className="border-t border-ink/10 bg-paper-2/55 py-24 md:py-32">
             <div className="container-x grid items-start gap-14 lg:grid-cols-[0.75fr_1.25fr]">
               <SectionHead
-                no="07"
+                no="08"
                 label="FAQs"
                 title={
                   <>
@@ -229,7 +240,7 @@ export default async function ProjectPage({
               </Reveal>
             </div>
           </section>
-        </>
+        </CurrencyProvider>
       )}
 
       {!booking && project.history && <ArcadeChart data={project.history} />}
