@@ -10,7 +10,6 @@
  * Text arrives after two beats, low and left. Confidence is quiet.
  */
 import Picture from './Picture.astro';
-import { asset } from '../lib/asset';
 import { opening } from '../lib/content';
 import { resUnits, comUnits, resTypes, short, possessionMonths } from '../lib/inventory';
 
@@ -37,12 +36,17 @@ const stamp = [
   <div class="cover__media">
     <Picture
       src="video-poster"
+      portraitSrc="video-poster-portrait"
       alt=""
       sizes="100vw"
       priority
       className="cover__poster"
       fit="cover"
     />
+    <!-- No `poster` attribute: it is fetched eagerly even under preload="none",
+         and it could never be seen — the element is transparent until the first
+         real frame is on screen, and the <Picture> above is already that frame
+         at full quality. -->
     <video
       id="coverVideo"
       class="cover__video"
@@ -52,7 +56,6 @@ const stamp = [
       preload="none"
       aria-hidden="true"
       tabindex="-1"
-      poster={asset('/img/video-poster/640.webp')}
     ></video>
     <div class="cover__scrim" aria-hidden="true"></div>
   </div>
@@ -187,6 +190,7 @@ const stamp = [
 
 <script>
   import { asset } from '../lib/asset';
+  import { UPRIGHT_PHONE } from '../lib/viewport';
 
   // The video is ambient. It is allowed to cost nothing: it is not fetched at
   // all until the page is idle, and not at all on a metered, slow, or
@@ -204,10 +208,16 @@ const stamp = [
 
     const start = () => {
       // The source is a 5.6MB 1080p file; a phone should never pull it.
-      // 540p (~570KB) for phones, 720p for tablets, 1080p for desktop.
+      //
+      // A phone held upright cannot show 16:9 at all: `object-fit: cover` keeps
+      // about a quarter of the frame's width and magnifies it four-fold, so the
+      // landscape ladder arrives as mush however many bits it carries. Upright
+      // it gets the 9:16 crop instead (~1MB, every pixel of it on screen); the
+      // widths below are for phones turned sideways, tablets and desktop.
       const w = innerWidth;
       v.src = asset(
-        w >= 1100 ? '/video/opening-1080.mp4'
+        matchMedia(UPRIGHT_PHONE).matches ? '/video/opening-portrait.mp4'
+        : w >= 1100 ? '/video/opening-1080.mp4'
         : w >= 700 ? '/video/opening-720.mp4'
         : '/video/opening-540.mp4'
       );

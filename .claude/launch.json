@@ -9,6 +9,12 @@
       "autoPort": true
     },
     {
+      "name": "brochure-preview",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "preview", "--prefix", "brochures/zee99lifestyle", "--", "--port", "4321"],
+      "port": 4321
+    },
+    {
       "name": "wrangler",
       "runtimeExecutable": "node",
       "runtimeArgs": ["node_modules/wrangler/bin/wrangler.js", "dev", "--port", "8787"],

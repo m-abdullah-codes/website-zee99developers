@@ -2787,5 +2787,39 @@
     ],
     "lqip": "data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAACwAwCdASoUAAsAPwlur0+rpiQiMAgBcCEJYwAASrRLOhJSiT6DgAD+6i9W2tPAAsZdKYPqjTJ7Yhv1gBQh3MdA7vKsdjOAAAA=",
     "color": "#180808"
+  },
+  "video-poster-portrait": {
+    "key": "video-poster-portrait",
+    "group": "video",
+    "role": "portrait",
+    "width": 608,
+    "height": 1080,
+    "aspect": 0.563,
+    "avif": [
+      {
+        "w": 400,
+        "path": "/img/video-poster-portrait/400.avif",
+        "bytes": 29321
+      },
+      {
+        "w": 608,
+        "path": "/img/video-poster-portrait/608.avif",
+        "bytes": 46733
+      }
+    ],
+    "webp": [
+      {
+        "w": 400,
+        "path": "/img/video-poster-portrait/400.webp",
+        "bytes": 40254
+      },
+      {
+        "w": 608,
+        "path": "/img/video-poster-portrait/608.webp",
+        "bytes": 67536
+      }
+    ],
+    "lqip": "data:image/webp;base64,UklGRtAAAABXRUJQVlA4IMQAAAAQBgCdASoUACQAPwl6s1Mrp6SiqqgBcCEJQBYfv/wEGDinRtniSL1oeWVzw6o5iBr35/sv7IeF1lQA/qmXKHeyBmH5ZmG69Ow7D7bCiJTFx3/YSRzjmK5W1d0snf3Mupg7Ztyk9dEksheZJei+LuDL86/kZZ4Tm0s37SNrYTB02iX7Aua5tr23gw6qTYoSKjJds1aZquLf6FzyxxbsT5oSLO82IYuK/SW54eR2n71r+DZCtlkM9LIx51rETZyxHuGmngAA",
+    "color": "#180808"
   }
 }

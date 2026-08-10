@@ -10,6 +10,7 @@
  */
 import manifest from '../generated/images.json';
 import { asset } from '../lib/asset';
+import { UPRIGHT_PHONE } from '../lib/viewport';
 
 interface Props {
   src: string;                 // manifest key, e.g. "2bed/scene-14"
@@ -21,30 +22,61 @@ interface Props {
   fit?: 'cover' | 'contain';
   position?: string;
   style?: string;
+  /* A second manifest key, served in place of `src` while `portraitMedia`
+     holds. The wrapper still reserves `src`'s aspect, so the two crops must
+     either share one or the caller must pin the box itself (the cover does). */
+  portraitSrc?: string;
+  portraitMedia?: string;
 }
 
 const {
   src, alt, sizes = '100vw', priority = false,
   className = '', ratio, fit = 'cover', position = 'center', style = '',
+  portraitSrc, portraitMedia = UPRIGHT_PHONE,
 } = Astro.props;
 
-const img = (manifest as Record<string, any>)[src];
-if (!img) {
-  throw new Error(
-    `[Picture] no image "${src}" in the manifest. Run: node scripts/build-images.mjs\n` +
-    `Available keys begin: ${Object.keys(manifest).slice(0, 6).join(', ')}`
-  );
-}
+const pick = (key: string) => {
+  const found = (manifest as Record<string, any>)[key];
+  if (!found) {
+    throw new Error(
+      `[Picture] no image "${key}" in the manifest. Run: node scripts/build-images.mjs\n` +
+      `Available keys begin: ${Object.keys(manifest).slice(0, 6).join(', ')}`
+    );
+  }
+  return found;
+};
+
+const img = pick(src);
+
+/* A second crop of the same picture, chosen by media query rather than by
+   width. Used where `fit="cover"` would otherwise show a narrow slice of a wide
+   image: the browser fetches exactly one of the two, so this costs nothing to
+   the viewport that does not need it. */
+const portraitImg = portraitSrc ? pick(portraitSrc) : null;
 
 // The manifest records where the files sit on disk, which is not where they sit
 // on the web — the brochure is served from a sub-path. asset() bridges the two.
-const srcset = (fmt: 'avif' | 'webp') =>
-  img[fmt].map((s: any) => `${asset(s.path)} ${s.w}w`).join(', ');
+const srcset = (entry: any, fmt: 'avif' | 'webp') =>
+  entry[fmt].map((s: any) => `${asset(s.path)} ${s.w}w`).join(', ');
 
 // Smallest rendition as the bare src: it is only ever used by a browser with no
 // srcset support at all, and there it should be cheap rather than enormous.
 const fallback = asset(img.webp[0].path);
 const aspect = ratio ?? `${img.width} / ${img.height}`;
+
+/* <picture> takes the first <source> whose media *and* type both hold, so the
+   two portrait lines have to lead and have to come in AVIF-then-WebP order:
+   a browser without AVIF falls past the first to the second, not past both to
+   the landscape ladder. */
+const sources = [
+  ...(portraitImg
+    ? [
+        { type: 'image/avif', media: portraitMedia, srcset: srcset(portraitImg, 'avif') },
+        { type: 'image/webp', media: portraitMedia, srcset: srcset(portraitImg, 'webp') },
+      ]
+    : []),
+  { type: 'image/avif', media: undefined, srcset: srcset(img, 'avif') },
+];
 ---
 
 <div
@@ -54,10 +86,12 @@ const aspect = ratio ?? `${img.width} / ${img.height}`;
   <picture>
     <!-- AVIF is preferred; the WebP ladder rides on the <img> itself rather than
          a second <source>, which does the same job for half the markup. -->
-    <source type="image/avif" srcset={srcset('avif')} sizes={sizes} />
+    {sources.map((s) => (
+      <source type={s.type} media={s.media} srcset={s.srcset} sizes={sizes} />
+    ))}
     <img
       src={fallback}
-      srcset={srcset('webp')}
+      srcset={srcset(img, 'webp')}
       alt={alt}
       width={img.width}
       height={img.height}

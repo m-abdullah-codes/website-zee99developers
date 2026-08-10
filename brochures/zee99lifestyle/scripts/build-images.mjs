@@ -36,6 +36,19 @@ const LADDERS = {
   portrait: [400, 600, 900, 1200],
 };
 
+/**
+ * The cover is 16:9 footage inside a 100svh box under `object-fit: cover`, so a
+ * phone held upright sees a *vertical slice* of it — on a 390x844 screen the
+ * crop is 249 of the 1920 source columns, blown up 4.5x on a 3x display. A
+ * landscape rendition therefore spends three quarters of its bitrate on pixels
+ * the phone never shows, and magnifies the quarter that survives.
+ *
+ * So the phone gets its own 9:16 centre crop instead: same vertical resolution
+ * as the source, every encoded pixel on screen, upscale halved. The building
+ * sits mid-frame for the whole shot, so a centre crop needs no tracking.
+ */
+const PORTRAIT = { w: 608, h: 1080, x: 656, y: 0 };
+
 const GROUPS = [
   { dir: 'building-renders', key: 'exterior', role: 'hero' },
   { dir: '1-BED', key: '1bed', role: 'gallery' },
@@ -152,13 +165,43 @@ if (existsSync(VID)) {
     const { dominant } = await sharp(posterPng).resize(80).stats();
     pEntry.color = `#${[dominant.r, dominant.g, dominant.b].map((v) => v.toString(16).padStart(2, '0')).join('')}`;
     manifest['video-poster'] = pEntry;
+
+    // The poster is the first thing on the screen and the only thing on a
+    // metered connection, so it is cropped exactly like the video it stands in
+    // for — otherwise the cover paints soft, sharpens when the video arrives,
+    // and stays soft for anyone who never gets the video at all.
+    const pp = join(OUT, 'video-poster-portrait');
+    mkdirSync(pp, { recursive: true });
+    const ppEntry = {
+      key: 'video-poster-portrait', group: 'video', role: 'portrait',
+      width: PORTRAIT.w, height: PORTRAIT.h,
+      aspect: +(PORTRAIT.w / PORTRAIT.h).toFixed(4), avif: [], webp: [],
+    };
+    const cropped = sharp(posterPng).extract({
+      left: PORTRAIT.x, top: PORTRAIT.y, width: PORTRAIT.w, height: PORTRAIT.h,
+    });
+    const croppedPng = await cropped.png().toBuffer();
+    for (const w of [400, PORTRAIT.w]) {
+      for (const [fmt, opts] of [['avif', { quality: 52, effort: 4 }], ['webp', { quality: 78, effort: 4 }]]) {
+        const p = join(pp, `${w}.${fmt}`);
+        if (!existsSync(p)) writeFileSync(p, await sharp(croppedPng).resize(w).toFormat(fmt, opts).toBuffer());
+        ppEntry[fmt].push({ w, path: `/img/video-poster-portrait/${w}.${fmt}`, bytes: statSync(p).size });
+      }
+    }
+    const ppLq = await sharp(croppedPng).resize(20).blur(1.1).webp({ quality: 32 }).toBuffer();
+    ppEntry.lqip = `data:image/webp;base64,${ppLq.toString('base64')}`;
+    ppEntry.color = pEntry.color;
+    manifest['video-poster-portrait'] = ppEntry;
+
     writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2));
 
-    // Three renditions. The 540p is what a phone actually gets: this is an
-    // ambient 10-second loop behind a scrim with type over it, so quality
-    // demands are modest and a megabyte of decoration on a Pakistani mobile
-    // connection is not defensible.
+    // Four renditions. A phone held upright gets the 9:16 crop; the landscape
+    // ladder covers phones turned sideways, tablets and desktop. The crop costs
+    // ~1MB against the 540p's 570KB, but it is the only one of the four a phone
+    // can actually display without magnifying a quarter-frame — and it is still
+    // fetched at idle only, and never on a metered or slow connection.
     const rends = [
+      ['opening-portrait.mp4', `crop=${PORTRAIT.w}:${PORTRAIT.h}:${PORTRAIT.x}:${PORTRAIT.y}`, 30],
       ['opening-540.mp4', 'scale=-2:540', 33],
       ['opening-720.mp4', 'scale=-2:720', 31],
       ['opening-1080.mp4', 'scale=-2:1080', 28],
