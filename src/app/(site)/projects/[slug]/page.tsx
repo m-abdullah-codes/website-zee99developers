@@ -9,7 +9,7 @@ import Commercial from "@/components/project/Commercial";
 import Amenities from "@/components/project/Amenities";
 import UpdatesTimeline from "@/components/project/UpdatesTimeline";
 import ArcadeChart from "@/components/project/ArcadeChart";
-import InvestmentCalculator from "@/components/tools/InvestmentCalculator";
+import RentalReturn from "@/components/tools/RentalReturn";
 import { CurrencyProvider } from "@/components/tools/Currency";
 import SectionHead from "@/components/ui/SectionHead";
 import Reveal from "@/components/motion/Reveal";
@@ -150,21 +150,17 @@ export default async function ProjectPage({
             <div className="container-x">
               <SectionHead
                 no="04"
-                label="Run your numbers"
+                label="The rent"
                 title={
                   <>
                     Then see what it <em className="italic text-gold">returns.</em>
                   </>
                 }
-                lede="Projected value at handover and expected rental yield — based on Arcade's actual price history, not wishful thinking."
+                lede="What each residence earns once the keys are handed over, at what comparable furnished units fetch in Bahria Town today."
                 className="mb-16"
               />
               <Reveal y={36}>
-                <InvestmentCalculator
-                  defaultMode="unit"
-                  defaultUnit="studio"
-                  headline="projected"
-                />
+                <RentalReturn defaultUnit="studio" />
               </Reveal>
             </div>
           </section>

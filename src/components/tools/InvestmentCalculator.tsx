@@ -21,24 +21,16 @@ import { useTweened } from "@/lib/hooks";
 import { waLink } from "@/data/site";
 
 type Mode = "unit" | "budget";
-/** Which figure gets the big line: the instalment, or what it comes back as. */
-type Headline = "monthly" | "projected";
 
 export default function InvestmentCalculator({
   compact = false,
   defaultMode,
   defaultUnit,
-  headline = "monthly",
 }: {
   compact?: boolean;
   /** Omit to let the dashboard's Planner settings decide. */
   defaultMode?: Mode;
   defaultUnit?: UnitId;
-  /**
-   * On the project page the payment plans are printed in full further up, so
-   * the tool leads with the projection instead of repeating the instalment.
-   */
-  headline?: Headline;
 }) {
   const units = LIFESTYLE.units!;
   const cfg = planConfig(LIFESTYLE);
@@ -237,21 +229,12 @@ export default function InvestmentCalculator({
             )}
           </div>
 
-          {headline === "projected" ? (
-            <p className="mt-6 font-display text-[clamp(2rem,3.4vw,3rem)] font-[380] leading-[1.05] tracking-[-0.01em] text-gold">
-              {moneyRange(range.low, range.high, cur)}
-              <span className="mt-2.5 block font-sans text-[0.95rem] font-normal tracking-normal text-ink-2">
-                projected value at handover, month {plan.handoverMonths}
-              </span>
-            </p>
-          ) : (
-            <p className="mt-6 font-display text-[clamp(2.3rem,3.6vw,3.3rem)] font-[380] leading-none tracking-[-0.01em] text-ink">
-              {money(twMonthly, cur)}
-              <span className="ml-3 font-sans text-[0.95rem] font-normal tracking-normal text-ink-2">
-                / month × {plan.months}
-              </span>
-            </p>
-          )}
+          <p className="mt-6 font-display text-[clamp(2.3rem,3.6vw,3.3rem)] font-[380] leading-none tracking-[-0.01em] text-ink">
+            {money(twMonthly, cur)}
+            <span className="ml-3 font-sans text-[0.95rem] font-normal tracking-normal text-ink-2">
+              / month × {plan.months}
+            </span>
+          </p>
           {mode === "budget" &&
             (budgetPKR === 0 ? (
               <p className="mt-3 text-[12px] leading-[1.7] text-ink-2/80">
@@ -305,8 +288,7 @@ export default function InvestmentCalculator({
                 <dd className="font-mono text-[1.02rem] tracking-[0.05em] text-ink">{v}</dd>
               </div>
             ))}
-            {/* Suppressed when it is the headline — one projection per panel. */}
-            {show("projected") && headline !== "projected" && (
+            {show("projected") && (
               <div className="flex items-baseline justify-between gap-4 border-b border-ink/10 py-4 sm:gap-6">
                 <dt className="text-[0.9rem] text-ink-2">Projected value at handover</dt>
                 <dd className="text-right font-mono text-[1.02rem] tracking-[0.03em] text-gold">
