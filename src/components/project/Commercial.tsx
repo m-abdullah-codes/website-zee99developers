@@ -4,7 +4,7 @@ import SectionHead from "@/components/ui/SectionHead";
 import Reveal from "@/components/motion/Reveal";
 import Plate from "@/components/ui/Plate";
 import Em from "@/components/ui/Em";
-import CurrencySwitch, { useCurrency } from "@/components/tools/Currency";
+import { useCurrency } from "@/components/tools/Currency";
 import { commercialContent } from "@/data/commercial";
 import type { Commercial as CommercialData } from "@/data/projects";
 import { fmtInt, money } from "@/lib/format";
@@ -25,7 +25,10 @@ export default function Commercial({
   no?: string;
 }) {
   const c = commercialContent(data);
-  const [cur, setCur] = useCurrency();
+  // Read-only: the page's currency is chosen up in the residences section and
+  // this section follows it. A third switch here changed nothing the buyer
+  // could not already change, on a panel that is about the split, not the money.
+  const [cur] = useCurrency();
   if (!c.floors.length) return null;
 
   return (
@@ -85,9 +88,8 @@ export default function Commercial({
 
         {/* one split, every unit */}
         <Reveal delay={0.1} className="mt-16 border border-ink/10 bg-paper">
-          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-ink/10 px-5 py-4 sm:px-7">
+          <div className="border-b border-ink/10 px-5 py-4 sm:px-7">
             <p className="eyebrow text-ink">Payment, identical on every unit</p>
-            <CurrencySwitch value={cur} onChange={setCur} className="-my-1.5" />
           </div>
           <ol className="grid grid-cols-2 gap-px bg-ink/10 sm:grid-cols-3 lg:grid-cols-5">
             {c.split.map((s) => (
