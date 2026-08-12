@@ -9,7 +9,7 @@ export default defineConfig({
   // the emitted URLs match where the files actually land — see
   // scripts/build-brochure.mjs in the repo root.
   site: 'https://zee99developers.com',
-  base: '/zee99lifestyle-e-brochure',
+  base: '/zee99lifestyle-e-brochure-lightweight',
   build: { inlineStylesheets: 'always' },
   compressHTML: true,
   // 'attribute' (the default) writes data-astro-cid-XXXXXXXX onto ~2,000

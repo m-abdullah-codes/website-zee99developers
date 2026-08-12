@@ -42,6 +42,13 @@ type Props = {
   brochure?: Brochure;
   /** Follows the switch on the section behind it; the schedule stays PKR-based. */
   currency?: CurrencyCode;
+  /**
+   * Drops every outbound link and call to action — the WhatsApp button, the
+   * brochure download, the open-full-size link. Set by the standalone
+   * e-brochure, which is a document rather than a page that sends anyone
+   * anywhere.
+   */
+  noCta?: boolean;
 };
 
 /**
@@ -58,6 +65,7 @@ export default function UnitDialog({
   plan,
   brochure,
   currency = "PKR",
+  noCta = false,
 }: Props) {
   const open = unit !== null;
   /** Signed for the sentences that carry one figure; bare inside the ledger,
@@ -378,14 +386,16 @@ export default function UnitDialog({
                       Indicative drawing
                       <span className="hidden sm:inline"> · final plans issued at booking</span>
                     </span>
-                    <a
-                      href={floorPlan}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-mono text-[9px] uppercase tracking-[0.24em] text-ink transition-colors hover:text-gold"
-                    >
-                      Open full size ↗
-                    </a>
+                    {!noCta && (
+                      <a
+                        href={floorPlan}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-mono text-[9px] uppercase tracking-[0.24em] text-ink transition-colors hover:text-gold"
+                      >
+                        Open full size ↗
+                      </a>
+                    )}
                   </div>
                 </>
               )}
@@ -499,7 +509,7 @@ export default function UnitDialog({
                 schedule is issued in writing at booking
                 {currency === "PKR" ? "." : ", in PKR; the figures above are converted at today’s rate."}
               </p>
-              <BrochureDownload brochure={brochure} className="mt-6" />
+              {!noCta && <BrochureDownload brochure={brochure} className="mt-6" />}
             </section>
           )}
         </div>
@@ -507,18 +517,27 @@ export default function UnitDialog({
         {/* footer */}
         <footer className="shrink-0 border-t border-ink/10 px-5 py-4 sm:px-9 sm:py-5">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <p className="hidden font-mono text-[9px] uppercase tracking-[0.22em] text-ink-2/80 sm:block">
+            <p
+              className={cn(
+                "font-mono text-[9px] uppercase tracking-[0.22em] text-ink-2/80",
+                // With the CTA gone this line is the whole footer, so it earns
+                // its place on a phone too.
+                noCta ? "block" : "hidden sm:block",
+              )}
+            >
               {tab === "gallery"
                 ? "Use ← → to move through the renders"
                 : tab === "floorplan"
                   ? "Drawing · not to scale"
                   : cfg.handoverLabel || "Schedule issued at booking"}
             </p>
-            <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
-              <Button external href={waLink(waMsg)} size="md" arrow className="flex-1 sm:flex-none">
-                Ask about this plan
-              </Button>
-            </div>
+            {!noCta && (
+              <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
+                <Button external href={waLink(waMsg)} size="md" arrow className="flex-1 sm:flex-none">
+                  Ask about this plan
+                </Button>
+              </div>
+            )}
           </div>
         </footer>
       </div>

@@ -20,9 +20,10 @@
 # build-time content pulled from D1 (public repo: content lives in D1, not git)
 /content/
 
-# e-brochure build output, written into public/ by scripts/build-brochure.mjs
-# so next build copies it into out/. Generated on every build, in CI too.
-/public/zee99lifestyle-e-brochure/
+# Light e-brochure build output, written into public/ by
+# scripts/build-brochure.mjs so next build copies it into out/. Generated on
+# every build, in CI too. (The full e-brochure is a Next route, not this.)
+/public/zee99lifestyle-e-brochure-lightweight/
 
 # 640MB of raw camera/render source for the Zee99 Lifestyle brochure, dropped
 # here by hand. It is a duplicate of brochures/zee99lifestyle/assets/ (which is
@@ -32,6 +33,14 @@
 
 # client handover document (sales collateral — not part of the public codebase)
 /handover/
+
+# Video masters. Everything under public/ is copied into out/ and uploaded as
+# Worker assets, which cap a single file at 25 MiB — a 341MB 1080p master would
+# fail the deploy. Masters live here; the web encode that the page actually
+# plays is public/media/*.mp4, made with:
+#   ffmpeg -i media-src/<name>.master.mp4 -c:v libx264 -preset slow -b:v 1250k \
+#     -pass N -vf scale=1280:720 -c:a aac -b:a 80k -movflags +faststart out.mp4
+/media-src/
 
 # wrangler local state + local dev secrets
 /.wrangler/

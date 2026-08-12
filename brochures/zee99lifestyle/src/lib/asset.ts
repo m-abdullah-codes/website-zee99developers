@@ -12,7 +12,7 @@
  */
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
 
-/** `asset('/img/hero/640.avif')` → `/zee99lifestyle-e-brochure/img/hero/640.avif` */
+/** `asset('/img/hero/640.avif')` → `/zee99lifestyle-e-brochure-lightweight/img/hero/640.avif` */
 export const asset = (path: string) => `${BASE}${path}`;
 
 /**

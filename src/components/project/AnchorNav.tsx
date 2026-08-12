@@ -6,7 +6,15 @@ import { getLenis } from "@/components/motion/SmoothScroll";
 
 export type AnchorItem = { id: string; label: string };
 
-export default function AnchorNav({ items }: { items: AnchorItem[] }) {
+export default function AnchorNav({
+  items,
+  /** Where the rail sticks. Defaults to under the site header; the e-brochure
+   *  has no header, so it passes 0 and the rail sits at the top of the viewport. */
+  top = "var(--nav-offset, 73px)",
+}: {
+  items: AnchorItem[];
+  top?: string;
+}) {
   const [active, setActive] = useState(items[0]?.id);
 
   useEffect(() => {
@@ -37,7 +45,7 @@ export default function AnchorNav({ items }: { items: AnchorItem[] }) {
   return (
     <nav
       aria-label="On this page"
-      style={{ top: "var(--nav-offset, 73px)" }}
+      style={{ top }}
       className="sticky z-40 border-y border-ink/10 bg-paper/88 backdrop-blur-xl transition-[top] duration-500 ease-[var(--ease-out-expo)]"
     >
       <div className="container-x flex gap-7 overflow-x-auto py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">

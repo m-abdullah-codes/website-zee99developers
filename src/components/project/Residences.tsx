@@ -54,12 +54,17 @@ export default function Residences({
   plan,
   brochure,
   no = "02",
+  noCta = false,
+  lede = "Open any residence for the interiors, the floor plan and the full payment schedule — the three things worth seeing before you decide.",
 }: {
   units: Unit[];
   projectName: string;
   plan?: PlanConfig;
   brochure?: Brochure;
   no?: string;
+  /** Passed to the dialog: no WhatsApp button, no brochure download, no links. */
+  noCta?: boolean;
+  lede?: string;
 }) {
   const [open, setOpen] = useState<{ unit: Unit; tab: UnitTab } | null>(null);
   const [compared, setCompared] = useState(0);
@@ -81,7 +86,7 @@ export default function Residences({
               Three ways <em className="italic text-gold">in.</em>
             </>
           }
-          lede="Open any residence for the interiors, the floor plan and the full payment schedule — the three things worth seeing before you decide."
+          lede={lede}
           className="mb-16"
         />
 
@@ -374,6 +379,7 @@ export default function Residences({
         plan={plan}
         brochure={brochure}
         currency={cur}
+        noCta={noCta}
       />
     </section>
   );

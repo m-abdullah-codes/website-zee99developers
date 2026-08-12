@@ -97,26 +97,41 @@ export default function Amenities({
           }
           className="mb-16"
         />
-        <div className="grid items-start gap-12 lg:grid-cols-[1.05fr_0.95fr]">
+        {/* The tile plate is short and the two renders beside it are tall, so
+            on a desktop the left column used to run out two-thirds of the way
+            down and leave the rest of the row empty. It now pins instead: the
+            nine amenities hold their place while the renders travel past them,
+            which is the same move the overview and the FAQs already make. */}
+        <div className="grid items-start gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:gap-14">
+          <div className="lg:sticky lg:top-24 lg:self-start">
           <div className="grid grid-cols-2 gap-px border border-ink/10 bg-ink/10 sm:grid-cols-3">
             {items.map((a, i) => (
               <Reveal
                 key={a.id}
                 delay={(i % 3) * 0.06}
-                className="group flex flex-col gap-5 bg-paper p-6 transition-colors duration-500 hover:bg-paper-2 sm:p-8"
+                className="group relative flex flex-col gap-5 bg-paper p-6 transition-colors duration-500 hover:bg-paper-2 sm:p-7"
               >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-7 w-7 text-ink-2 transition-colors duration-500 group-hover:text-gold"
+                <span
                   aria-hidden
-                >
-                  {ICONS[a.id] ?? <circle cx="12" cy="12" r="8" />}
-                </svg>
+                  className="absolute inset-x-0 top-0 h-px origin-left scale-x-0 bg-gold transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover:scale-x-100"
+                />
+                <span className="flex items-start justify-between gap-3">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-7 w-7 shrink-0 text-ink-2 transition-colors duration-500 group-hover:text-gold"
+                    aria-hidden
+                  >
+                    {ICONS[a.id] ?? <circle cx="12" cy="12" r="8" />}
+                  </svg>
+                  <span className="font-mono text-[9px] tracking-[0.14em] text-ink-2/40 transition-colors duration-500 group-hover:text-gold">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                </span>
                 <span className="font-mono text-[10px] uppercase leading-[1.7] tracking-[0.2em] text-ink">
                   {a.label}
                 </span>
@@ -145,24 +160,29 @@ export default function Amenities({
               </Reveal>
             )}
           </div>
-          <div className="grid gap-6">
+          <p className="mt-6 max-w-[40ch] border-l-2 border-gold-2 pl-4 text-[0.95rem] leading-[1.8] text-ink-2">
+            Every one of them is handed over with the apartment. None of it is an
+            optional extra, and none of it is charged for twice.
+          </p>
+          </div>
+          <div className="grid gap-6 lg:content-start">
             <Reveal>
               <Plate
                 src={m0.image}
                 alt={m0.alt}
                 ratio="aspect-[16/9]"
                 zoom
-                sizes="(max-width: 1024px) 100vw, 45vw"
+                sizes="(max-width: 1024px) 100vw, 50vw"
                 caption={{ left: m0.captionLeft, right: m0.captionRight }}
               />
             </Reveal>
-            <Reveal delay={0.1} className="lg:w-[68%] lg:justify-self-end">
+            <Reveal delay={0.1} className="lg:w-[74%] lg:justify-self-end">
               <Plate
                 src={m1.image}
                 alt={m1.alt}
                 ratio="aspect-[3/4]"
                 zoom
-                sizes="(max-width: 1024px) 80vw, 30vw"
+                sizes="(max-width: 1024px) 80vw, 36vw"
                 caption={{ left: m1.captionLeft, right: m1.captionRight }}
               />
             </Reveal>
