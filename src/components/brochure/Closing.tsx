@@ -3,16 +3,15 @@ import Reveal from "@/components/motion/Reveal";
 import Em from "@/components/ui/Em";
 import Logo from "@/components/ui/Logo";
 import { CLOSING } from "@/data/brochure";
-import { SITE } from "@/data/site";
 
 /**
  * The end of the document.
  *
  * Where the project page closes with two buttons, this closes with a colophon.
  * The brochure is sent by someone — on WhatsApp, by email, hand to hand — so
- * the reader already has a way back to whoever sent it; what it owes them is
- * an identity and a date, not another place to click. The address and number
- * below are set as plain text on purpose: nothing on this page is a link.
+ * the reader already has a way back to whoever sent it. It carries no address
+ * or number on purpose: this brochure is also handed out by other agencies for
+ * commission work, so no personal contact details belong on it.
  */
 export default function Closing({ edition }: { edition: string }) {
   return (
@@ -47,12 +46,8 @@ export default function Closing({ edition }: { edition: string }) {
         </Reveal>
 
         <Reveal delay={0.3} className="mt-20 w-full border-t border-paper/12 pt-10">
-          <div className="flex flex-col items-center gap-8 lg:flex-row lg:items-start lg:justify-between lg:text-left">
+          <div className="flex flex-col items-center gap-8 lg:flex-row lg:items-center lg:justify-between lg:text-left">
             <Logo tone="paper" />
-            <div className="grid gap-1.5 font-mono text-[10px] uppercase leading-[1.9] tracking-[0.18em] text-paper/55">
-              <p>{SITE.address}</p>
-              <p>{SITE.phoneDisplay}</p>
-            </div>
             <p className="font-mono text-[9px] uppercase tracking-[0.24em] text-paper/45">
               E-brochure · {edition}
             </p>
