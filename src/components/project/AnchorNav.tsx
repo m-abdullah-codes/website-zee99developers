@@ -37,6 +37,9 @@ export default function AnchorNav({
   const go = (id: string) => {
     const el = document.getElementById(id);
     if (!el) return;
+    // Sections that fold (the e-brochure's last four) listen for this and open
+    // themselves. Nothing on the project page does, and the event is ignored.
+    window.dispatchEvent(new CustomEvent("fold:open", { detail: { id } }));
     const lenis = getLenis();
     if (lenis) lenis.scrollTo(el, { offset: -110, duration: 1.2 });
     else el.scrollIntoView({ behavior: "smooth", block: "start" });

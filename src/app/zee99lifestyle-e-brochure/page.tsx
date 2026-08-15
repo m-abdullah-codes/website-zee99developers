@@ -14,11 +14,11 @@ import SpecList from "@/components/brochure/SpecList";
 import Building from "@/components/brochure/Building";
 import BuilderRecord from "@/components/brochure/BuilderRecord";
 import Closing from "@/components/brochure/Closing";
-import SectionHead from "@/components/ui/SectionHead";
 import Reveal from "@/components/motion/Reveal";
 import SplitReveal from "@/components/motion/SplitReveal";
 import Plate from "@/components/ui/Plate";
 import Accordion from "@/components/ui/Accordion";
+import Fold from "@/components/ui/Fold";
 import Logo from "@/components/ui/Logo";
 
 /**
@@ -172,7 +172,7 @@ export default function BrochurePage() {
           <SpecList no="05" />
 
           {/* 06 */}
-          <Amenities items={project.amenities!} media={project.amenityMedia} no="06" />
+          <Amenities items={project.amenities!} media={project.amenityMedia} no="06" fold />
 
           {/* 07 */}
           <Building no="07" />
@@ -239,23 +239,22 @@ export default function BrochurePage() {
           <BuilderRecord no="10" />
 
           {/* 11 — faqs */}
-          <section id="faqs" className="border-t border-ink/10 bg-paper-2/55 py-24 md:py-32">
-            <div className="container-x grid items-start gap-14 lg:grid-cols-[0.75fr_1.25fr]">
-              <SectionHead
-                no="11"
-                label="FAQs"
-                title={
-                  <>
-                    Asked, <em className="italic text-gold">answered.</em>
-                  </>
-                }
-                className="lg:sticky lg:top-28"
-              />
-              <Reveal>
-                <Accordion items={project.faqs!.map((f) => ({ q: f.q, a: f.a }))} />
-              </Reveal>
-            </div>
-          </section>
+          <Fold
+            id="faqs"
+            no="11"
+            label="FAQs"
+            title={
+              <>
+                Asked, <em className="italic text-gold">answered.</em>
+              </>
+            }
+            peek={`${project.faqs!.length} questions · asked by buyers, not by us`}
+            className="bg-paper-2/55"
+          >
+            <Reveal className="mx-auto max-w-[62rem]">
+              <Accordion items={project.faqs!.map((f) => ({ q: f.q, a: f.a }))} />
+            </Reveal>
+          </Fold>
         </CurrencyProvider>
 
         <Closing edition={edition} />

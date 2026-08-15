@@ -1,7 +1,14 @@
 import SectionHead from "@/components/ui/SectionHead";
+import Fold from "@/components/ui/Fold";
 import Reveal from "@/components/motion/Reveal";
 import Plate from "@/components/ui/Plate";
 import type { AmenityMedia } from "@/data/projects";
+
+const TITLE = (
+  <>
+    Built in, <em className="italic text-gold">not bolted on.</em>
+  </>
+);
 
 const ICONS: Record<string, React.ReactNode> = {
   terrace: (
@@ -60,10 +67,10 @@ const ICONS: Record<string, React.ReactNode> = {
 // original renders so the section always has its two gallery images.
 const MEDIA_FALLBACK: AmenityMedia[] = [
   {
-    image: "/images/projects/rooftop-pool.jpg",
-    alt: "Rooftop pool at dusk",
-    captionLeft: "Rooftop pool — dusk render",
-    captionRight: "Level 8",
+    image: "/images/projects/zee99-lifestyle/rooftop-cinema.webp",
+    alt: "Rooftop cinema at dusk — tiered lounge seating facing the screen, a torch-lit terrace, planted pergola and the city beyond",
+    captionLeft: "Rooftop cinema — dusk render",
+    captionRight: "The roof",
   },
   {
     image: "/images/projects/terrace-interior.jpg",
@@ -77,27 +84,20 @@ export default function Amenities({
   items,
   media,
   no = "05",
+  fold = false,
 }: {
   items: { id: string; label: string }[];
   media?: AmenityMedia[];
   no?: string;
+  /** The e-brochure folds this section shut; the project page never does. */
+  fold?: boolean;
 }) {
   const m0 = media?.[0] ?? MEDIA_FALLBACK[0];
   const m1 = media?.[1] ?? MEDIA_FALLBACK[1];
-  return (
-    <section id="amenities" className="border-t border-ink/10 bg-paper-2/55 py-24 md:py-32">
-      <div className="container-x">
-        <SectionHead
-          no={no}
-          label="Amenities"
-          title={
-            <>
-              Built in, <em className="italic text-gold">not bolted on.</em>
-            </>
-          }
-          className="mb-16"
-        />
-        {/* The tile plate is short and the two renders beside it are tall, so
+
+  const body = (
+    <>
+      {/* The tile plate is short and the two renders beside it are tall, so
             on a desktop the left column used to run out two-thirds of the way
             down and leave the rest of the row empty. It now pins instead: the
             nine amenities hold their place while the renders travel past them,
@@ -188,6 +188,29 @@ export default function Amenities({
             </Reveal>
           </div>
         </div>
+    </>
+  );
+
+  if (fold) {
+    return (
+      <Fold
+        id="amenities"
+        no={no}
+        label="Amenities"
+        title={TITLE}
+        peek={`${items.length} amenities · handed over with the apartment`}
+        className="bg-paper-2/55"
+      >
+        {body}
+      </Fold>
+    );
+  }
+
+  return (
+    <section id="amenities" className="border-t border-ink/10 bg-paper-2/55 py-24 md:py-32">
+      <div className="container-x">
+        <SectionHead no={no} label="Amenities" title={TITLE} className="mb-16" />
+        {body}
       </div>
     </section>
   );

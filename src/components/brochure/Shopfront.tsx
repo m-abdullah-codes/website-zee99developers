@@ -54,30 +54,26 @@ export default function Shopfront({ no = "03" }: { no?: string }) {
           ))}
         </div>
 
-        <div className="mt-16 grid gap-10 border-t border-ink/15 pt-10 lg:grid-cols-2 lg:gap-16">
-          <Exception />
-
+        <div className="mt-16 grid gap-8 border-t border-ink/15 pt-10 lg:grid-cols-[0.75fr_1.25fr] lg:gap-16">
           <div>
             <p className="eyebrow mb-5 text-ink">Payment, identical on every unit</p>
-            <ol className="border-t border-ink/10">
-              {COMMERCIAL.split.map((s) => (
-                <li
-                  key={s.label}
-                  className="flex items-baseline gap-5 border-b border-ink/10 py-3.5"
-                >
-                  <span className="min-w-[3.25rem] font-display text-[1.35rem] font-[400] leading-none text-gold">
-                    {s.pct}%
-                  </span>
-                  <span className="font-mono text-[9.5px] uppercase tracking-[0.18em] text-ink-2">
-                    {s.label}
-                  </span>
-                </li>
-              ))}
-            </ol>
-            <p className="mt-5 font-mono text-[9px] uppercase leading-[1.8] tracking-[0.18em] text-ink-2/80">
+            <p className="max-w-[34ch] font-mono text-[9px] uppercase leading-[1.8] tracking-[0.18em] text-ink-2/80">
               {SHOPFRONT.note}
             </p>
           </div>
+
+          <ol className="border-t border-ink/10">
+            {COMMERCIAL.split.map((s) => (
+              <li key={s.label} className="flex items-baseline gap-5 border-b border-ink/10 py-3.5">
+                <span className="min-w-[3.25rem] font-display text-[1.35rem] font-[400] leading-none text-gold">
+                  {s.pct}%
+                </span>
+                <span className="font-mono text-[9.5px] uppercase tracking-[0.18em] text-ink-2">
+                  {s.label}
+                </span>
+              </li>
+            ))}
+          </ol>
         </div>
       </div>
     </section>
@@ -431,33 +427,4 @@ function flagFor(u: ShopUnit): string {
   }
   if (ARCADE_FRONTED.includes(u.id)) return "Opens directly onto the ten-foot arcade.";
   return "";
-}
-
-/** G9's discount, with the two rates computed from the ledger rather than typed. */
-function Exception() {
-  const [cur] = useCurrency();
-  const ground = SHOP_FLOORS[0];
-  const off = ground.units.filter((u) => u.rate !== ground.rate);
-  if (!off.length) return null;
-
-  return (
-    <div>
-      <h3 className="font-display text-[clamp(1.35rem,2.2vw,1.8rem)] font-[440] leading-tight tracking-[-0.015em] text-ink">
-        {SHOPFRONT.exception.head}
-      </h3>
-      <p className="mt-3.5 max-w-[46ch] text-[1rem] leading-[1.8] text-ink-2">
-        {SHOPFRONT.exception.body}
-      </p>
-      {off.map((u) => (
-        <p key={u.id} className="mt-5 font-mono text-[11.5px] leading-[1.9] tracking-[0.04em] text-ink">
-          Shop {u.id.replace(/^[GL]/, "").padStart(2, "0")} · {fmtInt(u.sqft)} sq ft ·{" "}
-          {money(u.rate, cur)}/sq ft
-          <span className="text-ink-2">
-            {" "}
-            against {money(ground.rate, cur)} elsewhere on the floor
-          </span>
-        </p>
-      ))}
-    </div>
-  );
 }

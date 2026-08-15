@@ -10,6 +10,7 @@ import { PostsList, PostEdit } from "./views/Posts";
 import { ProjectsList, ProjectEdit } from "./views/Projects";
 import PaymentPlansView from "./views/PaymentPlans";
 import PlannerView from "./views/Planner";
+import BrochureView from "./views/Brochure";
 import SectionsView from "./views/Sections";
 import SettingsView from "./views/Settings";
 import SeoView from "./views/Seo";
@@ -21,6 +22,7 @@ const NAV = [
   ["#/projects", "Projects"],
   ["#/payment", "Payment"],
   ["#/planner", "Planner"],
+  ["#/brochure", "Brochure"],
   ["#/sections", "Sections"],
   ["#/media", "Media"],
   ["#/seo", "SEO"],
@@ -50,6 +52,8 @@ function View({
       return <PaymentPlansView nav={nav} />;
     case "planner":
       return <PlannerView nav={nav} />;
+    case "brochure":
+      return <BrochureView nav={nav} />;
     case "sections":
       return <SectionsView />;
     case "media":

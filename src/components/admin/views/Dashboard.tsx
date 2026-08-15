@@ -9,6 +9,7 @@ type StatusResp = { configured: boolean; error?: string; runs: BuildRun[] };
 const NAV_CARDS: { hash: string; title: string; desc: string }[] = [
   { hash: "#/posts", title: "Blog posts", desc: "Write, edit, preview drafts" },
   { hash: "#/projects", title: "Projects", desc: "Pricing, units, updates, FAQs" },
+  { hash: "#/brochure", title: "E-brochure", desc: "Shops, spec, roof, the record" },
   { hash: "#/sections", title: "Page sections", desc: "Hero, about, pillars & co" },
   { hash: "#/media", title: "Media", desc: "Upload to R2, copy URLs" },
   { hash: "#/seo", title: "SEO", desc: "Titles, descriptions, OG images" },
@@ -23,7 +24,7 @@ const TYPE_LABEL: Record<string, string> = {
   page_seo: "SEO",
 };
 
-const changeHref = (type: string, id: number | null): string => {
+const changeHref = (type: string, id: number | null, label: string): string => {
   switch (type) {
     case "post":
       return `#/posts/${id}`;
@@ -33,8 +34,10 @@ const changeHref = (type: string, id: number | null): string => {
       return "#/sections";
     case "page_seo":
       return "#/seo";
+    // Settings rows are labelled with their key, and one of them has its own
+    // editor rather than a box on the Settings page.
     default:
-      return "#/settings";
+      return label === "brochure" ? "#/brochure" : "#/settings";
   }
 };
 
@@ -140,7 +143,7 @@ export default function Dashboard({
               <button
                 key={`${c.type}-${c.id}-${i}`}
                 type="button"
-                onClick={() => nav(changeHref(c.type, c.id))}
+                onClick={() => nav(changeHref(c.type, c.id, c.label))}
                 className="flex w-full items-center justify-between gap-3 py-2.5 text-left font-mono text-[11px] transition-colors hover:text-gold"
               >
                 <span className="flex items-center gap-3 truncate">

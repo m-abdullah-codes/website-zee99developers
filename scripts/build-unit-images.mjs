@@ -46,6 +46,14 @@ const PLANS = [
   ["floor-plans/2Bed-floorplan.jpg", "2-bed-floor-plan"],
 ];
 
+// The roof, landscape and full-bleed. It is the headline amenity plate on the
+// project page and on the e-brochure (aspect-[16/9], up to the full width of a
+// phone), and the master is a 3840px render — so it gets a wider cap and a
+// notch more quality than the interior renders, which are only ever seen
+// inside a dialog. The three portrait roof frames beside it in
+// assets/roof-top/ are the light brochure's, built by its own pipeline.
+const ROOF = [["roof-top/rooftop-cinema.png", "rooftop-cinema"]];
+
 // The two commercial floors. Rendered plates rather than line drawings — full
 // of furniture, lighting and marble — so they are treated like the renders
 // above (capped and compressed) instead of like the apartment drawings.
@@ -64,6 +72,15 @@ for (const [src, name] of RENDERS) {
   const { size } = await sharp(path.join(ASSETS, src))
     .resize({ width: 1400, withoutEnlargement: true })
     .webp({ quality: 74, effort: 6 })
+    .toFile(file);
+  console.log(`${file}  ${(size / 1024).toFixed(0)} KB`);
+}
+
+for (const [src, name] of ROOF) {
+  const file = path.join(OUT, `${name}.webp`);
+  const { size } = await sharp(path.join(ASSETS, src))
+    .resize({ width: 1800, withoutEnlargement: true })
+    .webp({ quality: 78, effort: 6 })
     .toFile(file);
   console.log(`${file}  ${(size / 1024).toFixed(0)} KB`);
 }
