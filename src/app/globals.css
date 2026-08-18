@@ -313,6 +313,60 @@ body {
   }
 }
 
+/* ---------- the click cue over a floor plan ---------- */
+/* A pointer that presses, and the ring that leaves it when it does. Two
+   animations on one clock, started in the same frame, so the burst always
+   lands on the press. */
+@keyframes tap-cue-press {
+  0%,
+  32% {
+    transform: translate(1px, 1px) scale(1);
+  }
+  42% {
+    transform: translate(1px, 2px) scale(0.82);
+  }
+  58%,
+  100% {
+    transform: translate(1px, 1px) scale(1);
+  }
+}
+.tap-cue-arrow {
+  transform-origin: 22% 16%;
+  animation: tap-cue-press 2.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes tap-cue-ring {
+  0%,
+  40% {
+    transform: translate(-50%, -50%) scale(0.4);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.85);
+    opacity: 0;
+  }
+}
+.tap-cue-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  animation: tap-cue-ring 2.4s var(--ease-out-expo) infinite;
+}
+
+/* The cue still says its piece without moving: the pointer stays drawn, the
+   ring it throws does not. */
+@media (prefers-reduced-motion: reduce) {
+  .tap-cue-arrow,
+  .tap-cue-ring {
+    animation: none;
+  }
+}
+
 /* ---------- article typography ---------- */
 .prose-z {
   font-size: 1.05rem;

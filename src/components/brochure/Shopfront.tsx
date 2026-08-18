@@ -8,7 +8,7 @@ import Reveal from "@/components/motion/Reveal";
 import Em from "@/components/ui/Em";
 import { useCurrency } from "@/components/tools/Currency";
 import { getLenis } from "@/components/motion/SmoothScroll";
-import { gsap, prefersReduced } from "@/lib/gsap";
+import { ScrollTrigger, gsap, prefersReduced } from "@/lib/gsap";
 import { cn } from "@/lib/utils";
 import { fmtInt, money } from "@/lib/format";
 import {
@@ -73,8 +73,44 @@ function Floor({ floor }: { floor: ShopFloor }) {
   const panel = useRef<HTMLDivElement>(null);
   const plate = useRef<HTMLDivElement>(null);
 
-  const choose = (id: string, from: "plan" | "list") =>
+  // This plan is on screen and nothing on it has been opened yet: the only
+  // moment its cue has anything to say. Kept per floor rather than shared
+  // across the section — the two plates are two drawings, and whichever one a
+  // reader comes to should say for itself that it can be read.
+  const [near, setNear] = useState(false);
+  const [taught, setTaught] = useState(false);
+  const hint = near && !taught;
+
+  const choose = (id: string, from: "plan" | "list") => {
+    setTaught(true);
     setPick((p) => (p?.id === id ? null : { id, from }));
+  };
+
+  /**
+   * A drawing covered in numbered pills does not, by itself, say that the pills
+   * are buttons — so a cue says it, for as long as the drawing is the thing on
+   * screen. It is put up on the way in and taken down on the way past, and the
+   * first unit opened on this plate ends it for good: nobody needs telling
+   * twice about the same drawing.
+   */
+  useGSAP(
+    () => {
+      // Read on refresh as well as on every crossing. Arriving with the plan
+      // already on screen — a reload, the back button, a link straight to
+      // #commercial — is not a crossing and fires no toggle, and the reading is
+      // only meaningful once ScrollTrigger has measured the page, which it
+      // defers past the moment the trigger is made.
+      const sync = (self: ScrollTrigger) => setNear(!!self.isActive);
+      ScrollTrigger.create({
+        trigger: plate.current,
+        start: "top 80%",
+        end: "bottom 35%",
+        onToggle: sync,
+        onRefresh: sync,
+      });
+    },
+    { scope: plate },
+  );
 
   /**
    * The picked unit's figures arrive one after another rather than all at once,
@@ -126,6 +162,19 @@ function Floor({ floor }: { floor: ShopFloor }) {
   const unit = units.find((u) => u.id === picked) ?? null;
   const kiosks = units.filter((u) => u.type === "Kiosk").length;
 
+  // The unit the cue rings. The leftmost one on the plate, because below sm the
+  // drawing is held at 640px inside a narrower scroller and only its left edge
+  // is on screen until someone pans it.
+  let cueId: string | null = null;
+  let cueX = Infinity;
+  for (const u of units) {
+    const pos = PLATE_POS[u.id];
+    if (pos && pos.x < cueX) {
+      cueId = u.id;
+      cueX = pos.x;
+    }
+  }
+
   const facts: [string, string][] = [
     [
       "Units",
@@ -164,63 +213,76 @@ function Floor({ floor }: { floor: ShopFloor }) {
           page scrolls sideways on a phone instead of the plan panning inside
           its own scroller. */}
       <div className="min-w-0">
-        {/* Below sm the plan is held at 640px so its markers stay tappable,
-            which puts part of it off-screen; it pans inside its own scroller
-            and the page itself never scrolls sideways. */}
-        <div
-          ref={plate}
-          className="scroll-mt-24 overflow-x-auto overscroll-x-contain [scrollbar-width:thin]"
-        >
-          <div className="relative min-w-[640px] sm:min-w-0">
-            <div className="relative aspect-square overflow-hidden border border-ink/10 bg-white">
-              <Image
-                src={floor.image}
-                alt={floor.alt}
-                fill
-                sizes="(max-width: 1024px) 640px, 55vw"
-                className="object-contain"
-              />
-            </div>
+        {/* The drawing, and over it the cue. The cue is a sibling of the
+            scroller and not a child of it: positioned inside, it would be
+            centred on the 640px drawing rather than on the part of the drawing
+            a phone is showing, and half of it would sit off the screen. */}
+        <div className="relative">
+          {/* Below sm the plan is held at 640px so its markers stay tappable,
+              which puts part of it off-screen; it pans inside its own scroller
+              and the page itself never scrolls sideways. */}
+          <div
+            ref={plate}
+            className="scroll-mt-24 overflow-x-auto overscroll-x-contain [scrollbar-width:thin]"
+          >
+            <div className="relative min-w-[640px] sm:min-w-0">
+              <div className="relative aspect-square overflow-hidden border border-ink/10 bg-white">
+                <Image
+                  src={floor.image}
+                  alt={floor.alt}
+                  fill
+                  sizes="(max-width: 1024px) 640px, 55vw"
+                  className="object-contain"
+                />
+              </div>
 
-            {units.map((u) => {
-              const pos = PLATE_POS[u.id];
-              if (!pos) return null;
-              const on = picked === u.id;
-              return (
-                <button
-                  key={u.id}
-                  type="button"
-                  onClick={() => choose(u.id, "plan")}
-                  aria-pressed={on}
-                  aria-label={`${u.type} ${u.id}, ${fmtInt(u.sqft)} square feet`}
-                  style={{ left: `${pos.x * 100}%`, top: `${pos.y * 100}%` }}
-                  className="absolute grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 place-items-center"
-                >
-                  {/* One ring leaving the picked marker, so the eye is told
-                      where the figures below came from. */}
-                  {on && (
-                    <span
-                      aria-hidden
-                      className="pointer-events-none absolute h-[26px] w-[26px] rounded-full border border-ink motion-reduce:hidden"
-                      style={{ animation: "float-ring 1.8s ease-out infinite" }}
-                    />
-                  )}
-                  <span
-                    className={cn(
-                      "relative grid h-[26px] min-w-[26px] place-items-center rounded-full px-1.5",
-                      "font-mono text-[10.5px] font-medium leading-none",
-                      "border transition-transform duration-500 ease-[var(--ease-out-expo)]",
-                      on
-                        ? "scale-[1.25] border-ink bg-ink text-paper shadow-[0_0_0_4px_color-mix(in_srgb,var(--color-ink)_14%,transparent)]"
-                        : "border-gold bg-gold-3 text-ink shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-gold-3)_45%,transparent)] hover:scale-[1.15]",
-                    )}
+              {units.map((u) => {
+                const pos = PLATE_POS[u.id];
+                if (!pos) return null;
+                const on = picked === u.id;
+                const ringed = on || (hint && u.id === cueId);
+                return (
+                  <button
+                    key={u.id}
+                    type="button"
+                    onClick={() => choose(u.id, "plan")}
+                    aria-pressed={on}
+                    aria-label={`${u.type} ${u.id}, ${fmtInt(u.sqft)} square feet`}
+                    style={{ left: `${pos.x * 100}%`, top: `${pos.y * 100}%` }}
+                    className="absolute grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 place-items-center"
                   >
-                    {u.type === "Kiosk" ? "K" : u.id.replace(/^[GL]/, "")}
-                  </span>
-                </button>
-              );
-            })}
+                    {/* One ring leaving the picked marker, so the eye is told
+                        where the figures below came from — and, until anything is
+                        picked, one leaving the marker the cue is about. */}
+                    {ringed && (
+                      <span
+                        aria-hidden
+                        className={cn(
+                          "pointer-events-none absolute h-[26px] w-[26px] rounded-full border motion-reduce:hidden",
+                          on ? "border-ink" : "border-gold-2",
+                        )}
+                        style={{ animation: "float-ring 1.8s ease-out infinite" }}
+                      />
+                    )}
+                    <span
+                      className={cn(
+                        "relative grid h-[26px] min-w-[26px] place-items-center rounded-full px-1.5",
+                        "font-mono text-[10.5px] font-medium leading-none",
+                        "border transition-transform duration-500 ease-[var(--ease-out-expo)]",
+                        on
+                          ? "scale-[1.25] border-ink bg-ink text-paper shadow-[0_0_0_4px_color-mix(in_srgb,var(--color-ink)_14%,transparent)]"
+                          : "border-gold bg-gold-3 text-ink shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-gold-3)_45%,transparent)] hover:scale-[1.15]",
+                      )}
+                    >
+                      {u.type === "Kiosk" ? "K" : u.id.replace(/^[GL]/, "")}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
+
+          <PlanCue show={hint} />
         </div>
 
         <p className="mt-3 flex items-center justify-between gap-4 border-x border-b border-ink/10 px-4 py-2.5 font-mono text-[9px] uppercase tracking-[0.24em] text-ink-2/80">
@@ -247,7 +309,7 @@ function Floor({ floor }: { floor: ShopFloor }) {
 
           {!unit ? (
             <p className="font-mono text-[9.5px] uppercase tracking-[0.22em] text-ink-2/80">
-              Tap a numbered unit on the plan
+              <Verb /> a numbered unit on the plan
             </p>
           ) : (
             <>
@@ -408,4 +470,53 @@ function flagFor(u: ShopUnit): string {
   }
   if (ARCADE_FRONTED.includes(u.id)) return "Opens directly onto the ten-foot arcade.";
   return "";
+}
+
+/**
+ * The cue over a plan: a pointer, clicking, and the one sentence that says what
+ * the numbers on the drawing are for. It arrives with the drawing and leaves
+ * the moment a unit is opened.
+ *
+ * Decorative in the accessibility tree on purpose. The panel under the plan
+ * carries the same instruction as its resting state, and that one sits in a
+ * live region — a reader on a screen reader should not be told it twice.
+ */
+function PlanCue({ show }: { show: boolean }) {
+  return (
+    <div
+      aria-hidden
+      className={cn(
+        "pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center px-3 pb-5 sm:px-4",
+        "transition-all duration-700 ease-[var(--ease-out-expo)] motion-reduce:transition-none",
+        show ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0",
+      )}
+    >
+      {/* Ink, on a drawing that is line work on white: a paper-coloured chip
+          would read as part of the plate. */}
+      <span className="flex items-center gap-3 bg-ink/95 px-4 py-2.5 text-paper shadow-[0_14px_34px_-16px_color-mix(in_srgb,var(--color-ink)_75%,transparent)]">
+        <span className="relative grid h-[22px] w-[22px] shrink-0 place-items-center">
+          <span className="tap-cue-ring h-4 w-4 rounded-full border border-gold-3" />
+          <svg viewBox="0 0 20 20" className="tap-cue-arrow h-[15px] w-[15px]">
+            <path
+              d="M3.4 2.5 L3.4 15.6 L6.7 12.5 L8.8 17.2 L11.2 16.1 L9.1 11.5 L13.7 11.2 Z"
+              fill="currentColor"
+            />
+          </svg>
+        </span>
+        <span className="font-mono text-[9px] uppercase leading-[1.6] tracking-[0.16em] sm:text-[9.5px] sm:tracking-[0.2em]">
+          <Verb /> a shop for its size and price
+        </span>
+      </span>
+    </div>
+  );
+}
+
+/** The same instruction in the reader's own verb: a mouse clicks, a thumb taps. */
+function Verb() {
+  return (
+    <>
+      <span className="[@media(hover:none)]:hidden">Click</span>
+      <span className="[@media(hover:hover)]:hidden">Tap</span>
+    </>
+  );
 }
