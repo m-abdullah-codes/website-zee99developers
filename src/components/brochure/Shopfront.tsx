@@ -11,7 +11,6 @@ import { getLenis } from "@/components/motion/SmoothScroll";
 import { gsap, prefersReduced } from "@/lib/gsap";
 import { cn } from "@/lib/utils";
 import { fmtInt, money } from "@/lib/format";
-import { COMMERCIAL } from "@/data/commercial";
 import {
   ARCADE_FRONTED,
   PLATE_POS,
@@ -31,12 +30,16 @@ import {
  * below it, which makes reading the plan and reading the prices one action
  * rather than two.
  *
+ * No summary schedule under the two floors any more: shops are sold on a down
+ * payment and thirty-six monthly instalments, and the only place either figure
+ * belongs is on the unit it applies to — which is the panel and the ledger.
+ *
  * The drawings here are the ones PLATE_POS was measured against. They are
  * deliberately not taken from the dashboard's `commercial.floors[].image`: a
  * re-crop from the media library would leave twenty-three markers pointing at
  * the wrong rooms, silently.
  */
-export default function Shopfront({ no = "03" }: { no?: string }) {
+export default function Shopfront({ no = "04" }: { no?: string }) {
   return (
     <section id="commercial" className="border-t border-ink/10 bg-paper py-24 md:py-32">
       <div className="container-x">
@@ -52,28 +55,6 @@ export default function Shopfront({ no = "03" }: { no?: string }) {
           {SHOP_FLOORS.map((floor) => (
             <Floor key={floor.id} floor={floor} />
           ))}
-        </div>
-
-        <div className="mt-16 grid gap-8 border-t border-ink/15 pt-10 lg:grid-cols-[0.75fr_1.25fr] lg:gap-16">
-          <div>
-            <p className="eyebrow mb-5 text-ink">Payment, identical on every unit</p>
-            <p className="max-w-[34ch] font-mono text-[9px] uppercase leading-[1.8] tracking-[0.18em] text-ink-2/80">
-              {SHOPFRONT.note}
-            </p>
-          </div>
-
-          <ol className="border-t border-ink/10">
-            {COMMERCIAL.split.map((s) => (
-              <li key={s.label} className="flex items-baseline gap-5 border-b border-ink/10 py-3.5">
-                <span className="min-w-[3.25rem] font-display text-[1.35rem] font-[400] leading-none text-gold">
-                  {s.pct}%
-                </span>
-                <span className="font-mono text-[9.5px] uppercase tracking-[0.18em] text-ink-2">
-                  {s.label}
-                </span>
-              </li>
-            ))}
-          </ol>
         </div>
       </div>
     </section>

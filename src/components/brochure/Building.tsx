@@ -15,7 +15,7 @@ import { BUILDING } from "@/data/brochure";
  * in half — ours on paper, theirs on a toned ground — rather than as two lists
  * that happen to sit next to each other.
  */
-export default function Building({ no = "07" }: { no?: string }) {
+export default function Building({ no = "08" }: { no?: string }) {
   const total = BUILDING.inBuilding.groups.reduce((n, g) => n + g.items.length, 0);
 
   return (
@@ -106,7 +106,7 @@ export default function Building({ no = "07" }: { no?: string }) {
             </ul>
             <p className="mt-auto pt-8 font-mono text-[9px] uppercase leading-[1.9] tracking-[0.2em] text-ink-2/55">
               Every one of them within a few blocks — the drive times are in
-              section 08.
+              section 09.
             </p>
           </div>
         </div>

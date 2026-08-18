@@ -18,7 +18,7 @@ import { FILM } from "@/data/brochure";
  * replaces it carries `autoPlay`, which is what makes that click feel like a
  * play button rather than a loading screen.
  */
-export default function Film({ no = "04" }: { no?: string }) {
+export default function Film({ no = "05" }: { no?: string }) {
   const [playing, setPlaying] = useState(false);
   const frame = useRef<HTMLDivElement>(null);
 

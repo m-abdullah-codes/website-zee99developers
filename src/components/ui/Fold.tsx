@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 /**
  * A whole section that folds.
  *
- * The e-brochure runs to eleven sections and the last four of them — the
+ * The e-brochure runs to twelve sections and the last four of them — the
  * specification, the amenities, the builder's record and the FAQs — are
  * reference material. A reader wants them *available*, not in the way of the
  * plans and the prices they came for. So they arrive shut: folio, title, and
@@ -43,6 +43,9 @@ type Props = {
   no: string;
   label: string;
   title: ReactNode;
+  /** Set to give the section's name its own weight on the lid, rather than the
+   *  folio's. Only the specification uses it. */
+  labelClassName?: string;
   lede?: ReactNode;
   /** One line naming what is inside — shown while the section is shut. */
   peek: ReactNode;
@@ -60,6 +63,7 @@ export default function Fold({
   no,
   label,
   title,
+  labelClassName,
   lede,
   peek,
   className,
@@ -154,7 +158,8 @@ export default function Fold({
           >
             <span className="flex flex-wrap items-center justify-between gap-x-8 gap-y-6">
               <Reveal as="span" y={14} className="folio text-ink-2">
-                {no}&ensp;—&ensp;{label}
+                <span>{no}&ensp;—</span>
+                <span className={labelClassName}>{label}</span>
               </Reveal>
               <Control open={open} />
             </span>

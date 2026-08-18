@@ -155,15 +155,10 @@ export default function ShopsTab({
 
   return (
     <div className="grid gap-6">
-      <Panel title="Section head" hint="Folio 03. Not folded — this is the section the brochure is sent for.">
+      <Panel title="Section head" hint="Folio 04. Not folded — this is the section the brochure is sent for.">
         <div className="grid gap-4">
           <EmField label="Title" value={value.title} onChange={(v) => patch((s) => ({ ...s, title: v }))} />
           <Para label="Lede" value={value.lede} onChange={(v) => patch((s) => ({ ...s, lede: v }))} />
-          <Line
-            label="Note under the payment split"
-            value={value.note}
-            onChange={(v) => patch((s) => ({ ...s, note: v }))}
-          />
         </div>
       </Panel>
 

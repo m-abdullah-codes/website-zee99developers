@@ -60,6 +60,9 @@ const ROOF = [["roof-top/rooftop-cinema.png", "rooftop-cinema"]];
 const COMMERCIAL_PLANS = [
   ["floor-plans/commercial-ground-floorplan.jpg", "commercial-ground-floor-plan"],
   ["floor-plans/commercial-lowerGround-floorplan.jpg", "commercial-lower-ground-floor-plan"],
+  // The typical residential floor, section 02 of the e-brochure. A rendered
+  // plate like the two above — furniture, marble, wood — not a line drawing.
+  ["floor-plans/residential-1-to-6-floorplan.jpg", "residential-typical-floor-plan"],
 ];
 
 await mkdir(OUT, { recursive: true });

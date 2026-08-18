@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * The five copy-led tabs of the brochure editor. The shops get their own file:
+ * The six copy-led tabs of the brochure editor. The shops get their own file:
  * they are a drawing and a ledger, not paragraphs.
  */
 
-import { Field, Select, TextInput } from "../../ui";
+import { AdminButton, Field, Select, TextInput } from "../../ui";
 import { AddRow, ChipList, EmField, Line, MediaField, Panel, Para, RowCard } from "./parts";
 import type { BrochureDoc } from "@/data/brochureDefaults";
 
@@ -18,6 +18,139 @@ export function moved<T>(list: T[], i: number, dir: -1 | 1): T[] {
   const next = [...list];
   [next[i], next[j]] = [next[j], next[i]];
   return next;
+}
+
+/* ------------------------------------------------------ the typical floor */
+
+export function TypicalFloorTab({
+  value,
+  patch,
+  onPickImage,
+}: {
+  value: BrochureDoc["typicalFloor"];
+  patch: Patch<BrochureDoc["typicalFloor"]>;
+  onPickImage: (set: (url: string) => void) => void;
+}) {
+  const units = value.units;
+  const setUnits = (fn: (u: typeof units) => typeof units) =>
+    patch((f) => ({ ...f, units: fn(f.units) }));
+
+  // The same count the page prints, so the editor can show the claim the copy
+  // is making before anyone publishes it.
+  const facings = [...new Set(units.map((u) => u.facing))];
+
+  return (
+    <div className="grid gap-6">
+      <Panel title="Section head" hint="Folio 02 — the plate, ahead of the three plans that come out of it.">
+        <div className="grid gap-4">
+          <EmField label="Title" value={value.title} onChange={(v) => patch((f) => ({ ...f, title: v }))} />
+          <Para label="Lede" value={value.lede} onChange={(v) => patch((f) => ({ ...f, lede: v }))} />
+          <Para
+            label="Second paragraph"
+            rows={2}
+            value={value.body}
+            onChange={(v) => patch((f) => ({ ...f, body: v }))}
+          />
+          <Para
+            label="Closing line"
+            rows={2}
+            hint="The italic aside under the list."
+            value={value.note}
+            onChange={(v) => patch((f) => ({ ...f, note: v }))}
+          />
+        </div>
+      </Panel>
+
+      <Panel title="The drawing" hint="Shown whole on white, so a square export of the plan is what fits.">
+        <div className="grid gap-4">
+          <MediaField
+            label="Plan"
+            value={value.image}
+            onChange={(v) => patch((f) => ({ ...f, image: v }))}
+            onPick={() => onPickImage((url) => patch((f) => ({ ...f, image: url })))}
+          />
+          <Para
+            label="Alt text"
+            hint="Read aloud instead of the drawing. Say what is on it — the apartments, their sizes, what they face."
+            value={value.alt}
+            onChange={(v) => patch((f) => ({ ...f, alt: v }))}
+          />
+          <Line
+            label="Caption"
+            value={value.caption}
+            onChange={(v) => patch((f) => ({ ...f, caption: v }))}
+          />
+        </div>
+      </Panel>
+
+      <Panel
+        title={`The plate · ${units.length} apartments`}
+        hint="Not printed as a list — the drawing already letters every apartment with its area. This is only what the two facing counts on the page are counted from, so the copy beside the plan can never disagree with the plan."
+        aside={
+          <AddRow
+            label="Add an apartment"
+            onClick={() =>
+              setUnits((u) => [...u, { id: "", facing: facings[0] ?? "Sports complex" }])
+            }
+          />
+        }
+      >
+        <div className="grid gap-2">
+          {units.map((u, i) => (
+            <div
+              key={i}
+              className="grid items-end gap-3 border border-ink/12 bg-white/50 p-3 sm:grid-cols-[7rem_1fr_auto]"
+            >
+              <Line
+                label="Number"
+                hint="As lettered on the drawing."
+                mono
+                value={u.id}
+                onChange={(v) => setUnits((l) => l.map((x, j) => (j === i ? { ...x, id: v } : x)))}
+              />
+              <Line
+                label="Facing"
+                hint="Apartments sharing a facing are counted together, in the order they first appear here."
+                value={u.facing}
+                onChange={(v) => setUnits((l) => l.map((x, j) => (j === i ? { ...x, facing: v } : x)))}
+              />
+              <div className="flex items-center gap-1 pb-1">
+                <AdminButton
+                  variant="ghost"
+                  onClick={() => setUnits((l) => moved(l, i, -1))}
+                  disabled={i === 0}
+                >
+                  ↑
+                </AdminButton>
+                <AdminButton
+                  variant="ghost"
+                  onClick={() => setUnits((l) => moved(l, i, 1))}
+                  disabled={i === units.length - 1}
+                >
+                  ↓
+                </AdminButton>
+                <AdminButton
+                  variant="ghost"
+                  onClick={() => setUnits((l) => l.filter((_, j) => j !== i))}
+                >
+                  Remove
+                </AdminButton>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* What the page will print from the rows above. */}
+        <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-2">
+          {facings.length
+            ? facings
+                .map((f) => `${f}: ${units.filter((u) => u.facing === f).length}`)
+                .join("  ·  ")
+            : "No apartments on the plate."}
+        </p>
+      </Panel>
+    </div>
+  );
 }
 
 /* --------------------------------------------------------- specification */
@@ -35,7 +168,7 @@ export function SpecTab({
 
   return (
     <div className="grid gap-6">
-      <Panel title="Section head" hint="Folio 05 on the brochure. The section arrives folded shut; this is what shows on the lid.">
+      <Panel title="Section head" hint="Folio 06 on the brochure. The section arrives folded shut; this is what shows on the lid.">
         <div className="grid gap-4">
           <EmField label="Title" value={value.title} onChange={(v) => patch((s) => ({ ...s, title: v }))} />
           <Para label="Lede" value={value.lede} onChange={(v) => patch((s) => ({ ...s, lede: v }))} />
@@ -122,7 +255,7 @@ export function BuildingTab({
 
   return (
     <div className="grid gap-6">
-      <Panel title="Section head" hint="Folio 07. This section is dark — the italic reads gold on ink.">
+      <Panel title="Section head" hint="Folio 08. This section is dark — the italic reads gold on ink.">
         <div className="grid gap-4">
           <EmField
             label="Title"
@@ -284,7 +417,7 @@ export function BuilderTab({
 
   return (
     <div className="grid gap-6">
-      <Panel title="Section head" hint="Folio 10, and folded shut like the specification.">
+      <Panel title="Section head" hint="Folio 11, and folded shut like the specification.">
         <div className="grid gap-4">
           <EmField label="Title" value={value.title} onChange={(v) => patch((b) => ({ ...b, title: v }))} />
           <Para label="Lede" value={value.lede} onChange={(v) => patch((b) => ({ ...b, lede: v }))} />
@@ -430,7 +563,7 @@ export function FilmTab({
 }) {
   return (
     <div className="grid gap-6">
-      <Panel title="Section head" hint="Folio 04 — the tour, where the project page runs its rental projection.">
+      <Panel title="Section head" hint="Folio 05 — the tour, where the project page runs its rental projection.">
         <div className="grid gap-4">
           <EmField
             label="Title"

@@ -15,7 +15,7 @@ import { BUILDER } from "@/data/brochure";
  * it answers a question, and a reader who has not asked it yet should not have
  * to scroll through the answer.
  */
-export default function BuilderRecord({ no = "10" }: { no?: string }) {
+export default function BuilderRecord({ no = "11" }: { no?: string }) {
   const delivered = BUILDER.projects.filter((p) => p.status === "Delivered").length;
 
   return (

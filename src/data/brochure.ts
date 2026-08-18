@@ -25,6 +25,7 @@ export type {
   BrochureDoc,
   BuilderProject,
   BuilderStat,
+  FloorUnit,
   PlatePoint,
   RoofFrame,
   ShopFloor,
@@ -45,6 +46,7 @@ const block = <K extends keyof BrochureDoc>(key: K): BrochureDoc[K] => ({
   ...(stored[key] ?? {}),
 });
 
+export const TYPICAL_FLOOR = block("typicalFloor");
 export const SPEC = block("spec");
 export const BUILDING = block("building");
 export const BUILDER = block("builder");
@@ -61,5 +63,4 @@ export const ARCADE_FRONTED = shopfront.arcadeFronted;
 export const SHOPFRONT = {
   title: shopfront.title,
   lede: shopfront.lede,
-  note: shopfront.note,
 };

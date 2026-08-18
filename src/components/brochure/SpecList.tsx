@@ -21,7 +21,7 @@ import { SPEC } from "@/data/brochure";
  * behind an interaction: opening adds the brands and the why, it does not
  * reveal the fact that the row exists.
  */
-export default function SpecList({ no = "05" }: { no?: string }) {
+export default function SpecList({ no = "06" }: { no?: string }) {
   const [open, setOpen] = useState<number>(0);
 
   return (
@@ -29,6 +29,10 @@ export default function SpecList({ no = "05" }: { no?: string }) {
       id="specification"
       no={no}
       label="Specification"
+      // The one section whose name is bigger than the folio it sits in: it is
+      // what a reader is looking for when they come back to this document, and
+      // at 10px it read as part of the numbering rather than as the heading.
+      labelClassName="text-[13.5px] font-medium tracking-[0.26em] text-ink sm:text-[16px]"
       title={<Em text={SPEC.title} />}
       lede={SPEC.lede}
       peek={`${SPEC.rows.length} lines · every one names its brands`}

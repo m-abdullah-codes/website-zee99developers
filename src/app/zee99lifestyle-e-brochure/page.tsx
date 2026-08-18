@@ -8,6 +8,7 @@ import Residences from "@/components/project/Residences";
 import Amenities from "@/components/project/Amenities";
 import UpdatesTimeline from "@/components/project/UpdatesTimeline";
 import { CurrencyProvider } from "@/components/tools/Currency";
+import TypicalFloor from "@/components/brochure/TypicalFloor";
 import Shopfront from "@/components/brochure/Shopfront";
 import Film from "@/components/brochure/Film";
 import SpecList from "@/components/brochure/SpecList";
@@ -25,9 +26,10 @@ import Logo from "@/components/ui/Logo";
  * The full e-brochure — /zee99lifestyle-e-brochure.
  *
  * It is the project page as a document. Same components, same type, same
- * plates, plus the five sections that only ever existed in the light brochure
- * (the specification, the roof, the amenity split, the shop-by-shop ledger and
- * the builder's record), and the full tour in place of the rental projection.
+ * plates, plus the six sections that only ever existed in the light brochure
+ * (the typical floor, the specification, the roof, the amenity split, the
+ * shop-by-shop ledger and the builder's record), and the full tour in place of
+ * the rental projection.
  *
  * Two rules hold the whole file together:
  *
@@ -63,6 +65,9 @@ export const metadata: Metadata = {
 
 const ANCHORS: AnchorItem[] = [
   { id: "overview", label: "Overview" },
+  // "Floor", not "The floor": the rail is a twelve-item scroller and at 1280px
+  // the shorter label is what keeps the last entry on screen without a drag.
+  { id: "floor", label: "Floor" },
   { id: "residences", label: "Residences" },
   { id: "commercial", label: "Shops" },
   { id: "film", label: "The film" },
@@ -150,40 +155,45 @@ export default function BrochurePage() {
           </div>
         </section>
 
+        {/* 02 — the plate the three plans are cut out of, ahead of the plans
+            themselves */}
+        <TypicalFloor no="02" />
+
         {/* One currency for the whole document: the plans, the shops and the
             shop ledger all follow whichever switch a reader touches first. */}
         <CurrencyProvider>
-          {/* 02 */}
+          {/* 03 */}
           <Residences
             units={project.units!}
             projectName={project.name}
             plan={project.plan}
+            no="03"
             noCta
             lede="Open any residence for the interiors, the floor plan and the full payment schedule — every figure exactly as it is issued at booking."
           />
 
-          {/* 03 */}
-          <Shopfront no="03" />
+          {/* 04 */}
+          <Shopfront no="04" />
 
-          {/* 04 — the tour, in place of the rental projection the site runs here */}
-          <Film no="04" />
-
-          {/* 05 */}
-          <SpecList no="05" />
+          {/* 05 — the tour, in place of the rental projection the site runs here */}
+          <Film no="05" />
 
           {/* 06 */}
-          <Amenities items={project.amenities!} media={project.amenityMedia} no="06" fold />
+          <SpecList no="06" />
 
           {/* 07 */}
-          <Building no="07" />
+          <Amenities items={project.amenities!} media={project.amenityMedia} no="07" fold />
 
-          {/* 08 — location */}
+          {/* 08 */}
+          <Building no="08" />
+
+          {/* 09 — location */}
           <section id="location" className="border-t border-ink/10 bg-paper py-24 md:py-32">
             <div className="container-x">
               <div className="grid items-start gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
                 <div>
                   <Reveal as="p" y={14} className="folio mb-9 text-ink-2">
-                    08&ensp;—&ensp;Location
+                    09&ensp;—&ensp;Location
                   </Reveal>
                   <SplitReveal
                     as="h2"
@@ -232,16 +242,16 @@ export default function BrochurePage() {
             </div>
           </section>
 
-          {/* 09 */}
-          <UpdatesTimeline updates={project.updates!} no="09" />
-
           {/* 10 */}
-          <BuilderRecord no="10" />
+          <UpdatesTimeline updates={project.updates!} no="10" />
 
-          {/* 11 — faqs */}
+          {/* 11 */}
+          <BuilderRecord no="11" />
+
+          {/* 12 — faqs */}
           <Fold
             id="faqs"
-            no="11"
+            no="12"
             label="FAQs"
             title={
               <>

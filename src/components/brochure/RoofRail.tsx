@@ -12,10 +12,17 @@ import { BUILDING } from "@/data/brochure";
  *
  * Three things had to be built rather than left to the browser:
  *
- *   1. `data-lenis-prevent`. Lenis calls preventDefault on every wheel event on
- *      the page, including the horizontal component of a trackpad swipe — so a
- *      native overflow-x container inside it cannot be scrolled with a wheel or
- *      a trackpad at all. The attribute hands events inside this element back.
+ *   1. `data-lenis-prevent-horizontal`, and specifically not `data-lenis-prevent`.
+ *      Lenis calls preventDefault on the wheel events it handles, so a native
+ *      overflow-x container inside it cannot be panned by a trackpad swipe.
+ *      The blanket attribute fixes that by handing back *every* wheel event
+ *      over the rail — vertical ones too — so scrolling the page with the
+ *      pointer over a render moved it natively, in instant jumps, while Lenis
+ *      went on animating the same page towards a target it no longer owned.
+ *      Two scroll positions fighting over one page is what the juddering was.
+ *      The axis-scoped attribute hands back only the sideways gestures, which
+ *      the browser then applies to this scroller; anything vertical-dominant
+ *      goes to Lenis and moves the page smoothly, exactly as everywhere else.
  *
  *   2. Mouse drag. The hint said "drag" and dragging did nothing: a native
  *      scroller is dragged by touch only. Pointer events are wired up for mice,
@@ -106,12 +113,12 @@ export default function RoofRail() {
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
-        data-lenis-prevent
+        data-lenis-prevent-horizontal
         role="group"
         aria-label="Rooftop renders"
         tabIndex={0}
         className={cn(
-          "grid grid-flow-col gap-4 overflow-x-auto pb-3 outline-none sm:gap-6",
+          "grid grid-flow-col gap-4 overflow-x-auto overscroll-x-contain pb-3 outline-none sm:gap-6",
           // Card widths are what make this a rail rather than a row that
           // happens to overflow. At a third each, three renders came within
           // 74px of fitting a 1440 desktop — the arrows moved almost nothing
@@ -127,29 +134,35 @@ export default function RoofRail() {
             : "snap-x snap-mandatory lg:cursor-grab",
         )}
       >
+        {/* The snap target is this wrapper, not the card that animates inside
+            it. A mandatory-snap container re-evaluates its snap points when a
+            target moves, and the entry animation moves every card by 30px at
+            exactly the moment the section is being scrolled into view. */}
         {BUILDING.roof.map((r, i) => (
-          <Reveal key={r.image} delay={i * 0.08} className="snap-center">
-            <figure className="group">
-              {/* 5/7 rather than the source's 4/7: at 44% of the rail a full
-                  4/7 frame runs past 750px tall and the section turns into a
-                  wall. The crop is centred, which is where all three renders
-                  keep their subject. */}
-              <div className="relative aspect-[5/7] overflow-hidden border border-ink/10 bg-paper-2">
-                <Image
-                  src={r.image}
-                  alt={r.alt}
-                  fill
-                  draggable={false}
-                  sizes="(max-width: 640px) 82vw, (max-width: 1024px) 58vw, 44vw"
-                  className="object-cover transition-transform duration-[1400ms] ease-[var(--ease-out-expo)] group-hover:scale-[1.05]"
-                />
-              </div>
-              <figcaption className="flex items-center justify-between gap-3 border-x border-b border-ink/10 px-4 py-2.5 font-mono text-[9px] uppercase tracking-[0.24em] text-ink-2/80">
-                <span className="truncate">{r.caption}</span>
-                <span className="hidden shrink-0 md:block">Render</span>
-              </figcaption>
-            </figure>
-          </Reveal>
+          <div key={r.image} className="snap-center">
+            <Reveal delay={i * 0.08}>
+              <figure className="group">
+                {/* 5/7 rather than the source's 4/7: at 44% of the rail a full
+                    4/7 frame runs past 750px tall and the section turns into a
+                    wall. The crop is centred, which is where all three renders
+                    keep their subject. */}
+                <div className="relative aspect-[5/7] overflow-hidden border border-ink/10 bg-paper-2">
+                  <Image
+                    src={r.image}
+                    alt={r.alt}
+                    fill
+                    draggable={false}
+                    sizes="(max-width: 640px) 82vw, (max-width: 1024px) 58vw, 44vw"
+                    className="object-cover transition-transform duration-[1400ms] ease-[var(--ease-out-expo)] group-hover:scale-[1.05]"
+                  />
+                </div>
+                <figcaption className="flex items-center justify-between gap-3 border-x border-b border-ink/10 px-4 py-2.5 font-mono text-[9px] uppercase tracking-[0.24em] text-ink-2/80">
+                  <span className="truncate">{r.caption}</span>
+                  <span className="hidden shrink-0 md:block">Render</span>
+                </figcaption>
+              </figure>
+            </Reveal>
+          </div>
         ))}
       </div>
 

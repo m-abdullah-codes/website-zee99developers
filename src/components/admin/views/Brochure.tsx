@@ -4,9 +4,9 @@
  * The e-brochure editor — /admin#/brochure.
  *
  * Everything the full brochure says that is not already the project itself
- * lives in one `brochure` row in `settings`: the specification, the roof and
- * the amenity split, the builder's record, the film, the shop ledger with its
- * drawings and markers, and the closing page. The residences, the prices, the
+ * lives in one `brochure` row in `settings`: the typical floor, the
+ * specification, the roof and the amenity split, the builder's record, the
+ * film, the shop ledger with its drawings and markers, and the closing page. The residences, the prices, the
  * amenities grid, the location and the FAQs come from the project, so this view
  * points at Projects rather than duplicating them — two editors writing the
  * same figure is how the two stop agreeing.
@@ -21,7 +21,14 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { api, type SettingRow } from "../api";
 import { AdminButton, useConfirm, useToast, useUnsavedGuard } from "../ui";
 import { MediaPickerModal, type MediaAccept } from "./Media";
-import { BuilderTab, BuildingTab, ClosingTab, FilmTab, SpecTab } from "./brochure/sections";
+import {
+  BuilderTab,
+  BuildingTab,
+  ClosingTab,
+  FilmTab,
+  SpecTab,
+  TypicalFloorTab,
+} from "./brochure/sections";
 import ShopsTab from "./brochure/shops";
 import { BROCHURE_DEFAULTS, type BrochureDoc } from "@/data/brochureDefaults";
 import { cn } from "@/lib/utils";
@@ -30,11 +37,12 @@ const KEY = "brochure";
 
 /** Tabs in the order the reader meets them, carrying the folio they will see. */
 const TABS = [
-  { id: "shopfront", no: "03", label: "Shops" },
-  { id: "film", no: "04", label: "The film" },
-  { id: "spec", no: "05", label: "Specification" },
-  { id: "building", no: "07", label: "The building" },
-  { id: "builder", no: "10", label: "The builder" },
+  { id: "typicalFloor", no: "02", label: "The floor" },
+  { id: "shopfront", no: "04", label: "Shops" },
+  { id: "film", no: "05", label: "The film" },
+  { id: "spec", no: "06", label: "Specification" },
+  { id: "building", no: "08", label: "The building" },
+  { id: "builder", no: "11", label: "The builder" },
   { id: "closing", no: "—", label: "Closing" },
 ] as const;
 
@@ -57,7 +65,7 @@ function hydrate(stored: Partial<Record<keyof BrochureDoc, unknown>>): BrochureD
 export default function BrochureView({ nav }: { nav: (hash: string) => void }) {
   const [doc, setDoc] = useState<BrochureDoc | null>(null);
   const [initial, setInitial] = useState("");
-  const [tab, setTab] = useState<TabId>("shopfront");
+  const [tab, setTab] = useState<TabId>("typicalFloor");
   const [saving, setSaving] = useState(false);
   const [picker, setPicker] = useState<PickRequest | null>(null);
   const toast = useToast();
@@ -99,6 +107,7 @@ export default function BrochureView({ nav }: { nav: (hash: string) => void }) {
 
   const patches = useMemo(
     () => ({
+      typicalFloor: patch("typicalFloor"),
       spec: patch("spec"),
       building: patch("building"),
       builder: patch("builder"),
@@ -183,7 +192,7 @@ export default function BrochureView({ nav }: { nav: (hash: string) => void }) {
       </div>
 
       {/* Tabs. The folio is the number printed beside the section on the page,
-          so "the client rang about section 07" lands somewhere. */}
+          so "the client rang about section 08" lands somewhere. */}
       <div className="mb-6 flex flex-wrap items-stretch gap-2 border-b border-ink/12 pb-3">
         {TABS.map((t) => (
           <button
@@ -212,6 +221,13 @@ export default function BrochureView({ nav }: { nav: (hash: string) => void }) {
         <p className="text-[13px] text-ink-2">Loading…</p>
       ) : (
         <>
+          {tab === "typicalFloor" && (
+            <TypicalFloorTab
+              value={doc.typicalFloor}
+              patch={patches.typicalFloor}
+              onPickImage={pickImage}
+            />
+          )}
           {tab === "shopfront" && (
             <ShopsTab value={doc.shopfront} patch={patches.shopfront} onPickImage={pickImage} />
           )}

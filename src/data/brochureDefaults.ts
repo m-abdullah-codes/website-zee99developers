@@ -36,6 +36,13 @@ export type RoofFrame = { image: string; alt: string; caption: string };
 
 export type AmenityGroup = { g: string; items: string[] };
 
+/** One apartment on the typical plate — its number on the drawing and what it
+ *  looks out at. `facing` is free text and is what the section counts itself
+ *  by, so a third orientation needs no code. Sizes and types are not repeated
+ *  here: they are lettered on the drawing itself and priced in the residences
+ *  two sections down. */
+export type FloorUnit = { id: string; facing: string };
+
 export type BuilderStat = { n: string; unit: string; label: string };
 
 export type BuilderProject = { name: string; status: string; note: string };
@@ -77,6 +84,16 @@ export type ShopFloor = {
 export type PlatePoint = { x: number; y: number };
 
 export type BrochureDoc = {
+  typicalFloor: {
+    title: string;
+    lede: string;
+    body: string;
+    note: string;
+    image: string;
+    alt: string;
+    caption: string;
+    units: FloorUnit[];
+  };
   spec: { title: string; lede: string; rows: SpecRow[]; close: string };
   building: {
     title: string;
@@ -104,7 +121,6 @@ export type BrochureDoc = {
   shopfront: {
     title: string;
     lede: string;
-    note: string;
     floors: ShopFloor[];
     /**
      * Where each shop sits on its drawing, read off the plans themselves. If
@@ -172,6 +188,36 @@ const DIR = "/images/projects/zee99-lifestyle";
 /* ------------------------------------------------------------ the document */
 
 export const BROCHURE_DEFAULTS: BrochureDoc = {
+  /**
+   * The plate every one of the six residential floors is. Carried over from the
+   * light brochure's `floor` block; the eight apartments are its floor-1 units,
+   * which is the exemplar it used for the same reason.
+   *
+   * `units` is not printed as a list — the drawing already letters every
+   * apartment with its area. It is there so the two facing counts are a count
+   * of the file rather than a sentence someone typed, which is what stops an
+   * edit in the dashboard leaving the copy contradicting the plate beside it.
+   */
+  typicalFloor: {
+    title: "Eight homes to a floor. *One five-foot corridor.*",
+    lede: "A corner plot gives the building two good faces instead of one. Four apartments on every floor look out at the sports complex and four at the residences behind, so there is no dead elevation.",
+    body: "The lift and the staircase sit at the centre of the plate, which is what keeps the corridor down to a single five-foot run.",
+    note: "All six residential floors are identical. This drawing is any of them.",
+    image: `${DIR}/residential-typical-floor-plan.webp`,
+    alt: "Typical residential floor plan. Eight apartments around a central lift and staircase, on a five-foot corridor. Apartments 01, 02, 03, 05, 06 and 07 are 500 sq ft one-bedrooms; apartment 04 is an 800 sq ft two-bedroom; apartment 08 is a 380 sq ft studio.",
+    caption: "Typical floor, levels 1 to 6. Corridor lettered 5'-0\" wide on the drawing.",
+    units: [
+      { id: "01", facing: "Sports complex" },
+      { id: "02", facing: "Sports complex" },
+      { id: "03", facing: "Sports complex" },
+      { id: "04", facing: "Sports complex" },
+      { id: "05", facing: "Residence" },
+      { id: "06", facing: "Residence" },
+      { id: "07", facing: "Residence" },
+      { id: "08", facing: "Residence" },
+    ],
+  },
+
   /**
    * Verbatim from the light brochure's `spec.rows`, which took it from the
    * client's own facts sheet. `note` is new: the rows expand on this page, and
@@ -355,7 +401,6 @@ export const BROCHURE_DEFAULTS: BrochureDoc = {
   shopfront: {
     title: "Two floors of *shopfront.*",
     lede: "The footfall is not speculative. The sports complex is across the road, Safari Mall is next door, and forty-eight households live directly upstairs. Tap any unit on a plan to see what it costs.",
-    note: "Prelaunch rates. Every commercial unit is sold on the same split.",
     floors: [
       {
         id: "ground",
