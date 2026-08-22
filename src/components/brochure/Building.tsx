@@ -15,11 +15,11 @@ import { BUILDING } from "@/data/brochure";
  * in half — ours on paper, theirs on a toned ground — rather than as two lists
  * that happen to sit next to each other.
  */
-export default function Building({ no = "08" }: { no?: string }) {
+export default function Building({ no = "09" }: { no?: string }) {
   const total = BUILDING.inBuilding.groups.reduce((n, g) => n + g.items.length, 0);
 
   return (
-    <section id="building" className="border-t border-ink/10 bg-paper py-24 md:py-32">
+    <section id="building" className="scroll-mt-24 border-t border-ink/10 bg-paper py-24 md:py-32">
       <div className="container-x">
         <SectionHead
           no={no}
@@ -104,9 +104,12 @@ export default function Building({ no = "08" }: { no?: string }) {
                 </li>
               ))}
             </ul>
+            {/* Not "section 09" any more: the fork moved every folio below it
+                once, and a cross-reference by number is one renumbering away
+                from pointing at the wrong page. */}
             <p className="mt-auto pt-8 font-mono text-[9px] uppercase leading-[1.9] tracking-[0.2em] text-ink-2/55">
-              Every one of them within a few blocks — the drive times are in
-              section 09.
+              Every one of them within a few blocks — the drive times are on the
+              location plate.
             </p>
           </div>
         </div>

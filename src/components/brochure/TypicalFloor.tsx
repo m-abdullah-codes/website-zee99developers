@@ -7,22 +7,24 @@ import { TYPICAL_FLOOR } from "@/data/brochure";
 /**
  * The typical floor — the plate all six residential levels are.
  *
- * It sits ahead of the residences on purpose. "Three ways in" shows three
- * apartments as three products; this shows the floor they are cut out of, so
- * by the time a reader opens the studio they already know where it is, what it
+ * It opens the residential half on purpose. The three plans below it show three
+ * apartments as three products; this shows the floor they are cut out of, so by
+ * the time a reader opens the studio they already know where it is, what it
  * looks out at, and what is on the other side of its wall.
  *
- * Carried over from the light brochure's `TypicalFloor.astro`, including its
- * one good idea: the facing split is a count of the plate, not a sentence
- * someone typed. Edit an apartment's facing in the dashboard and the two
- * numbers follow — they cannot drift out of agreement with the drawing.
+ * One line of copy and no more. This section used to carry a lede, a second
+ * paragraph and an italic closing aside in a column beside the drawing — four
+ * hundred words in front of the plans, which is four hundred words nobody
+ * finishes on the way to a price. Everything they said the drawing already
+ * says: it letters every apartment with its own area, its caption names the
+ * levels and the corridor width, and the two counts beside it say the one thing
+ * a glance at the plate does not.
  *
- * The apartments are not also listed row by row. The drawing letters every one
- * of them with its own area, so a table beside it would be the same eight
- * facts twice; the two counts say the thing the drawing does not say at a
- * glance, and stop there.
+ * Those counts are still a count of the file rather than a sentence someone
+ * typed. Edit an apartment's facing in the dashboard and the numbers follow —
+ * they cannot drift out of agreement with the drawing they sit next to.
  */
-export default function TypicalFloor({ no = "02" }: { no?: string }) {
+export default function TypicalFloor({ no = "R1" }: { no?: string }) {
   const units = TYPICAL_FLOOR.units;
 
   // Grouped in the order the facings first appear, so the dashboard's row
@@ -35,57 +37,43 @@ export default function TypicalFloor({ no = "02" }: { no?: string }) {
   }
 
   return (
-    <section id="floor" className="border-t border-ink/10 bg-paper py-24 md:py-32">
+    <section id="floor" className="scroll-mt-24 border-t border-ink/10 bg-paper py-24 md:py-32">
       <div className="container-x">
         <SectionHead
           no={no}
           label="The typical floor"
           title={<Em text={TYPICAL_FLOOR.title} />}
           lede={TYPICAL_FLOOR.lede}
-          className="mb-16"
+          className="mb-14"
         />
 
-        <div className="grid items-start gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
-          <div className="min-w-0">
-            <Reveal>
-              <p className="max-w-[42ch] text-[1rem] leading-[1.85] text-ink-2">
-                {TYPICAL_FLOOR.body}
-              </p>
+        {/* The drawing is the section, so it takes the wide column and the
+            counts stack down the narrow one rather than sitting under a
+            paragraph that is no longer there. */}
+        <div className="grid items-start gap-10 lg:grid-cols-[0.58fr_1.42fr] lg:gap-14">
+          {facings.length > 1 && (
+            <Reveal className="order-2 grid grid-cols-2 gap-px border border-ink/10 bg-ink/10 lg:sticky lg:top-28 lg:order-1 lg:grid-cols-1">
+              {facings.map((f) => (
+                <div key={f.facing} className="bg-paper p-6 sm:p-7">
+                  <p className="eyebrow mb-4 text-[9px]">Facing {f.facing.toLowerCase()}</p>
+                  <p className="font-display text-[clamp(2.4rem,4.2vw,3.2rem)] font-[380] leading-none tracking-[-0.02em] text-gold">
+                    {f.ids.length}
+                  </p>
+                  <p className="mt-4 font-mono text-[10px] tracking-[0.18em] text-ink-2">
+                    {f.ids.join(" · ")}
+                  </p>
+                </div>
+              ))}
             </Reveal>
+          )}
 
-            {facings.length > 1 && (
-              <Reveal
-                delay={0.1}
-                className="mt-10 grid grid-cols-2 gap-px border border-ink/10 bg-ink/10"
-              >
-                {facings.map((f) => (
-                  <div key={f.facing} className="bg-paper p-6 sm:p-7">
-                    <p className="eyebrow mb-4 text-[9px]">Facing {f.facing.toLowerCase()}</p>
-                    <p className="font-display text-[clamp(2.4rem,4.2vw,3.2rem)] font-[380] leading-none tracking-[-0.02em] text-gold">
-                      {f.ids.length}
-                    </p>
-                    <p className="mt-4 font-mono text-[10px] tracking-[0.18em] text-ink-2">
-                      {f.ids.join(" · ")}
-                    </p>
-                  </div>
-                ))}
-              </Reveal>
-            )}
-
-            <Reveal delay={0.15}>
-              <p className="mt-9 max-w-[38ch] border-l-2 border-gold-2 pl-5 font-display text-[1.08rem] font-[400] italic leading-[1.65] text-ink-2">
-                {TYPICAL_FLOOR.note}
-              </p>
-            </Reveal>
-          </div>
-
-          <Reveal delay={0.1} className="min-w-0 lg:sticky lg:top-28">
+          <Reveal delay={0.1} className="order-1 min-w-0 lg:order-2">
             <Plate
               src={TYPICAL_FLOOR.image}
               alt={TYPICAL_FLOOR.alt}
               ratio="aspect-square"
               fit="contain"
-              sizes="(max-width: 1024px) 100vw, 55vw"
+              sizes="(max-width: 1024px) 100vw, 62vw"
               caption={{ left: TYPICAL_FLOOR.caption, right: "Not to scale" }}
             />
           </Reveal>

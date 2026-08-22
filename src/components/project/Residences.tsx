@@ -6,6 +6,7 @@ import SectionHead from "@/components/ui/SectionHead";
 import Reveal from "@/components/motion/Reveal";
 import UnitDialog, { type UnitTab } from "@/components/project/UnitDialog";
 import CurrencySwitch, { useCurrency } from "@/components/tools/Currency";
+import TapCue, { Verb } from "@/components/ui/TapCue";
 import { cn } from "@/lib/utils";
 import type { Brochure, Milestone, PlanConfig, Unit } from "@/data/projects";
 import type { CurrencyCode } from "@/data/rates";
@@ -56,6 +57,7 @@ export default function Residences({
   no = "02",
   noCta = false,
   lede = "Open any residence for the interiors, the floor plan and the full payment schedule — the three things worth seeing before you decide.",
+  cue,
 }: {
   units: Unit[];
   projectName: string;
@@ -65,15 +67,28 @@ export default function Residences({
   /** Passed to the dialog: no WhatsApp button, no brochure download, no links. */
   noCta?: boolean;
   lede?: string;
+  /**
+   * What the cards open, said in one line beside the section head. Set on the
+   * e-brochure, where the page carries no other controls and the cards are the
+   * only thing on it that does anything; the site's own project page leaves it
+   * off, because a visitor there has already met a dozen buttons.
+   */
+  cue?: string;
 }) {
   const [open, setOpen] = useState<{ unit: Unit; tab: UnitTab } | null>(null);
   const [compared, setCompared] = useState(0);
   const [cur, setCur] = useCurrency();
+  // The cue has done its job the moment anything is opened, and a reader who
+  // has opened one card does not need telling about the next two.
+  const [taught, setTaught] = useState(false);
   const cfg = planConfig({ plan });
   const rows = compareRows(units, cur);
   const picked = Math.min(compared, units.length - 1);
 
-  const show = (unit: Unit, tab: UnitTab) => setOpen({ unit, tab });
+  const show = (unit: Unit, tab: UnitTab) => {
+    setTaught(true);
+    setOpen({ unit, tab });
+  };
 
   return (
     <section id="residences" className="border-t border-ink/10 bg-paper-2/55 py-24 md:py-32">
@@ -87,8 +102,22 @@ export default function Residences({
             </>
           }
           lede={lede}
-          className="mb-16"
+          className={cue ? "mb-8" : "mb-16"}
         />
+
+        {/* The fade is on the chip, not on the `Reveal` around it: `Reveal`
+            finishes by writing `opacity: 1` inline, and an inline style beats a
+            class — so a `taught` fade put on the wrapper would never land. */}
+        {cue && (
+          <Reveal delay={0.24} className="mb-10 flex print:hidden">
+            <TapCue
+              tone="paper"
+              className={cn("transition-opacity duration-700", taught && "opacity-0")}
+            >
+              <Verb /> {cue}
+            </TapCue>
+          </Reveal>
+        )}
 
         <div className="grid gap-6 lg:grid-cols-3">
           {units.map((u, i) => {
@@ -98,7 +127,7 @@ export default function Residences({
               <Reveal
                 key={u.id}
                 delay={i * 0.1}
-                className="group flex flex-col border border-ink/10 bg-paper transition-colors duration-500 hover:border-gold-2/60"
+                className="group flex flex-col border border-ink/15 bg-paper transition-colors duration-500 hover:border-gold-2/60 has-[:focus-visible]:border-gold-2"
               >
                 {cover && (
                   <button
@@ -128,6 +157,24 @@ export default function Residences({
                         <path d="M2.5 16.5 8 11l4.5 4.5L16 12l5.5 5.5" />
                       </svg>
                       {gallery.length} renders
+                    </span>
+                    {/* Drawn, not hovered into existence: on a phone there is no
+                        hover, and a picture with nothing on it is a picture. */}
+                    <span
+                      aria-hidden
+                      className="absolute bottom-4 right-4 grid h-10 w-10 place-items-center rounded-full bg-paper/95 text-ink shadow-[0_10px_28px_-12px_color-mix(in_srgb,var(--color-ink)_80%,transparent)] transition-colors duration-500 group-hover:bg-gold group-hover:text-paper"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-[17px] w-[17px]"
+                      >
+                        <path d="M14 4h6v6M20 4l-7.5 7.5M10 20H4v-6M4 20l7.5-7.5" />
+                      </svg>
                     </span>
                   </button>
                 )}
@@ -165,13 +212,20 @@ export default function Residences({
                   <p className="mt-6 flex-1 text-[0.94rem] leading-[1.8] text-ink-2">{u.blurb}</p>
                 </div>
 
-                <div className="grid grid-cols-3 divide-x divide-ink/10 border-t border-ink/10">
+                {/* Three buttons, drawn as three buttons. They used to be bare
+                    icons on the card's own ground, which on a desktop the
+                    cursor explained and on a phone nothing did — so they now
+                    sit on a toned bar under a gold rule, take the ink the rest
+                    of the card's small type does not, and answer a press with
+                    a colour rather than with a dialog appearing out of
+                    nowhere. */}
+                <div className="grid grid-cols-3 divide-x divide-ink/12 border-t-2 border-gold-2/70 bg-paper-2/70">
                   {ACTIONS.map((a) => (
                     <button
                       key={a.id}
                       type="button"
                       onClick={() => show(u, a.id)}
-                      className="flex flex-col items-center gap-2.5 px-2 py-5 text-ink-2 transition-colors duration-300 hover:bg-paper-2 hover:text-gold focus-visible:bg-paper-2 focus-visible:text-gold"
+                      className="group/act flex flex-col items-center gap-2.5 px-2 py-5 text-ink transition-colors duration-300 hover:bg-ink hover:text-paper focus-visible:bg-ink focus-visible:text-paper active:bg-ink active:text-paper"
                     >
                       <svg
                         viewBox="0 0 24 24"
@@ -180,12 +234,12 @@ export default function Residences({
                         strokeWidth="1.3"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        className="h-[18px] w-[18px]"
+                        className="h-[19px] w-[19px] text-gold transition-colors duration-300 group-hover/act:text-gold-3 group-focus-visible/act:text-gold-3 group-active/act:text-gold-3"
                         aria-hidden
                       >
                         {a.icon}
                       </svg>
-                      <span className="text-center font-mono text-[9px] uppercase leading-[1.4] tracking-[0.16em]">
+                      <span className="text-center font-mono text-[9.5px] uppercase leading-[1.4] tracking-[0.16em]">
                         {a.label}
                       </span>
                       <span className="sr-only">for the {u.name}</span>

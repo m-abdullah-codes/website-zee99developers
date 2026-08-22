@@ -43,6 +43,24 @@ export type AmenityGroup = { g: string; items: string[] };
  *  two sections down. */
 export type FloorUnit = { id: string; facing: string };
 
+/**
+ * One side of the fork — everything a reader is given before they choose it.
+ *
+ * A label, a name and a few short facts. Nothing more: the card is a signpost,
+ * not an argument. Whoever is reading already knows whether they want a home or
+ * a shop, and the only job of the card is to be recognised at a glance — which
+ * is also what lets the two of them sit side by side on a phone, where each is
+ * about a hundred and sixty pixels wide and a sentence would not fit.
+ */
+export type PathOption = {
+  /** The small mono label over the name. */
+  label: string;
+  /** The name, set large. */
+  title: string;
+  /** Two or three short facts, one per line. Counts and ranges, not claims. */
+  meta: string[];
+};
+
 export type BuilderStat = { n: string; unit: string; label: string };
 
 export type BuilderProject = { name: string; status: string; note: string };
@@ -84,16 +102,28 @@ export type ShopFloor = {
 export type PlatePoint = { x: number; y: number };
 
 export type BrochureDoc = {
-  typicalFloor: {
+  /** The fork the document turns on: apartments or shops. */
+  paths: {
     title: string;
     lede: string;
-    body: string;
+    /** The line under the two cards while neither is open — the page does not
+     *  go on until one of them is. */
     note: string;
+    residential: PathOption;
+    commercial: PathOption;
+  };
+  typicalFloor: {
+    title: string;
+    /** One line. The drawing is the section; the prose is a caption for it. */
+    lede: string;
     image: string;
     alt: string;
     caption: string;
     units: FloorUnit[];
   };
+  /** The three plans come from the project itself — this is only the section's
+   *  own copy, which belongs to the brochure rather than to the site. */
+  residences: { lede: string; cue: string };
   spec: { title: string; lede: string; rows: SpecRow[]; close: string };
   building: {
     title: string;
@@ -189,20 +219,59 @@ const DIR = "/images/projects/zee99-lifestyle";
 
 export const BROCHURE_DEFAULTS: BrochureDoc = {
   /**
+   * The fork. Two thirds of this document is only ever relevant to one of two
+   * readers — someone buying a home and someone buying a shop — and printing
+   * both at full length in front of both is how a brochure gets closed. So the
+   * plans, the schedules and the specification arrive folded behind a choice,
+   * and everything either reader needs regardless (the film, the amenities, the
+   * address, the builder, the questions) stays open below it.
+   *
+   * The copy here is the whole of the ask, and it is deliberately almost
+   * nothing: a label, a name and three facts on each card. A reader already
+   * knows which of the two they are, so the cards only have to be recognisable,
+   * and a card that argues its case is a card nobody finishes before clicking
+   * the other one.
+   *
+   * The page does not continue past this section until one of them is open.
+   * Everything below the fork is written for a reader who has already said
+   * which half of the building they came for, and a document that lets you
+   * scroll past the question answers it for you — badly, by showing you the
+   * other half's prices first.
+   */
+  paths: {
+    title: "One building. *Two ways to own it.*",
+    lede: "Choose one to open its plans, prices and payment schedules. You can switch at any time.",
+    note: "Choose one to carry on",
+    residential: {
+      label: "Residential",
+      title: "Apartments",
+      meta: ["3 plans", "380 – 800 sq ft", "6 floors"],
+    },
+    commercial: {
+      label: "Commercial",
+      title: "Shops",
+      meta: ["23 units", "70 – 486 sq ft", "2 floors"],
+    },
+  },
+
+  /**
    * The plate every one of the six residential floors is. Carried over from the
    * light brochure's `floor` block; the eight apartments are its floor-1 units,
    * which is the exemplar it used for the same reason.
    *
-   * `units` is not printed as a list — the drawing already letters every
-   * apartment with its area. It is there so the two facing counts are a count
-   * of the file rather than a sentence someone typed, which is what stops an
-   * edit in the dashboard leaving the copy contradicting the plate beside it.
+   * One line of copy and no more. The drawing letters every apartment with its
+   * own area and the two counts beside it say the one thing the drawing does
+   * not — three paragraphs in front of it were three paragraphs nobody read on
+   * the way to the plans.
+   *
+   * `units` is not printed as a list, for the same reason. It is there so the
+   * two facing counts are a count of the file rather than a sentence someone
+   * typed, which is what stops an edit in the dashboard leaving the copy
+   * contradicting the plate beside it.
    */
   typicalFloor: {
     title: "Eight homes to a floor. *One five-foot corridor.*",
-    lede: "A corner plot gives the building two good faces instead of one. Four apartments on every floor look out at the sports complex and four at the residences behind, so there is no dead elevation.",
-    body: "The lift and the staircase sit at the centre of the plate, which is what keeps the corridor down to a single five-foot run.",
-    note: "All six residential floors are identical. This drawing is any of them.",
+    lede: "A corner plot gives the building two good faces: four apartments on every floor look out at the sports complex and four at the residences behind.",
     image: `${DIR}/residential-typical-floor-plan.webp`,
     alt: "Typical residential floor plan. Eight apartments around a central lift and staircase, on a five-foot corridor. Apartments 01, 02, 03, 05, 06 and 07 are 500 sq ft one-bedrooms; apartment 04 is an 800 sq ft two-bedroom; apartment 08 is a 380 sq ft studio.",
     caption: "Typical floor, levels 1 to 6. Corridor lettered 5'-0\" wide on the drawing.",
@@ -216,6 +285,17 @@ export const BROCHURE_DEFAULTS: BrochureDoc = {
       { id: "07", facing: "Residence" },
       { id: "08", facing: "Residence" },
     ],
+  },
+
+  /**
+   * The residences section's own words. The three plans, their areas and every
+   * figure on them are the project's — edited under Payment, and the same on
+   * this page as on the site. Only the lede and the cue are the brochure's,
+   * because only they are about this document rather than about the building.
+   */
+  residences: {
+    lede: "Open any residence for the interiors, the floor plan and the full payment schedule — every figure exactly as it is issued at booking.",
+    cue: "a plan for its renders, its drawing and its schedule",
   },
 
   /**

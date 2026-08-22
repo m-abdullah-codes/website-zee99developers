@@ -26,6 +26,7 @@ export type {
   BuilderProject,
   BuilderStat,
   FloorUnit,
+  PathOption,
   PlatePoint,
   RoofFrame,
   ShopFloor,
@@ -46,7 +47,9 @@ const block = <K extends keyof BrochureDoc>(key: K): BrochureDoc[K] => ({
   ...(stored[key] ?? {}),
 });
 
+export const PATHS = block("paths");
 export const TYPICAL_FLOOR = block("typicalFloor");
+export const RESIDENCES = block("residences");
 export const SPEC = block("spec");
 export const BUILDING = block("building");
 export const BUILDER = block("builder");

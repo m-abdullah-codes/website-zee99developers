@@ -21,7 +21,7 @@ import { SPEC } from "@/data/brochure";
  * behind an interaction: opening adds the brands and the why, it does not
  * reveal the fact that the row exists.
  */
-export default function SpecList({ no = "06" }: { no?: string }) {
+export default function SpecList({ no = "R3" }: { no?: string }) {
   const [open, setOpen] = useState<number>(0);
 
   return (

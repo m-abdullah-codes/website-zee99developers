@@ -1,13 +1,17 @@
 "use client";
 
 /**
- * The six copy-led tabs of the brochure editor. The shops get their own file:
- * they are a drawing and a ledger, not paragraphs.
+ * The copy-led tabs of the brochure editor — the sections that exist only in
+ * the brochure and are edited out of `settings.brochure`.
+ *
+ * Two neighbours: the shops get `./shops` because they are a drawing and a
+ * ledger rather than paragraphs, and the sections shared with the project page
+ * get `./project`, because those are written back into a different row.
  */
 
 import { AdminButton, Field, Select, TextInput } from "../../ui";
 import { AddRow, ChipList, EmField, Line, MediaField, Panel, Para, RowCard } from "./parts";
-import type { BrochureDoc } from "@/data/brochureDefaults";
+import type { BrochureDoc, PathOption } from "@/data/brochureDefaults";
 
 type Patch<T> = (fn: (b: T) => T) => void;
 
@@ -18,6 +22,164 @@ export function moved<T>(list: T[], i: number, dir: -1 | 1): T[] {
   const next = [...list];
   [next[i], next[j]] = [next[j], next[i]];
   return next;
+}
+
+/* ------------------------------------------------------------- the choice */
+
+/**
+ * The fork, folio 02 — the one section on the page that decides what the rest
+ * of the page is.
+ *
+ * The two cards are edited side by side rather than one under the other, on
+ * purpose: they are read side by side, and the failure mode here is not a typo,
+ * it is one card arguing harder than the other. Seeing them in the same shape
+ * at the same width is what catches that before it is published.
+ */
+export function PathsTab({
+  value,
+  patch,
+}: {
+  value: BrochureDoc["paths"];
+  patch: Patch<BrochureDoc["paths"]>;
+}) {
+  const setSide = (side: "residential" | "commercial") => (fn: (o: PathOption) => PathOption) =>
+    patch((p) => ({ ...p, [side]: fn({ ...p[side] }) }));
+
+  return (
+    <div className="grid gap-6">
+      <Panel
+        title="Section head"
+        hint="Folio 02, and the point the document stops at: nothing below this section is on the page until one of the two cards is open. Keep the lede to a line — a reader is being asked a question, not read a paragraph."
+      >
+        <div className="grid gap-4">
+          <EmField label="Title" value={value.title} onChange={(v) => patch((p) => ({ ...p, title: v }))} />
+          <Para
+            label="Lede"
+            rows={2}
+            value={value.lede}
+            onChange={(v) => patch((p) => ({ ...p, lede: v }))}
+          />
+          <Line
+            label="Line under the cards"
+            hint="Shown between two gold rules while neither card is open, and gone the moment one is. It is what stops the end of the page reading as a page that failed to load, so say what has to happen next — a few words."
+            value={value.note}
+            onChange={(v) => patch((p) => ({ ...p, note: v }))}
+          />
+        </div>
+      </Panel>
+
+      <div className="grid gap-6 xl:grid-cols-2">
+        <PathCard
+          title="Left card · Apartments"
+          hint="Opens the typical floor, the three plans and the specification."
+          value={value.residential}
+          patch={setSide("residential")}
+        />
+        <PathCard
+          title="Right card · Shops"
+          hint="Opens both retail plans and the shop-by-shop price list."
+          value={value.commercial}
+          patch={setSide("commercial")}
+        />
+      </div>
+    </div>
+  );
+}
+
+function PathCard({
+  title,
+  hint,
+  value,
+  patch,
+}: {
+  title: string;
+  hint: string;
+  value: PathOption;
+  patch: Patch<PathOption>;
+}) {
+  return (
+    <Panel title={title} hint={hint}>
+      <div className="grid gap-4">
+        <Line
+          label="Label"
+          hint="The small gold line over the name. One word."
+          value={value.label}
+          onChange={(v) => patch((o) => ({ ...o, label: v }))}
+        />
+        <Line
+          label="Name"
+          hint="Set large. One or two words — the two cards sit side by side on a phone, where each is about 160px wide."
+          value={value.title}
+          onChange={(v) => patch((o) => ({ ...o, title: v }))}
+        />
+        <ChipList
+          label="Facts"
+          hint="Two or three short ones, printed one to a line under the name. Counts and ranges, not claims — the card is a signpost, not an argument."
+          values={value.meta}
+          onChange={(v) => patch((o) => ({ ...o, meta: v }))}
+        />
+      </div>
+    </Panel>
+  );
+}
+
+/* --------------------------------------------------------- the residences */
+
+/**
+ * Two lines, and deliberately only two. The three plans, their areas and every
+ * figure on them belong to the project and are edited under Payment — this is
+ * the section's own copy, which is about the document rather than the building.
+ */
+export function ResidencesTab({
+  value,
+  patch,
+  nav,
+}: {
+  value: BrochureDoc["residences"];
+  patch: Patch<BrochureDoc["residences"]>;
+  nav: (hash: string) => void;
+}) {
+  return (
+    <div className="grid gap-6">
+      <Panel
+        title="Section head"
+        hint="Folio R2 — the three plans, inside the apartments half."
+        aside={
+          <AdminButton variant="outline" onClick={() => nav("#/payment")}>
+            Prices and plans →
+          </AdminButton>
+        }
+      >
+        <div className="grid gap-4">
+          <Para
+            label="Lede"
+            value={value.lede}
+            onChange={(v) => patch((r) => ({ ...r, lede: v }))}
+          />
+          <Line
+            label="Cue"
+            hint="Printed after “Tap” on a phone and “Click” on a desktop, in the gold chip under the head. It is the only thing on this page that says the cards are buttons, so finish the sentence: “Tap …”."
+            value={value.cue}
+            onChange={(v) => patch((r) => ({ ...r, cue: v }))}
+          />
+        </div>
+      </Panel>
+
+      <Panel
+        title="The three plans themselves"
+        hint="Not here. The studio, the one-bed and the two-bed — their areas, prices, down payments, instalments, floor plans and renders — are the project's own, and are the same on the site as they are in the brochure."
+      >
+        <div className="flex flex-wrap gap-2">
+          <AdminButton variant="outline" onClick={() => nav("#/payment")}>
+            Open the payment editor
+          </AdminButton>
+          <AdminButton variant="ghost" onClick={() => nav("#/media")}>
+            Media library
+          </AdminButton>
+        </div>
+      </Panel>
+    </div>
+  );
 }
 
 /* ------------------------------------------------------ the typical floor */
@@ -41,22 +203,17 @@ export function TypicalFloorTab({
 
   return (
     <div className="grid gap-6">
-      <Panel title="Section head" hint="Folio 02 — the plate, ahead of the three plans that come out of it.">
+      <Panel
+        title="Section head"
+        hint="Folio R1 — the plate, ahead of the three plans that come out of it."
+      >
         <div className="grid gap-4">
           <EmField label="Title" value={value.title} onChange={(v) => patch((f) => ({ ...f, title: v }))} />
-          <Para label="Lede" value={value.lede} onChange={(v) => patch((f) => ({ ...f, lede: v }))} />
           <Para
-            label="Second paragraph"
-            rows={2}
-            value={value.body}
-            onChange={(v) => patch((f) => ({ ...f, body: v }))}
-          />
-          <Para
-            label="Closing line"
-            rows={2}
-            hint="The italic aside under the list."
-            value={value.note}
-            onChange={(v) => patch((f) => ({ ...f, note: v }))}
+            label="Lede"
+            hint="One line, and it is the only prose in the section. The drawing letters every apartment with its own area, its caption names the levels, and the two counts beside it say the rest — a paragraph here is a paragraph in front of the prices."
+            value={value.lede}
+            onChange={(v) => patch((f) => ({ ...f, lede: v }))}
           />
         </div>
       </Panel>
@@ -168,7 +325,7 @@ export function SpecTab({
 
   return (
     <div className="grid gap-6">
-      <Panel title="Section head" hint="Folio 06 on the brochure. The section arrives folded shut; this is what shows on the lid.">
+      <Panel title="Section head" hint="Folio R3 — the last of the apartments half, and it arrives folded shut. This is what shows on the lid.">
         <div className="grid gap-4">
           <EmField label="Title" value={value.title} onChange={(v) => patch((s) => ({ ...s, title: v }))} />
           <Para label="Lede" value={value.lede} onChange={(v) => patch((s) => ({ ...s, lede: v }))} />
@@ -255,14 +412,11 @@ export function BuildingTab({
 
   return (
     <div className="grid gap-6">
-      <Panel title="Section head" hint="Folio 08. This section is dark — the italic reads gold on ink.">
+      <Panel title="Section head" hint="Folio 09 — “Experience every evening”, the last section of the document. It closes the brochure on the roof, after the questions are answered and the record is on the table.">
         <div className="grid gap-4">
-          <EmField
-            label="Title"
-            dark
-            value={value.title}
-            onChange={(v) => patch((b) => ({ ...b, title: v }))}
-          />
+          {/* Not `dark`: the section is set on paper, and the preview was
+              showing the italic in the wrong gold. */}
+          <EmField label="Title" value={value.title} onChange={(v) => patch((b) => ({ ...b, title: v }))} />
           <Para label="Lede" rows={2} value={value.lede} onChange={(v) => patch((b) => ({ ...b, lede: v }))} />
         </div>
       </Panel>
@@ -417,7 +571,7 @@ export function BuilderTab({
 
   return (
     <div className="grid gap-6">
-      <Panel title="Section head" hint="Folio 11, and folded shut like the specification.">
+      <Panel title="Section head" hint="Folio 07, and folded shut like the specification.">
         <div className="grid gap-4">
           <EmField label="Title" value={value.title} onChange={(v) => patch((b) => ({ ...b, title: v }))} />
           <Para label="Lede" value={value.lede} onChange={(v) => patch((b) => ({ ...b, lede: v }))} />
@@ -563,7 +717,7 @@ export function FilmTab({
 }) {
   return (
     <div className="grid gap-6">
-      <Panel title="Section head" hint="Folio 05 — the tour, where the project page runs its rental projection.">
+      <Panel title="Section head" hint="Folio 03 — the tour, where the project page runs its rental projection. It is the first section below the choice, so both readers see it.">
         <div className="grid gap-4">
           <EmField
             label="Title"

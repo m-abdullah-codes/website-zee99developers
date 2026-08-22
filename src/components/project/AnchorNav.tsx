@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { getLenis } from "@/components/motion/SmoothScroll";
 
@@ -11,9 +11,16 @@ export default function AnchorNav({
   /** Where the rail sticks. Defaults to under the site header; the e-brochure
    *  has no header, so it passes 0 and the rail sits at the top of the viewport. */
   top = "var(--nav-offset, 73px)",
+  lead,
 }: {
   items: AnchorItem[];
   top?: string;
+  /**
+   * A control pinned to the left of the rail, outside the scroller. The
+   * e-brochure puts its apartments / shops switch here so it is reachable at
+   * every scroll position; nothing else passes one.
+   */
+  lead?: ReactNode;
 }) {
   const [active, setActive] = useState(items[0]?.id);
 
@@ -51,20 +58,23 @@ export default function AnchorNav({
       style={{ top }}
       className="sticky z-40 border-y border-ink/10 bg-paper/88 backdrop-blur-xl transition-[top] duration-500 ease-[var(--ease-out-expo)]"
     >
-      <div className="container-x flex gap-7 overflow-x-auto py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {items.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => go(item.id)}
-            className={cn(
-              "shrink-0 whitespace-nowrap font-mono text-[9.5px] uppercase tracking-[0.24em] transition-colors duration-300",
-              active === item.id ? "text-gold" : "text-ink-2/75 hover:text-ink",
-            )}
-          >
-            {item.label}
-          </button>
-        ))}
+      <div className="container-x flex items-stretch">
+        {lead}
+        <div className="flex min-w-0 flex-1 gap-7 overflow-x-auto py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {items.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => go(item.id)}
+              className={cn(
+                "shrink-0 whitespace-nowrap font-mono text-[9.5px] uppercase tracking-[0.24em] transition-colors duration-300",
+                active === item.id ? "text-gold" : "text-ink-2/75 hover:text-ink",
+              )}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
       </div>
     </nav>
   );

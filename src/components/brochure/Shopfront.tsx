@@ -6,6 +6,7 @@ import { useGSAP } from "@gsap/react";
 import SectionHead from "@/components/ui/SectionHead";
 import Reveal from "@/components/motion/Reveal";
 import Em from "@/components/ui/Em";
+import TapCue, { Verb } from "@/components/ui/TapCue";
 import { useCurrency } from "@/components/tools/Currency";
 import { getLenis } from "@/components/motion/SmoothScroll";
 import { ScrollTrigger, gsap, prefersReduced } from "@/lib/gsap";
@@ -39,7 +40,7 @@ import {
  * re-crop from the media library would leave twenty-three markers pointing at
  * the wrong rooms, silently.
  */
-export default function Shopfront({ no = "04" }: { no?: string }) {
+export default function Shopfront({ no = "C1" }: { no?: string }) {
   return (
     <section id="commercial" className="border-t border-ink/10 bg-paper py-24 md:py-32">
       <div className="container-x">
@@ -493,30 +494,9 @@ function PlanCue({ show }: { show: boolean }) {
     >
       {/* Ink, on a drawing that is line work on white: a paper-coloured chip
           would read as part of the plate. */}
-      <span className="flex items-center gap-3 bg-ink/95 px-4 py-2.5 text-paper shadow-[0_14px_34px_-16px_color-mix(in_srgb,var(--color-ink)_75%,transparent)]">
-        <span className="relative grid h-[22px] w-[22px] shrink-0 place-items-center">
-          <span className="tap-cue-ring h-4 w-4 rounded-full border border-gold-3" />
-          <svg viewBox="0 0 20 20" className="tap-cue-arrow h-[15px] w-[15px]">
-            <path
-              d="M3.4 2.5 L3.4 15.6 L6.7 12.5 L8.8 17.2 L11.2 16.1 L9.1 11.5 L13.7 11.2 Z"
-              fill="currentColor"
-            />
-          </svg>
-        </span>
-        <span className="font-mono text-[9px] uppercase leading-[1.6] tracking-[0.16em] sm:text-[9.5px] sm:tracking-[0.2em]">
-          <Verb /> a shop for its size and price
-        </span>
-      </span>
+      <TapCue>
+        <Verb /> a shop for its size and price
+      </TapCue>
     </div>
-  );
-}
-
-/** The same instruction in the reader's own verb: a mouse clicks, a thumb taps. */
-function Verb() {
-  return (
-    <>
-      <span className="[@media(hover:none)]:hidden">Click</span>
-      <span className="[@media(hover:hover)]:hidden">Tap</span>
-    </>
   );
 }
