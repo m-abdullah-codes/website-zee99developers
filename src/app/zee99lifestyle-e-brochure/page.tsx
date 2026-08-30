@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { GLOBAL_SEO, OG_SITE } from "@/data/content";
 import { getProject } from "@/data/projects";
 import { RESIDENCES } from "@/data/brochure";
 import SmoothScroll from "@/components/motion/SmoothScroll";
@@ -66,12 +67,28 @@ import Logo from "@/components/ui/Logo";
  */
 
 const SLUG = "zee99-lifestyle";
+const SOCIAL_TITLE = "Zee99 Lifestyle — Live the luxury";
+const SOCIAL_DESCRIPTION =
+  "Explore the official Zee99 Lifestyle e-brochure: terrace apartments and retail spaces facing the Safari Sports Complex in Bahria Town Lahore.";
 
 export const metadata: Metadata = {
   title: "Zee99 Lifestyle — e-brochure",
-  description:
-    "The full Zee99 Lifestyle brochure: the three plans and their schedules, the two retail floors shop by shop, the specification, the roof, the site and the builder's record.",
+  description: SOCIAL_DESCRIPTION,
   alternates: { canonical: "/zee99lifestyle-e-brochure" },
+  openGraph: {
+    ...OG_SITE,
+    type: "website",
+    url: "/zee99lifestyle-e-brochure",
+    title: SOCIAL_TITLE,
+    description: SOCIAL_DESCRIPTION,
+    images: [{ url: GLOBAL_SEO.ogImage, width: 1200, height: 630, alt: "Zee99 Lifestyle" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SOCIAL_TITLE,
+    description: SOCIAL_DESCRIPTION,
+    images: [GLOBAL_SEO.ogImage],
+  },
   // A document, not a page to rank: nearly all of it also stands on
   // /projects/zee99-lifestyle, and two indexed copies of one building compete
   // with each other. The light brochure is noindex for the same reason.
