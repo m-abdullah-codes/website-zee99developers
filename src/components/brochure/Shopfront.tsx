@@ -464,11 +464,8 @@ function nudgeIntoView(el: HTMLElement) {
   else window.scrollTo({ top: y, behavior: "smooth" });
 }
 
-/** Two things worth saying out loud rather than leaving to be noticed. */
+/** The one thing worth saying out loud rather than leaving to be noticed. */
 function flagFor(u: ShopUnit): string {
-  if (u.id === "G9") {
-    return "Priced below the other ground-floor shops: it sits inside the plate with no arcade frontage.";
-  }
   if (ARCADE_FRONTED.includes(u.id)) return "Opens directly onto the ten-foot arcade.";
   return "";
 }

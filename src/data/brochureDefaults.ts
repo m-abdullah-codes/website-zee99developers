@@ -71,7 +71,7 @@ export type ShopUnit = {
   id: string;
   type: "Shop" | "Kiosk";
   sqft: number;
-  /** PKR per sq ft. G9 is the one unit below its floor's headline rate. */
+  /** PKR per sq ft. */
   rate: number;
   price: number;
   down: number;
@@ -88,7 +88,7 @@ export type ShopFloor = {
   name: string;
   sub: string;
   body: string;
-  /** Headline rate for the floor. G9 sells below the ground-floor one. */
+  /** Headline rate for the floor. */
   rate: number;
   image: string;
   alt: string;
@@ -168,16 +168,33 @@ export type BrochureDoc = {
 
 /* ---------------------------------------------------------------- the shops */
 
+/**
+ * Ground floor, revised Nov 2026 to the client's 19-shop plan and its payment
+ * sheet: 50,000 / sq ft flat, 20% down, 36 monthly, 6 bi-annual, the balance
+ * at possession — no "on structure" payment on this floor. The sheet's 10%
+ * factor on front and outer-facing shops is left out on purpose: the client
+ * confirms it at booking, not in the brochure.
+ */
 const GROUND_UNITS: ShopUnit[] = [
-  { id: "G1", type: "Shop", sqft: 486, rate: 55000, price: 26730000, down: 5346000, monthly: 222750, monthlyCount: 36, biAnnual: 891000, biAnnualCount: 6, structure: 2673000, possession: 5346000 },
-  { id: "G2", type: "Shop", sqft: 380, rate: 55000, price: 20900000, down: 4180000, monthly: 174167, monthlyCount: 36, biAnnual: 696667, biAnnualCount: 6, structure: 2090000, possession: 4179986 },
-  { id: "G3", type: "Shop", sqft: 380, rate: 55000, price: 20900000, down: 4180000, monthly: 174167, monthlyCount: 36, biAnnual: 696667, biAnnualCount: 6, structure: 2090000, possession: 4179986 },
-  { id: "G4", type: "Shop", sqft: 440, rate: 55000, price: 24200000, down: 4840000, monthly: 201667, monthlyCount: 36, biAnnual: 806667, biAnnualCount: 6, structure: 2420000, possession: 4839986 },
-  { id: "G5", type: "Shop", sqft: 399, rate: 55000, price: 21945000, down: 4389000, monthly: 182875, monthlyCount: 36, biAnnual: 731500, biAnnualCount: 6, structure: 2194500, possession: 4389000 },
-  { id: "G6", type: "Shop", sqft: 410, rate: 55000, price: 22550000, down: 4510000, monthly: 187917, monthlyCount: 36, biAnnual: 751667, biAnnualCount: 6, structure: 2255000, possession: 4509986 },
-  { id: "G7", type: "Shop", sqft: 390, rate: 55000, price: 21450000, down: 4290000, monthly: 178750, monthlyCount: 36, biAnnual: 715000, biAnnualCount: 6, structure: 2145000, possession: 4290000 },
-  { id: "G8", type: "Shop", sqft: 305, rate: 55000, price: 16775000, down: 3355000, monthly: 139792, monthlyCount: 36, biAnnual: 559167, biAnnualCount: 6, structure: 1677500, possession: 3354986 },
-  { id: "G9", type: "Shop", sqft: 450, rate: 50000, price: 22500000, down: 4500000, monthly: 187500, monthlyCount: 36, biAnnual: 750000, biAnnualCount: 6, structure: 2250000, possession: 4500000 },
+  { id: "G1", type: "Shop", sqft: 285, rate: 50000, price: 14250000, down: 2850000, monthly: 142500, monthlyCount: 36, biAnnual: 600000, biAnnualCount: 6, structure: 0, possession: 2670000 },
+  { id: "G2", type: "Shop", sqft: 285, rate: 50000, price: 14250000, down: 2850000, monthly: 142500, monthlyCount: 36, biAnnual: 600000, biAnnualCount: 6, structure: 0, possession: 2670000 },
+  { id: "G3", type: "Shop", sqft: 230, rate: 50000, price: 11500000, down: 2300000, monthly: 115000, monthlyCount: 36, biAnnual: 530000, biAnnualCount: 6, structure: 0, possession: 1880000 },
+  { id: "G4", type: "Shop", sqft: 165, rate: 50000, price: 8250000, down: 1650000, monthly: 82500, monthlyCount: 36, biAnnual: 380000, biAnnualCount: 6, structure: 0, possession: 1350000 },
+  { id: "G5", type: "Shop", sqft: 165, rate: 50000, price: 8250000, down: 1650000, monthly: 82500, monthlyCount: 36, biAnnual: 380000, biAnnualCount: 6, structure: 0, possession: 1350000 },
+  { id: "G6", type: "Shop", sqft: 145, rate: 50000, price: 7250000, down: 1450000, monthly: 72500, monthlyCount: 36, biAnnual: 335000, biAnnualCount: 6, structure: 0, possession: 1180000 },
+  { id: "G7", type: "Shop", sqft: 145, rate: 50000, price: 7250000, down: 1450000, monthly: 72500, monthlyCount: 36, biAnnual: 335000, biAnnualCount: 6, structure: 0, possession: 1180000 },
+  { id: "G8", type: "Shop", sqft: 145, rate: 50000, price: 7250000, down: 1450000, monthly: 72500, monthlyCount: 36, biAnnual: 335000, biAnnualCount: 6, structure: 0, possession: 1180000 },
+  { id: "G9", type: "Shop", sqft: 135, rate: 50000, price: 6750000, down: 1350000, monthly: 67500, monthlyCount: 36, biAnnual: 300000, biAnnualCount: 6, structure: 0, possession: 1170000 },
+  { id: "G10", type: "Shop", sqft: 135, rate: 50000, price: 6750000, down: 1350000, monthly: 67500, monthlyCount: 36, biAnnual: 300000, biAnnualCount: 6, structure: 0, possession: 1170000 },
+  { id: "G11", type: "Shop", sqft: 135, rate: 50000, price: 6750000, down: 1350000, monthly: 67500, monthlyCount: 36, biAnnual: 300000, biAnnualCount: 6, structure: 0, possession: 1170000 },
+  { id: "G12", type: "Shop", sqft: 135, rate: 50000, price: 6750000, down: 1350000, monthly: 67500, monthlyCount: 36, biAnnual: 300000, biAnnualCount: 6, structure: 0, possession: 1170000 },
+  { id: "G13", type: "Shop", sqft: 135, rate: 50000, price: 6750000, down: 1350000, monthly: 67500, monthlyCount: 36, biAnnual: 300000, biAnnualCount: 6, structure: 0, possession: 1170000 },
+  { id: "G14", type: "Shop", sqft: 135, rate: 50000, price: 6750000, down: 1350000, monthly: 67500, monthlyCount: 36, biAnnual: 300000, biAnnualCount: 6, structure: 0, possession: 1170000 },
+  { id: "G15", type: "Shop", sqft: 135, rate: 50000, price: 6750000, down: 1350000, monthly: 67500, monthlyCount: 36, biAnnual: 300000, biAnnualCount: 6, structure: 0, possession: 1170000 },
+  { id: "G16", type: "Shop", sqft: 135, rate: 50000, price: 6750000, down: 1350000, monthly: 67500, monthlyCount: 36, biAnnual: 300000, biAnnualCount: 6, structure: 0, possession: 1170000 },
+  { id: "G17", type: "Shop", sqft: 135, rate: 50000, price: 6750000, down: 1350000, monthly: 67500, monthlyCount: 36, biAnnual: 300000, biAnnualCount: 6, structure: 0, possession: 1170000 },
+  { id: "G18", type: "Shop", sqft: 135, rate: 50000, price: 6750000, down: 1350000, monthly: 67500, monthlyCount: 36, biAnnual: 300000, biAnnualCount: 6, structure: 0, possession: 1170000 },
+  { id: "G19", type: "Shop", sqft: 120, rate: 50000, price: 6000000, down: 1200000, monthly: 60000, monthlyCount: 36, biAnnual: 250000, biAnnualCount: 6, structure: 0, possession: 1140000 },
 ];
 
 const LOWER_UNITS: ShopUnit[] = [
@@ -485,13 +502,13 @@ export const BROCHURE_DEFAULTS: BrochureDoc = {
       {
         id: "ground",
         name: "Ground",
-        sub: "Nine shops behind a ten-foot arcade.",
-        body: "The arcade runs the length of the frontage: shade in June, cover in monsoon, and enough depth to put a display outside the door. Shops 04, 05, 06 and 07 open directly onto it. This is the floor you take if the street is your customer.",
-        rate: 55000,
-        image: `${DIR}/commercial-ground-plate.webp`,
-        alt: "Ground floor plan — nine shops from 305 to 486 sq ft around a five- and six-foot corridor, with a ten-foot covered arcade along the frontage, central lift, two staircases and toilets including an accessible one.",
+        sub: "Nineteen shops behind a ten-foot arcade.",
+        body: "The arcade runs the length of the frontage: shade in June, cover in monsoon, and enough depth to put a display outside the door. Shops 14 to 19 open directly onto it. This is the floor you take if the street is your customer.",
+        rate: 50000,
+        image: `${DIR}/commercial-ground-plate-19.webp`,
+        alt: "Ground floor plan — nineteen shops from 120 to 285 sq ft on two five-foot corridors, with a ten-foot arcade along the frontage, a lift, a staircase and an accessible bathroom.",
         caption:
-          "Ground floor. Arcade ten feet wide along the frontage; shops 04, 05, 06 and 07 open onto it.",
+          "Ground floor. Ten-foot arcade along the frontage.",
         ledgerLabel: "Price of every ground-floor shop",
         units: GROUND_UNITS,
       },
@@ -510,16 +527,27 @@ export const BROCHURE_DEFAULTS: BrochureDoc = {
       },
     ],
     platePos: {
-      // Ground: nine shops, arcade along the bottom edge.
-      G1: { x: 0.284, y: 0.258 },
-      G2: { x: 0.276, y: 0.39 },
-      G3: { x: 0.276, y: 0.52 },
-      G4: { x: 0.286, y: 0.668 },
-      G5: { x: 0.45, y: 0.566 },
-      G6: { x: 0.616, y: 0.566 },
-      G7: { x: 0.856, y: 0.556 },
-      G8: { x: 0.858, y: 0.376 },
-      G9: { x: 0.586, y: 0.376 },
+      // Ground: nineteen shops, arcade along the bottom edge. Markers sit
+      // just above each shop's own lettering on the client's rendered plan.
+      G1: { x: 0.239, y: 0.186 },
+      G2: { x: 0.239, y: 0.319 },
+      G3: { x: 0.410, y: 0.299 },
+      G4: { x: 0.543, y: 0.299 },
+      G5: { x: 0.663, y: 0.299 },
+      G6: { x: 0.870, y: 0.238 },
+      G7: { x: 0.870, y: 0.369 },
+      G8: { x: 0.823, y: 0.539 },
+      G9: { x: 0.680, y: 0.539 },
+      G10: { x: 0.555, y: 0.539 },
+      G11: { x: 0.433, y: 0.540 },
+      G12: { x: 0.312, y: 0.540 },
+      G13: { x: 0.191, y: 0.540 },
+      G14: { x: 0.191, y: 0.679 },
+      G15: { x: 0.312, y: 0.679 },
+      G16: { x: 0.435, y: 0.679 },
+      G17: { x: 0.555, y: 0.679 },
+      G18: { x: 0.680, y: 0.679 },
+      G19: { x: 0.806, y: 0.681 },
 
       // Lower ground: thirteen shops plus the kiosk.
       L13: { x: 0.213, y: 0.14 },
@@ -537,7 +565,7 @@ export const BROCHURE_DEFAULTS: BrochureDoc = {
       L5: { x: 0.8, y: 0.712 },
       LK1: { x: 0.436, y: 0.132 },
     },
-    arcadeFronted: ["G4", "G5", "G6", "G7"],
+    arcadeFronted: ["G14", "G15", "G16", "G17", "G18", "G19"],
   },
 
   closing: {
